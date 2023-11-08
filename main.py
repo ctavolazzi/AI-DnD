@@ -1,42 +1,61 @@
 # main.py
 
 import random
-from game import Game  # Assuming you have a game.py that contains the Game class
-from character import Character  # Assuming your Character class is ready to be imported
+from module_loader import ModuleLoader
+from game_state import GameState
+from character import Character
+
+# Assuming you have the following modules with their configure and update methods
+from combat_module import CombatModule
+from dialogue_module import DialogueModule
+# ... import other game modules ...
 
 def create_random_character():
     # Your character creation logic will go here
-    pass
+    # For now, let's just return a new Character with a random name
+    names = ["Ariadne", "Theron", "Kael", "Mira"]
+    return Character(random.choice(names))
 
-def load_game_modules(game, module_configs):
-    # Logic for loading and configuring modules
-    pass
+def load_game_modules(game_state):
+    # Instantiate the module loader
+    module_loader = ModuleLoader()
+
+    # Configure each game module and load it
+    combat_config = {'difficulty': 'normal'}
+    dialogue_config = {}  # Add necessary configurations
+    # ... other module configurations ...
+
+    # Load and initialize modules with their specific configurations
+    module_loader.load_module('combat', CombatModule, combat_config, game_state)
+    module_loader.load_module('dialogue', DialogueModule, dialogue_config, game_state)
+    # ... load other modules ...
+
+    return module_loader
 
 def main():
     print("Welcome to the DnD Simulator!")
 
-    # Initialize the Game
-    game = Game()
+    # Initialize game state
+    game_state = GameState()
 
-    # Create a new character
-    character = create_random_character()
-    game.character = character
+    # Create a new character with random attributes
+    game_state.character = create_random_character()
 
-    # Load game modules with their configurations
-    module_configs = {
-        'combat': {'difficulty': 'normal'},
-        'dialogue': {},
-        # Add other modules and their configurations here
-    }
-    load_game_modules(game, module_configs)
+    # Load and configure game modules
+    module_loader = load_game_modules(game_state)
+
+    # Assign the loaded module_loader to the game_state for easy access
+    game_state.module_loader = module_loader
 
     # Start the game loop
     try:
-        game.start()
+        while not game_state.is_game_over:
+            module_loader.update_modules(game_state)
     except KeyboardInterrupt:
         print("\nGame interrupted by user.")
     finally:
         print("Thank you for playing!")
+        module_loader.terminate_modules(game_state)
 
 if __name__ == "__main__":
     main()
