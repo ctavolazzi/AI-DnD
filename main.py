@@ -1,5 +1,4 @@
-import time
-import random
+
 from module_interface import ModuleInterface
 from module_loader import ModuleLoader
 from game import Game
@@ -9,13 +8,19 @@ from combat_module import CombatModule
 from dialogue_module import DialogueModule
 from menu import Menu
 from config import config
+from world import World
+
+
+import time
+import random
+import keyboard
 
 # Helper function to stream text to the console, character by character
 def stc(text, delay=0.05):
     for character in text:
         print(character, end='', flush=True)
         time.sleep(delay)
-    print()  # for newline
+    print()
 
 # Function to display the backstory from a file
 def display_backstory(backstory_path="backstory.txt"):
@@ -25,7 +30,6 @@ def display_backstory(backstory_path="backstory.txt"):
         stc(backstory)
     except FileNotFoundError:
         print("Backstory file not found. Please ensure 'backstory.txt' exists.")
-
 # Function to create a random character by selecting a random name
 def create_character(config):
     return Character(config)
@@ -37,56 +41,143 @@ def create_random_character(config=None):
     random_character = create_character(config)
     return random_character
 
+# main.py
+
+def create_custom_character():
+    print("Let's create your character!")
+    name = input("What is your character's name? ")
+    race = input("Choose your race [Human, Elf, Dwarf, Orc]: ")
+    character_class = input("Choose your class [Warrior, Mage, Rogue]: ")
+
+    # You can add input validation or loops to ensure correct input
+    # For now, let's assume the player inputs are valid
+
+    attributes = {}
+    for attr in ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma']:
+        value = int(input(f"Assign points to {attr} (1-20): "))
+        attributes[attr] = value
+
+    config = {
+        "name": name,
+        "race": race,
+        "character_class": character_class,
+        **attributes
+    }
+
+    new_character = Character(config)
+    print(f"You have created {new_character}")
+    return new_character
+
+def test_character_creation():
+    character = create_custom_character()
+    character.save('character.json')
+    loaded_character = Character.load('character.json')
+    assert str(character) == str(loaded_character)
+    print("Character creation test passed!")
+
 # Function to set up the game state and modules
-def setup_game(config):
-    # Initialize the Game object and give it state
-    game = Game(config)
+def setup_game():
+    # The config can be a parameter if different configurations are needed per game setup.
+    game = Game()
+    # Initialize the world and assign it to the game
+    game.world = World()
+    game.world.load_world()
     return game
 
 # Main menu function to greet the player and offer choices
-def main_menu():
+def main_menu(game):
     print("Welcome to the DnD Game!")
     print("1. Start Game")
-    print("2. Load Game")  # Placeholder for future functionality
-    print("3. Options")    # Placeholder for future functionality
-    print("4. Exit")
+    print("2. Load Game")
+    print("3. Save Game")  # New option to save the game
+    print("4. Options")    # Placeholder for future functionality
+    print("5. Exit")
     choice = input("Select an option: ")
+    if choice == "3":
+        save_game_state(game)
+    elif choice == "2":
+        load_game_state(game)
     return choice
+
+def render_game_state(game):
+    # Get the character's current location and print its description
+    current_location = game.world.get_location(game.player_character.position)
+    print(current_location.description)
+
+    # Print the character's current stats and inventory
+    print(f"HP: {game.player_character.state['hp']}, MP: {game.player_character.state['mp']}")
+    print(f"Inventory: {game.player_character.state['inventory']}")
 
 # Function to handle the start of the game, including character creation
 def start_game(game):
     print("Loading backstory...")
     display_backstory()
     print("Character Creation:")
-    print("1. Create Custom Character (Coming Soon!)")
+    print("1. Create Custom Character")
     print("2. Load Random Character")
     choice = input("Select an option: ")
-    if choice == "1" or choice == "2":
-      # Create a random character
-      random_character = create_random_character()
-      stc(f"Welcome, {random_character.config['name']}!")
+    if choice == "1":
+        custom_character = create_custom_character()
+        game.update_character(custom_character)
+        stc(f"Welcome, {custom_character.config['name']}!")
+    elif choice == "2":
+        random_character = create_random_character()
+        game.update_character(random_character)
+        stc(f"Welcome, {random_character.config['name']}!")
+    else:
+        stc("Invalid option. Returning to main menu...")
+        return
     # Placeholder for presenting story options
-    stc("Story options are being developed...")
+    stc("Please be advised: This game is HIGHLY UNSTABLE. Story options are being developed. Play at your own risk...")
+    game_loop(game)
+
+
+def game_loop(game):
+    print("Use the arrow keys to move. Press 'esc' to quit.")
+    while game.is_running:
+        try:
+            if keyboard.is_pressed('up'):
+                game.player_character.move('north')
+            # Repeat for other directions
+
+            # Check for 'esc' to quit
+            if keyboard.is_pressed('esc'):
+                print("Exiting game...")
+                game.is_running = False
+                return  # Return immediately after setting is_running to False
+
+            # Update and render game state after each action
+            render_game_state(game)
+
+            # Control loop execution frequency
+            time.sleep(0.1)
+        except Exception as e:
+            # Catch all exceptions and handle them
+            print(f"An unexpected error occurred: {e}")
+            game.is_running = False
 
 # The main function that ties everything together and runs the game loop
-def main(config=None):
-    # Initialize game state and modules
-    if config is None:
-        config = {"modules": [{"name": "test", "description": "Test Module"}]} # Set the config here
-    game = setup_game(config)
-
-    # Run setup tests (To be implemented)
-    # Run any failsafes or security checks (To be implemented)
-
+def main():
+    game = setup_game()
     while True:
-        choice = main_menu()
+        choice = main_menu(game)
         if choice == "1":
             start_game(game)
-        elif choice == "4":
+        elif choice == "5":
             print("Exiting game. Goodbye!")
             break
         else:
-            print("Invalid option. Please try again. (Sorry, this is still under development.)")
+            print("Invalid option. Please try again.")
+
+def save_game_state(game):
+    # Save the current game state to a file
+    game.save_state('savegame.json')
+    print("Game saved successfully.")
+
+def load_game_state(game):
+    # Load the game state from a file
+    game.load_state('savegame.json')
+    print("Game loaded successfully.")
 
 if __name__ == "__main__":
-    main(config)
+    main()

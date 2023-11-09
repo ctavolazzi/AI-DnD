@@ -1,8 +1,10 @@
 # game.py
 import importlib
 import random
+import json
 from character import Character
 from module_loader import ModuleLoader
+from game_state_manager import GameStateManager
 
 class Game:
     """
@@ -21,13 +23,13 @@ class Game:
         self.characters = {}
         self.modules = {}
         self.load_config(config)
+        self.state = GameStateManager()
 
 
     def update_character(self, character):
-        self.player_characters[character.name] = character
+        self.characters[character.config['name']] = character
+        self.state.update_character(character)  # Change from game_state to state
 
-    def start(self):
-        self.main_loop()
 
     def main_loop(self):
         while self.is_running:
@@ -44,3 +46,21 @@ class Game:
         for key, value in config.items():
             if key in allowed_config_options:
                 setattr(self, key, value)
+
+    def save_state(self, file_path):
+        with open(file_path, 'w') as file:
+            # Serialize necessary components of game state, e.g., characters, world state
+            game_state = {
+                "characters": {name: char.to_dict() for name, char in self.characters.items()},
+                # Include other necessary state information
+            }
+            json.dump(game_state, file)
+
+    def load_state(self, file_path):
+        with open(file_path, 'r') as file:
+            # Deserialize the game state and restore it
+            game_state = json.load(file)
+            for name, char_data in game_state['characters'].items():
+                self.characters[name] = Character.from_dict(char_data)
+            # Restore other state information
+            self.is_running = True
