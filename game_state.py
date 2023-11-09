@@ -2,5 +2,6 @@
 
 class GameState:
     def __init__(self):
-        self.character = None
+        self.player_character = None
         # Other global game states
+        self.characers = []
