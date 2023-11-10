@@ -5,49 +5,57 @@ import json
 from character import Character
 from module_loader import ModuleLoader
 from game_state_manager import GameStateManager
+from main_menu import MainMenu
+from default_map import DefaultMap
 
 class Game:
-    """
-    The Game class encapsulates all the operations related to game flow and state.
-
-    Attributes:
-        config (dict): Configuration for the game.
-        is_running (bool): Indicates if the game is currently running.
-        modules (dict): Holds the loaded game modules.
-        game_state (GameState): The current state of the game.
-    """
+    direction_mapping = {'w': 'north', 'a': 'west', 's': 'south', 'd': 'east'}
+    movement_deltas = {'north': (0, -1), 'south': (0, 1), 'west': (-1, 0), 'east': (1, 0)}
 
     def __init__(self, config):
         self.config = config
         self.is_running = True
         self.characters = {}
         self.modules = {}
-        self.load_config(config)
-        self.state = GameStateManager()
         self.player_position = (0, 0)  # Starting position
-        self.map = Map(10)  # Assuming a 10x10 world for simplicity
+        self.map = DefaultMap(10)  # Assuming a 10x10 world for simplicity
+        self.map.mark_as_explored(self.player_position)
+        # Additional initialization code can go here
 
     def move_player(self, direction):
-        # Logic to update self.player_position based on direction
-        # and to mark the new position as explored
-        # ...
-        pass
+        # Using the direction parameter as a key to get the movement delta
+        dx, dy = self.movement_deltas[direction]
+        x, y = self.player_position
+        new_x, new_y = x + dx, y + dy
+
+        # Check if the new position is within the map boundaries
+        if 0 <= new_x < self.map.size and 0 <= new_y < self.map.size:
+            self.player_position = (new_x, new_y)
+            self.map.mark_as_explored(self.player_position)
+        else:
+            print("You can't move in that direction.")
+
+    def game_loop(self):
+        while self.is_running:
+            self.render_game_state()  # Display the map before asking for the next command
+            command = input("Enter 'WASD' to move, 'Q' to quit: ").lower()
+
+            if command in self.direction_mapping:
+                # Translate command to direction before passing to move_player
+                self.move_player(self.direction_mapping[command])
+            elif command == 'q':
+                print("Exiting game...")
+                self.is_running = False
+            else:
+                print("Invalid command. Use 'WASD' to move or 'Q' to quit.")
 
     def render_game_state(self):
-        # Include a call to self.map.display(self.player_position)
-        # ...
-        pass
-
+        self.map.display(self.player_position)
+        # Additional game state rendering can go here
 
     def update_character(self, character):
         self.characters[character.config['name']] = character
         # self.state.update_character(character)  # Change from game_state to state
-
-
-    def main_loop(self):
-        while self.is_running:
-            # Run the game loop
-            pass
 
     def game_over(self):
         # Implement logic to determine if the game should end

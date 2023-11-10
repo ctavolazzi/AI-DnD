@@ -6,7 +6,8 @@ from game_state import GameState
 from character import Character
 from combat_module import CombatModule
 from dialogue_module import DialogueModule
-from menu import Menu
+from main_menu import MainMenu
+from player_menu import PlayerMenu
 from config import config
 from world import World
 
