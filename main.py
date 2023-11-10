@@ -13,7 +13,6 @@ from world import World
 
 import time
 import random
-import keyboard
 
 # Helper function to stream text to the console, character by character
 def stc(text, delay=0.05):
@@ -76,11 +75,11 @@ def test_character_creation():
     print("Character creation test passed!")
 
 # Function to set up the game state and modules
-def setup_game():
+def setup_game(config):
     # The config can be a parameter if different configurations are needed per game setup.
-    game = Game()
+    game = Game(config)
     # Initialize the world and assign it to the game
-    game.world = World()
+    game.world = World(config)
     game.world.load_world()
     return game
 
@@ -133,32 +132,34 @@ def start_game(game):
 
 
 def game_loop(game):
-    print("Use the arrow keys to move. Press 'esc' to quit.")
+    command_map = {
+        'w': 'north',
+        'a': 'west',
+        's': 'south',
+        'd': 'east',
+    }
+
     while game.is_running:
-        try:
-            if keyboard.is_pressed('up'):
-                game.player_character.move('north')
-            # Repeat for other directions
-
-            # Check for 'esc' to quit
-            if keyboard.is_pressed('esc'):
-                print("Exiting game...")
-                game.is_running = False
-                return  # Return immediately after setting is_running to False
-
-            # Update and render game state after each action
-            render_game_state(game)
-
-            # Control loop execution frequency
-            time.sleep(0.1)
-        except Exception as e:
-            # Catch all exceptions and handle them
-            print(f"An unexpected error occurred: {e}")
+        command = input("Enter 'WASD' to move, 'Q' to quit: ").lower()
+        if command in command_map:
+            # Move the player in the specified direction
+            game.move_player(command_map[command])
+        elif command == 'q':
+            print("Exiting game...")
             game.is_running = False
+        else:
+            print("Invalid command.")
+
+        # Update and render game state after each action
+        game.render_game_state()
+
+        # Sleep might be required to control loop speed if necessary
+        # time.sleep(0.1)
+
 
 # The main function that ties everything together and runs the game loop
-def main():
-    game = setup_game()
+def main(config):
+    game = setup_game(config)
     while True:
         choice = main_menu(game)
         if choice == "1":
@@ -180,4 +181,5 @@ def load_game_state(game):
     print("Game loaded successfully.")
 
 if __name__ == "__main__":
-    main()
+    print(config)
+    main(config)

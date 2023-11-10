@@ -24,11 +24,24 @@ class Game:
         self.modules = {}
         self.load_config(config)
         self.state = GameStateManager()
+        self.player_position = (0, 0)  # Starting position
+        self.map = Map(10)  # Assuming a 10x10 world for simplicity
+
+    def move_player(self, direction):
+        # Logic to update self.player_position based on direction
+        # and to mark the new position as explored
+        # ...
+        pass
+
+    def render_game_state(self):
+        # Include a call to self.map.display(self.player_position)
+        # ...
+        pass
 
 
     def update_character(self, character):
         self.characters[character.config['name']] = character
-        self.state.update_character(character)  # Change from game_state to state
+        # self.state.update_character(character)  # Change from game_state to state
 
 
     def main_loop(self):
