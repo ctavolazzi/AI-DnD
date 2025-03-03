@@ -67,10 +67,10 @@ class DungeonMaster:
             self.logger.propagate = False
 
     def extract_run_id(self) -> Optional[str]:
-        """Extract run ID from Current-Run.md."""
-        current_run_path = os.path.join(self.vault_path, "Current-Run.md")
+        """Extract run ID from Current Run.md."""
+        current_run_path = os.path.join(self.vault_path, "Current Run.md")
         if not os.path.exists(current_run_path):
-            self.logger.info("No Current-Run.md found. A new file will be created with a fresh run_id.")
+            self.logger.info("No Current Run.md found. A new file will be created with a fresh run_id.")
             return None
 
         try:
@@ -82,7 +82,7 @@ class DungeonMaster:
                     return match.group(1).strip()
 
                 # If we found a template variable instead of a real run_id, generate a new one
-                self.logger.warning("Current-Run.md exists but contains template variables. Will generate new run_id.")
+                self.logger.warning("Current Run.md exists but contains template variables. Will generate new run_id.")
                 return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         except Exception as e:
             self.logger.warning(f"Error extracting run ID: {e}")
@@ -125,16 +125,16 @@ class DungeonMaster:
         self.game_manager = GameManager(self.obsidian, self.event_manager)
         self.logger.info("Initialized game manager for entity tracking and theory of mind")
 
-        # Update Current-Run.md immediately - ensure it exists
+        # Update Current Run.md immediately - ensure it exists
         self.update_current_run(force_create=True)
-        self.logger.info(f"Updated Current-Run.md with run ID: {run_id}")
+        self.logger.info(f"Updated Current Run.md with run ID: {run_id}")
 
         return run_id
 
     def update_current_run(self, force_create=False):
-        """Update the Current-Run.md file with the latest game state."""
+        """Update the Current Run.md file with the latest game state."""
         if not self.current_run_data:
-            self.logger.warning("Attempted to update Current-Run.md but no run data is available")
+            self.logger.warning("Attempted to update Current Run.md but no run data is available")
             return False
 
         run_id = self.current_run_data.get('run_id')
@@ -143,10 +143,10 @@ class DungeonMaster:
         if not run_id or "{{" in run_id:
             run_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
-        # Check if Current-Run.md exists
-        current_run_path = os.path.join(self.vault_path, "Current-Run.md")
+        # Check if Current Run.md exists
+        current_run_path = os.path.join(self.vault_path, "Current Run.md")
         if not os.path.exists(current_run_path) and not force_create:
-            self.logger.warning("Current-Run.md does not exist and force_create is False. Skipping update.")
+            self.logger.warning("Current Run.md does not exist and force_create is False. Skipping update.")
             return False
 
         try:
@@ -225,18 +225,18 @@ Current Turn: {self.current_run_data.get('turn_count', 0)}
             with open(current_run_path, 'w') as f:
                 f.write(content)
 
-            self.logger.debug(f"Updated Current-Run.md (Run ID: {run_id}, Turn: {self.current_run_data.get('turn_count', 0)})")
+            self.logger.debug(f"Updated Current Run.md (Run ID: {run_id}, Turn: {self.current_run_data.get('turn_count', 0)})")
 
             # Log a detailed summary of what was updated
             char_count = len(self.current_run_data.get('characters', []))
             event_count = len(self.current_run_data.get('events', []))
             location_count = len(self.current_run_data.get('locations', []))
-            self.logger.info(f"Current-Run.md updated with: {char_count} characters, {event_count} events, {location_count} locations")
+            self.logger.info(f"Current Run.md updated with: {char_count} characters, {event_count} events, {location_count} locations")
 
             return True
 
         except Exception as e:
-            self.logger.error(f"Error updating Current-Run.md: {e}")
+            self.logger.error(f"Error updating Current Run.md: {e}")
             return False
 
     def update_dashboard(self):
@@ -257,7 +257,7 @@ aliases: [📊 Dashboard]
 
 ## Current Game
 
-[[Current-Run|🎲 Current Game Session]]
+[[Current Run|🎲 Current Game Session]]
 
 ## Statistics
 - **Characters**: """ + str(len(self.current_run_data.get('characters', []))) + """
@@ -318,7 +318,7 @@ aliases: [📊 Dashboard]
             quest_intro = self.game.narrative_engine.generate_quest(difficulty="medium", theme="epic battle")
             self.logger.info("\nQuest generated successfully: " + quest_intro)
 
-            # Log the quest to Obsidian immediately
+            # Log the quest to Obsidian immediately (we'll update it with characters later)
             quest_data = {
                 "name": "Main Quest",
                 "description": quest_intro,
@@ -335,18 +335,24 @@ aliases: [📊 Dashboard]
             # After quest is created, now process locations and characters
             # Log initial world locations to Obsidian
             if hasattr(self.game, 'current_location'):
+                # Get the character names for the starting location
+                character_names = [player.name for player in self.game.players]
+
                 location_data = {
                     "name": self.game.current_location,
                     "description": f"The starting location of the adventure.",
                     "connections": {},
-                    "type": "Starting Area"
+                    "type": "Starting Area",
+                    "characters": character_names  # Include the characters present
                 }
                 # Use event-aware logging for real-time updates
                 self.obsidian.log_location_with_event(location_data, self.event_manager)
                 self.logger.info(f"Logged starting location: {self.game.current_location}")
 
             # Log player characters to Obsidian
+            character_names = []
             for player in self.game.players:
+                character_names.append(player.name)
                 character_data = {
                     "name": player.name,
                     "char_class": player.char_class,
@@ -361,14 +367,33 @@ aliases: [📊 Dashboard]
                     "abilities": list(player.abilities.keys()) if hasattr(player, 'abilities') else [],
                     "status_effects": player.status_effects if hasattr(player, 'status_effects') else [],
                     "team": "Player",
-                    "location": self.game.current_location  # Add location for theory of mind
+                    "location": self.game.current_location,  # Add location for theory of mind
+                    "quests": ["Main Quest"]  # Associate character with the main quest
                 }
                 # Use event-aware logging for real-time updates
                 self.obsidian.log_character_with_event(character_data, self.event_manager)
                 self.logger.info(f"Logged player character: {player.name}")
 
+                # Ensure the GameManager creates journals for each character
+                # The character_created event should already trigger this via event listeners,
+                # but we'll check if the journal exists and create it if needed
+                if self.game_manager and hasattr(self.game_manager, 'journal_manager'):
+                    journal_path = os.path.join(self.vault_path, "Journals",
+                                               self.obsidian._sanitize_filename(player.name) + ".md")
+                    if not os.path.exists(journal_path):
+                        self.logger.info(f"Creating journal for {player.name}")
+                        # Extract the player Character object data for rich journal content
+                        self.game_manager.journal_manager.create_character_journal(player)
+
+            # Now update the quest with the character associations
+            updated_quest_data = quest_data.copy()
+            updated_quest_data["characters"] = character_names
+            updated_quest_data["locations"] = [self.game.current_location]
+            self.obsidian.log_quest_with_event(updated_quest_data, self.event_manager)
+            self.logger.info(f"Updated Main Quest with character associations: {', '.join(character_names)}")
+
             # Create session data with quest already established
-            session_name = f"Session-{time.strftime('%Y%m%d')}"
+            session_name = f"Session {time.strftime('%Y%m%d')}"
             session_data = {
                 "name": session_name,
                 "date": datetime.datetime.now().strftime("%Y-%m-%d"),
@@ -389,13 +414,30 @@ aliases: [📊 Dashboard]
             self.logger.info(f"Logged session: {session_name}")
             self.current_run_data["session"] = session_name
 
-            # Final updates to Current-Run.md and Dashboard
+            # Final updates to Current Run.md and Dashboard
             self.update_current_run()
             self.update_dashboard()
 
             # NOW generate character introductions after everything else is set up
             self.logger.info("\nGenerating character introductions...")
             self.game.generate_character_introductions()
+
+            # Create journal entries for character introductions
+            for player in self.game.players:
+                if self.game_manager and hasattr(self.game_manager, 'journal_manager'):
+                    # Create an introduction event for journal entries
+                    intro_event = {
+                        "name": f"{player.name}'s Introduction",
+                        "description": f"{player.name} begins the adventure.",
+                        "location": self.game.current_location,
+                        "characters": [player.name],
+                        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "type": "Character Introduction"
+                    }
+
+                    # Add entry to character journal for this introduction
+                    self.game_manager._on_event_occurred(intro_event)
+                    self.logger.info(f"Journal entry created for {player.name}'s introduction")
 
         except Exception as e:
             self.logger.error(f"Error initializing game: {e}", exc_info=True)
@@ -430,13 +472,13 @@ aliases: [📊 Dashboard]
 
                 # Log the scene as an event
                 scene_data = {
-                    "name": f"Scene-Turn{turn+1}",
+                    "name": f"Scene {self.game.scene_counter}",
                     "type": "Scene",
-                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "location": self.game.current_location,
                     "summary": "A new scene unfolds",
                     "description": scene,
-                    "participants": [player.name for player in self.game.players]
+                    "participants": [player.name for player in self.game.players],
+                    "related_quests": ["Main Quest"]  # Add Main Quest by default
                 }
                 self.obsidian.log_event_with_event(scene_data, self.event_manager)
 
@@ -452,13 +494,14 @@ aliases: [📊 Dashboard]
 
                         # Log as an event
                         action_data = {
-                            "name": f"Action-{player.name}-Turn{turn+1}",
+                            "name": f"Action {player.name} Turn {turn+1}",
                             "type": "Character Action",
                             "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             "location": self.game.current_location,
                             "summary": f"{player.name} takes action",
                             "description": action,
-                            "participants": [player.name]
+                            "participants": [player.name],
+                            "related_quests": ["Main Quest"]  # Add Main Quest by default
                         }
                         self.obsidian.log_event_with_event(action_data, self.event_manager)
 
@@ -477,7 +520,7 @@ aliases: [📊 Dashboard]
                     self.logger.info("Processing random encounter...")
                     self.game.process_encounter()
 
-                # Update Current-Run.md and Dashboard after each turn
+                # Update Current Run.md and Dashboard after each turn
                 self.update_current_run()
                 self.update_dashboard()
 
@@ -494,32 +537,53 @@ aliases: [📊 Dashboard]
 
             # Log the conclusion as an event
             conclusion_event = {
-                "name": "Adventure-Conclusion",
+                "name": "Adventure Conclusion",
                 "type": "Conclusion",
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "location": self.game.current_location,
                 "summary": "The adventure has concluded",
                 "description": conclusion,
-                "participants": [p.name for p in self.game.players]
+                "participants": [p.name for p in self.game.players],
+                "related_quests": ["Main Quest"]  # Add Main Quest by default
             }
             self.obsidian.log_event_with_event(conclusion_event, self.event_manager)
 
-            # Final updates to Current-Run.md and Dashboard
+            # Final updates to Current Run.md and Dashboard
             self.update_current_run()
             self.update_dashboard()
 
             return True
 
         except GameError as e:
+            import traceback
+            error_tb = traceback.format_exc()
             self.logger.error(f"Game error: {e}")
+            self.logger.error(f"Game error traceback:\n{error_tb}")
+
+            # Log specific error context
+            self.logger.error(f"Error occurred at turn: {self.current_run_data.get('turn_count', 'unknown')}")
+            self.logger.error(f"Current location: {self.game.current_location if hasattr(self.game, 'current_location') else 'unknown'}")
+            self.logger.error(f"Active characters: {[p.name for p in self.game.players if p.alive] if hasattr(self.game, 'players') else 'unknown'}")
+
             self.current_run_data["status"] = "error"
             self.current_run_data["conclusion"] = f"The adventure ended unexpectedly due to an error: {e}"
+            self.current_run_data["error_details"] = error_tb
             self.update_current_run()
             return False
         except Exception as e:
-            self.logger.error(f"Unexpected error: {e}", exc_info=True)
+            import traceback
+            error_tb = traceback.format_exc()
+            self.logger.error(f"Unexpected error: {e}")
+            self.logger.error(f"Error traceback:\n{error_tb}")
+
+            # Log specific error context
+            self.logger.error(f"Error occurred at turn: {self.current_run_data.get('turn_count', 'unknown')}")
+            self.logger.error(f"Current location: {self.game.current_location if hasattr(self.game, 'current_location') else 'unknown'}")
+            self.logger.error(f"Active characters: {[p.name for p in self.game.players if hasattr(p, 'alive') and p.alive] if hasattr(self.game, 'players') else 'unknown'}")
+
             self.current_run_data["status"] = "error"
             self.current_run_data["conclusion"] = f"The adventure ended unexpectedly due to an error: {e}"
+            self.current_run_data["error_details"] = error_tb
             self.update_current_run()
             return False
 
@@ -540,6 +604,16 @@ aliases: [📊 Dashboard]
             # Initialize the game
             self.initialize_game()
 
+            # Ensure journal directories exist
+            journal_dir = os.path.join(self.vault_path, "Journals")
+            entries_dir = os.path.join(journal_dir, "Entries")
+            thoughts_dir = os.path.join(journal_dir, "Thoughts")
+
+            os.makedirs(journal_dir, exist_ok=True)
+            os.makedirs(entries_dir, exist_ok=True)
+            os.makedirs(thoughts_dir, exist_ok=True)
+            self.logger.info("Ensured journal directories exist")
+
             # Run the game loop
             success = self.run_game_loop(max_turns)
 
@@ -547,10 +621,19 @@ aliases: [📊 Dashboard]
             return success
 
         except Exception as e:
-            self.logger.error(f"Critical error running game: {e}", exc_info=True)
+            import traceback
+            error_tb = traceback.format_exc()
+            self.logger.error(f"Critical error running game: {e}")
+            self.logger.error(f"Error traceback:\n{error_tb}")
+
+            # Log specific details about the error context
+            self.logger.error(f"Error context - Current run ID: {self.current_run_id}")
+            self.logger.error(f"Error context - Game state: {self.game.__dict__ if hasattr(self, 'game') else 'Game not initialized'}")
+
             if self.current_run_data:
                 self.current_run_data["status"] = "error"
                 self.current_run_data["conclusion"] = f"The adventure ended unexpectedly due to a critical error: {e}"
+                self.current_run_data["error_details"] = error_tb
                 self.update_current_run()
             return False
 
@@ -572,13 +655,14 @@ aliases: [📊 Dashboard]
 
         # Create a death event
         death_event = {
-            "name": f"Death-{character_name}",
+            "name": f"Death {character_name}",
             "type": "Character Death",
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "location": self.game.current_location,
             "summary": f"{character_name} has died",
             "description": cause,
-            "participants": [character_name]
+            "participants": [character_name],
+            "related_quests": ["Main Quest"]  # Add Main Quest by default
         }
         self.obsidian.log_event_with_event(death_event, self.event_manager)
 
@@ -606,16 +690,46 @@ aliases: [📊 Dashboard]
         # Handle movement in the game manager
         self.game_manager.handle_character_movement(character_name, old_location, new_location)
 
+        # Update the old location file to remove this character
+        if old_location:
+            # Get all characters at the old location excluding the moving character
+            characters_at_old_location = [
+                p.name for p in self.game.players
+                if hasattr(p, 'location') and p.location == old_location and p.name != character_name
+            ]
+
+            old_location_data = {
+                "name": old_location,
+                "characters": characters_at_old_location
+            }
+            self.obsidian.log_location_with_event(old_location_data, self.event_manager)
+            self.logger.info(f"Updated old location {old_location} after {character_name} left")
+
+        # Update the new location file to add this character
+        # Get all characters at the new location including the moving character
+        characters_at_new_location = [
+            p.name for p in self.game.players
+            if hasattr(p, 'location') and p.location == new_location
+        ]
+
+        new_location_data = {
+            "name": new_location,
+            "characters": characters_at_new_location
+        }
+        self.obsidian.log_location_with_event(new_location_data, self.event_manager)
+        self.logger.info(f"Updated new location {new_location} after {character_name} arrived")
+
         # Create a movement event if description provided
         if description:
             movement_event = {
-                "name": f"Movement-{character_name}-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}",
+                "name": f"Movement {character_name} {datetime.datetime.now().strftime('%Y%m%d%H%M%S')}",
                 "type": "Movement",
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "location": new_location,
                 "summary": f"{character_name} travels to {new_location}",
                 "description": description,
-                "participants": [character_name]
+                "participants": [character_name],
+                "related_quests": ["Main Quest"]  # Add Main Quest by default
             }
             self.obsidian.log_event_with_event(movement_event, self.event_manager)
 

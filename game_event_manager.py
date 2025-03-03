@@ -3,7 +3,7 @@ import logging
 class GameEventManager:
     """
     Event manager for the game that enables real-time updates to Obsidian files.
-    Publishes events and updates run_data and Current-Run.md in real-time.
+    Publishes events and updates run_data and Current Run.md in real-time.
     """
     def __init__(self, obsidian_logger, run_data, dungeon_master=None):
         self.obsidian = obsidian_logger
@@ -14,7 +14,7 @@ class GameEventManager:
 
     def publish(self, event_type, event_data):
         """
-        Publish an event which updates run_data and Current-Run.md immediately.
+        Publish an event which updates run_data and Current Run.md immediately.
 
         Args:
             event_type: Type of event (e.g. "character_created", "location_created")
@@ -26,11 +26,11 @@ class GameEventManager:
         # Update run_data based on event type
         self._update_run_data(event_type, event_data)
 
-        # Update Current-Run.md immediately
+        # Update Current Run.md immediately
         try:
             # First try to use the direct reference to DungeonMaster instance
             if self.dungeon_master and hasattr(self.dungeon_master, 'update_current_run'):
-                self.logger.debug(f"Updating Current-Run.md via direct DungeonMaster reference after {event_type}")
+                self.logger.debug(f"Updating Current Run.md via direct DungeonMaster reference after {event_type}")
                 self.dungeon_master.update_current_run()
             else:
                 # Import here to avoid circular imports
@@ -44,14 +44,14 @@ class GameEventManager:
                             for obj_name in dir(module):
                                 obj = getattr(module, obj_name)
                                 if isinstance(obj, module.DungeonMaster) and hasattr(obj, 'update_current_run'):
-                                    self.logger.debug(f"Found DungeonMaster instance, updating Current-Run.md after {event_type}")
+                                    self.logger.debug(f"Found DungeonMaster instance, updating Current Run.md after {event_type}")
                                     obj.update_current_run()
                                     self.dungeon_master = obj  # Save for future use
                                     dm_found = True
                                     break
 
                     if not dm_found:
-                        self.logger.warning(f"No DungeonMaster instance found to update Current-Run.md after {event_type}")
+                        self.logger.warning(f"No DungeonMaster instance found to update Current Run.md after {event_type}")
                 except Exception as e:
                     self.logger.error(f"Failed to find DungeonMaster: {e}")
                     # Fallback to direct update
@@ -62,14 +62,14 @@ class GameEventManager:
                     except Exception as inner_e:
                         self.logger.error(f"Fallback update also failed: {inner_e}")
         except Exception as e:
-            self.logger.error(f"Failed to update Current-Run.md: {e}")
+            self.logger.error(f"Failed to update Current Run.md: {e}")
 
         # Notify subscribers if needed
         self._notify_subscribers(event_type, event_data)
 
     def _update_run_data(self, event_type, event_data):
         """
-        Update the run_data based on the event type. This ensures Current-Run.md shows
+        Update the run_data based on the event type. This ensures Current Run.md shows
         real-time game state even before a turn is completed.
 
         Args:
@@ -120,7 +120,7 @@ class GameEventManager:
 
             elif event_type == "item_created" or event_type == "item_updated":
                 # Currently not tracking items in run_data
-                # Consider adding if needed for Current-Run.md display
+                # Consider adding if needed for Current Run.md display
                 pass
 
             elif event_type == "combat_started":
@@ -136,7 +136,7 @@ class GameEventManager:
 
             elif event_type == "relationship_changed":
                 # Currently not tracking relationships in run_data
-                # Consider adding if needed for Current-Run.md display
+                # Consider adding if needed for Current Run.md display
                 pass
         except Exception as e:
             self.logger.error(f"Error updating run_data for {event_type}: {e}")

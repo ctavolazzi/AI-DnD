@@ -4,6 +4,7 @@ import datetime
 import os
 import json
 import re
+from journal_manager import JournalManager
 
 class KnowledgeGraph:
     """
@@ -101,24 +102,29 @@ class EntityRelationshipManager:
 
 class GameManager:
     """
-    Central manager for game state that maintains logical consistency and entity knowledge.
-    Handles updates across all game entities and ensures proper linking.
+    Central manager for game state, entities, and events.
+    Handles event propagation, knowledge tracking, and entity relationships.
     """
     def __init__(self, obsidian_logger, event_manager):
-        self.obsidian = obsidian_logger
+        self.obsidian_logger = obsidian_logger
         self.event_manager = event_manager
-        self.entities = {
-            "characters": {},
-            "locations": {},
-            "items": {},
-            "events": {},
-            "quests": {}
-        }
-        self.knowledge_graph = KnowledgeGraph()
-        self.relationship_manager = EntityRelationshipManager()
         self.logger = logging.getLogger("game_manager")
 
-        # Subscribe to events
+        # Internal data
+        self.characters = {}
+        self.locations = {}
+        self.items = {}
+        self.quests = {}
+
+        # Knowledge graph for tracking what entities know
+        self.knowledge_graph = KnowledgeGraph()
+        # Entity relationships
+        self.relationships = EntityRelationshipManager()
+
+        # Journal manager for character journals
+        self.journal_manager = JournalManager(obsidian_logger, self.knowledge_graph)
+
+        # Register event handlers
         self._register_event_handlers()
 
     def _register_event_handlers(self):
@@ -136,26 +142,42 @@ class GameManager:
 
     def _on_character_created(self, character_data):
         """Handle character creation event."""
-        name = character_data["name"]
-        self.entities["characters"][name] = character_data
-        self.logger.info(f"Character registered: {name}")
+        character_name = character_data.get("name")
+        if not character_name:
+            self.logger.error("Character creation event has no name")
+            return
+
+        self.characters[character_name] = character_data
+        self.logger.info(f"Character created: {character_name}")
+
+        # Create initial journal for the character
+        self.journal_manager.create_character_journal(character_data)
+
+        # Add a basic introduction entry
+        bio = character_data.get("bio", "")
+        if bio:
+            intro_entry = f"I am {character_name}.\n\n{bio}\n\nMy journey begins now."
+            self.journal_manager.add_journal_entry(
+                character_name=character_name,
+                content=intro_entry
+            )
 
         # A character knows about themselves
-        self.knowledge_graph.update_entity_knowledge(name, name, character_data)
+        self.knowledge_graph.update_entity_knowledge(character_name, character_name, character_data)
 
         # Initial relationships with starting location if any
         if "location" in character_data and character_data["location"]:
             location = character_data["location"]
-            self.relationship_manager.add_relationship(name, location, "present_at")
-            self.knowledge_graph.update_entity_knowledge(name, location,
-                self.entities["locations"].get(location, {"name": location}))
+            self.relationships.add_relationship(character_name, location, "present_at")
+            self.knowledge_graph.update_entity_knowledge(character_name, location,
+                self.locations.get(location, {"name": location}))
 
     def _on_character_updated(self, character_data):
         """Handle character update event."""
         name = character_data["name"]
-        if name in self.entities["characters"]:
-            old_data = self.entities["characters"][name]
-            self.entities["characters"][name] = character_data
+        if name in self.characters:
+            old_data = self.characters[name]
+            self.characters[name] = character_data
             self.logger.info(f"Character updated: {name}")
 
             # Character knows their own updated state
@@ -165,26 +187,26 @@ class GameManager:
             if "location" in character_data and "location" in old_data:
                 if character_data["location"] != old_data["location"]:
                     if old_data["location"]:
-                        self.relationship_manager.remove_relationship(name, old_data["location"])
+                        self.relationships.remove_relationship(name, old_data["location"])
                     if character_data["location"]:
-                        self.relationship_manager.add_relationship(name, character_data["location"], "present_at")
+                        self.relationships.add_relationship(name, character_data["location"], "present_at")
                         # Character learns about new location
                         self.knowledge_graph.update_entity_knowledge(name, character_data["location"],
-                            self.entities["locations"].get(character_data["location"],
+                            self.locations.get(character_data["location"],
                                                         {"name": character_data["location"]}))
 
     def _on_character_died(self, character_data):
         """Handle character death event."""
         name = character_data["name"]
-        if name in self.entities["characters"]:
-            self.entities["characters"][name] = character_data
+        if name in self.characters:
+            self.characters[name] = character_data
             self.logger.info(f"Character died: {name}")
 
             # Update their relationships and knowledge
             location = character_data.get("location")
             if location:
                 # Inform other characters at this location about the death
-                chars_at_location = self.relationship_manager.get_related_entities(location, "present_at")
+                chars_at_location = self.relationships.get_related_entities(location, "present_at")
                 for char in chars_at_location:
                     if char != name:  # Don't update the dead character
                         self.knowledge_graph.update_entity_knowledge(char, name, character_data)
@@ -193,78 +215,101 @@ class GameManager:
     def _on_location_created(self, location_data):
         """Handle location creation event."""
         name = location_data["name"]
-        self.entities["locations"][name] = location_data
+        self.locations[name] = location_data
         self.logger.info(f"Location registered: {name}")
 
     def _on_location_updated(self, location_data):
         """Handle location update event."""
         name = location_data["name"]
-        if name in self.entities["locations"]:
-            self.entities["locations"][name] = location_data
+        if name in self.locations:
+            self.locations[name] = location_data
             self.logger.info(f"Location updated: {name}")
 
             # Update knowledge for characters at this location
-            chars_at_location = self.relationship_manager.get_related_entities(name, "present_at")
+            chars_at_location = self.relationships.get_related_entities(name, "present_at")
             for char in chars_at_location:
                 self.knowledge_graph.update_entity_knowledge(char, name, location_data)
 
     def _on_event_occurred(self, event_data):
-        """Handle event occurrence."""
-        name = event_data["name"]
-        self.entities["events"][name] = event_data
-        self.logger.info(f"Event occurred: {name}")
+        """Handle generic event occurrence."""
+        event_name = event_data.get("name")
+        if not event_name:
+            self.logger.error("Event has no name")
+            return
 
-        # Update knowledge for participants
-        participants = event_data.get("participants", [])
+        self.logger.info(f"Event occurred: {event_name}")
+
+        # Update character journals for characters involved in the event
+        characters_involved = event_data.get("characters", [])
         location = event_data.get("location")
 
-        # Characters present learn about the event
-        if location:
-            chars_at_location = self.relationship_manager.get_related_entities(location, "present_at")
-            for char in chars_at_location:
-                if char in participants or not participants:  # If no specific participants or char is a participant
-                    self.knowledge_graph.update_entity_knowledge(char, name, event_data)
-                    self.logger.debug(f"{char} knows about event {name}")
+        # Generate journal entries and thoughts for characters involved
+        for character_name in characters_involved:
+            if character_name in self.characters:
+                # Generate and add journal entry
+                journal_entry = self.journal_manager.generate_journal_entry(
+                    character_name=character_name,
+                    event_data=event_data
+                )
+                self.journal_manager.add_journal_entry(
+                    character_name=character_name,
+                    content=journal_entry,
+                    related_event=event_name,
+                    related_characters=characters_involved,
+                    related_locations=[location] if location else [],
+                    related_quests=event_data.get("related_quests", ["Main Quest"])
+                )
 
-            # Add relationship between event and location
-            self.relationship_manager.add_relationship(name, location, "occurred_at", bidirectional=True)
+                # Generate and add internal thought
+                internal_thought = self.journal_manager.generate_internal_thought(
+                    character_name=character_name,
+                    event_data=event_data
+                )
+                self.journal_manager.add_internal_thought(
+                    character_name=character_name,
+                    content=internal_thought,
+                    related_event=event_name,
+                    related_characters=characters_involved,
+                    related_locations=[location] if location else [],
+                    related_quests=event_data.get("related_quests", ["Main Quest"])
+                )
 
     def _on_quest_created(self, quest_data):
         """Handle quest creation."""
         name = quest_data["name"]
-        self.entities["quests"][name] = quest_data
+        self.quests[name] = quest_data
         self.logger.info(f"Quest registered: {name}")
 
     def _on_quest_updated(self, quest_data):
         """Handle quest update."""
         name = quest_data["name"]
-        if name in self.entities["quests"]:
-            self.entities["quests"][name] = quest_data
+        if name in self.quests:
+            self.quests[name] = quest_data
             self.logger.info(f"Quest updated: {name}")
 
     def _on_item_created(self, item_data):
         """Handle item creation."""
         name = item_data["name"]
-        self.entities["items"][name] = item_data
+        self.items[name] = item_data
         self.logger.info(f"Item registered: {name}")
 
     def _on_item_updated(self, item_data):
         """Handle item update."""
         name = item_data["name"]
-        if name in self.entities["items"]:
-            self.entities["items"][name] = item_data
+        if name in self.items:
+            self.items[name] = item_data
             self.logger.info(f"Item updated: {name}")
 
     def get_entity(self, entity_type: str, name: str) -> Optional[Dict]:
         """Get entity data by type and name."""
-        if entity_type not in self.entities or name not in self.entities[entity_type]:
+        if entity_type not in self.characters or name not in self.characters[entity_type]:
             return None
-        return self.entities[entity_type][name]
+        return self.characters[entity_type][name]
 
     def get_character_knowledge(self, character: str, target_type: str, target_name: str) -> Optional[Dict]:
         """Get what a character knows about a target entity."""
         # First check if the character exists
-        if character not in self.entities["characters"]:
+        if character not in self.characters:
             return None
 
         # Then check what they know
@@ -275,7 +320,7 @@ class GameManager:
         if exclude is None:
             exclude = []
 
-        chars_at_location = self.relationship_manager.get_related_entities(location, "present_at")
+        chars_at_location = self.relationships.get_related_entities(location, "present_at")
         for char in chars_at_location:
             if char not in exclude:
                 self.knowledge_graph.update_entity_knowledge(char, event_data["name"], event_data)
@@ -283,31 +328,31 @@ class GameManager:
 
     def handle_character_movement(self, character: str, from_location: str, to_location: str):
         """Handle a character moving from one location to another."""
-        if character not in self.entities["characters"]:
+        if character not in self.characters:
             return
 
         # Update relationships
         if from_location:
-            self.relationship_manager.remove_relationship(character, from_location)
+            self.relationships.remove_relationship(character, from_location)
 
         if to_location:
-            self.relationship_manager.add_relationship(character, to_location, "present_at")
+            self.relationships.add_relationship(character, to_location, "present_at")
 
             # Character learns about the new location
-            if to_location in self.entities["locations"]:
+            if to_location in self.locations:
                 self.knowledge_graph.update_entity_knowledge(character, to_location,
-                    self.entities["locations"][to_location])
+                    self.locations[to_location])
 
             # Characters at the new location learn about the arrival
-            chars_at_location = self.relationship_manager.get_related_entities(to_location, "present_at")
+            chars_at_location = self.relationships.get_related_entities(to_location, "present_at")
             for char in chars_at_location:
                 if char != character:
                     self.knowledge_graph.update_entity_knowledge(char, character,
-                        self.entities["characters"][character])
+                        self.characters[character])
 
             # Create an arrival event
             event_data = {
-                "name": f"Arrival-{character}-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}",
+                "name": f"Arrival {character} {datetime.datetime.now().strftime('%Y%m%d%H%M%S')}",
                 "type": "Movement",
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "location": to_location,
@@ -316,25 +361,25 @@ class GameManager:
             }
 
             # Log the event
-            self.obsidian.log_event_with_event(event_data, self.event_manager)
+            self.obsidian_logger.log_event_with_event(event_data, self.event_manager)
 
     def update_entity_file(self, entity_type: str, entity_name: str):
         """Update the entity file in Obsidian with latest data."""
-        if entity_type not in self.entities or entity_name not in self.entities[entity_type]:
+        if entity_type not in self.characters or entity_name not in self.characters[entity_type]:
             return False
 
-        entity_data = self.entities[entity_type][entity_name]
+        entity_data = self.characters[entity_type][entity_name]
 
         # Use appropriate logger method based on entity type
         if entity_type == "characters":
-            self.obsidian.log_character_with_event(entity_data, self.event_manager)
+            self.obsidian_logger.log_character_with_event(entity_data, self.event_manager)
         elif entity_type == "locations":
-            self.obsidian.log_location_with_event(entity_data, self.event_manager)
+            self.obsidian_logger.log_location_with_event(entity_data, self.event_manager)
         elif entity_type == "events":
-            self.obsidian.log_event_with_event(entity_data, self.event_manager)
+            self.obsidian_logger.log_event_with_event(entity_data, self.event_manager)
         elif entity_type == "quests":
-            self.obsidian.log_quest_with_event(entity_data, self.event_manager)
+            self.obsidian_logger.log_quest_with_event(entity_data, self.event_manager)
         elif entity_type == "items":
-            self.obsidian.log_item_with_event(entity_data, self.event_manager)
+            self.obsidian_logger.log_item_with_event(entity_data, self.event_manager)
 
         return True

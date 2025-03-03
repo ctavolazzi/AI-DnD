@@ -193,14 +193,14 @@ class DnDGame:
     def _create_characters(self, generate_intros: bool = False) -> None:
         try:
             self.players = [
-                Character(f"Hero-{i+1}", random.choice(["Fighter", "Wizard", "Rogue", "Cleric"]))
+                Character(f"Hero {i+1}", random.choice(["Fighter", "Wizard", "Rogue", "Cleric"]))
                 for i in range(2)
             ]
             for player in self.players:
                 player.team = "players"
 
             self.enemies = [
-                Character(f"Monster-{i+1}", random.choice(["Goblin", "Orc", "Skeleton", "Bandit"]))
+                Character(f"Monster {i+1}", random.choice(["Goblin", "Orc", "Skeleton", "Bandit"]))
                 for i in range(2)
             ]
             for enemy in self.enemies:
