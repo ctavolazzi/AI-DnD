@@ -11,7 +11,7 @@ Welcome to your AI-driven D&D adventure! This page explains how to follow along 
 ## Current Progress
 
 > **Active Game Session**
-> [[Current-Run|🎲 View Current Game Session]]
+> [[Current Run|🎲 View Current Game Session]]
 
 ## Following the Adventure
 

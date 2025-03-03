@@ -35,7 +35,7 @@ Artifacts, equipment, and treasures.
 
 ## Game Management
 
-- `[[Current-Run]]` - 🎲 Current Game Session
+- `[[Current Run]]` - 🎲 Current Game Session
 - `[[Runs/Archived/README|Archived Runs]]` - 📚 Previous Sessions
 - `[[Dashboard]]` - 📊 Status Dashboard
 - `[[Start]]` - 📖 How to Follow Along

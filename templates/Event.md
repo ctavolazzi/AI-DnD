@@ -51,6 +51,15 @@ location: {{ location }}
 - No related events
 {% endif %}
 
+## Related Quests
+{% if related_quests %}
+{% for quest in related_quests %}
+- [[{{ quest }}]]
+{% endfor %}
+{% else %}
+- No related quests
+{% endif %}
+
 ## Quest Progress
 {% if quest_progress %}
 {% for quest, progress in quest_progress.items() %}

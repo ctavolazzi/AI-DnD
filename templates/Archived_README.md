@@ -12,7 +12,7 @@ This section contains all previous game runs that have been archived.
 
 - `[[../../Start]]` - 📖 How to Follow Along
 - `[[../../Dashboard]]` - 📊 Status Dashboard
-- `[[../../Current-Run]]` - 🎲 Current Game Session
+- `[[../../Current Run]]` - 🎲 Current Game Session
 - `[[../../Index]]` - 📑 Complete Content Catalog
 
 > [!TIP]

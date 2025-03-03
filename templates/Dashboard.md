@@ -23,7 +23,7 @@
 
 ### 📌 Main Pages
 - `[[Start]]` - How to Follow Along
-- `[[Current-Run]]` - Active Game Session
+- `[[Current Run]]` - Active Game Session
 - `[[Index]]` - Complete Content Catalog
 - `[[Runs/Archived/README|Archived Runs]]` - Previous Sessions
 
