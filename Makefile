@@ -1,4 +1,4 @@
-.PHONY: reset run setup clean archive structure play-game
+.PHONY: reset run setup clean archive structure play-game check-journals
 
 # Default target - complete workflow to play the game
 play-game: setup
@@ -54,16 +54,29 @@ archive:
 	@echo "Archiving the current run..."
 	@python3 -c "from reset_game import archive_current_vault, update_runs_readme; archive = archive_current_vault(); update_runs_readme(archive)"
 
+# Check character journals
+check-journals:
+	@echo "Checking character journals..."
+	@echo "Character journals directory:"
+	@ls -la ai-dnd-test-vault/Journals
+	@echo "\nJournal entries directory:"
+	@ls -la ai-dnd-test-vault/Journals/Entries
+	@echo "\nCharacter thoughts directory:"
+	@ls -la ai-dnd-test-vault/Journals/Thoughts
+	@echo "\nTo view a specific character journal, use:"
+	@echo "cat ai-dnd-test-vault/Journals/<CharacterName>.md"
+
 # Help message
 help:
 	@echo "Available commands:"
 	@echo "  make play-game   - Complete workflow: setup, reset vault, and run game (default)"
 	@echo "  make setup       - Set up project environment"
-	@echo "  make reset       - Reset vault to blank slate (no Current-Run.md created)"
+	@echo "  make reset       - Reset vault to blank slate (no Current Run.md created)"
 	@echo "  make run         - Run the game without resetting"
 	@echo "  make run-reset   - Run the game with reset flag"
 	@echo "  make run-turns turns=N - Run the game with N turns"
 	@echo "  make structure   - Rebuild vault structure without running the game (same as reset)"
 	@echo "  make clean       - Clean up generated files"
 	@echo "  make archive     - Archive the current run"
+	@echo "  make check-journals - View character journals and entries"
 	@echo "  make help        - Show this help message"

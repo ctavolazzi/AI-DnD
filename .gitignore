@@ -174,7 +174,7 @@ cython_debug/
 # Test vault and its contents
 ai-dnd-test-vault/
 # Current run file that changes frequently
-Current-Run.md
+Current Run.md
 # Any logs
 logs/
 *.log
