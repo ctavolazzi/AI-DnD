@@ -21,30 +21,43 @@ class ObsidianLogger:
         self.vault_path = vault_path
         self.logger = logging.getLogger("obsidian_logger")
 
-        # Set up Jinja2 environment for templates
-        self.template_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader("templates"),
-            autoescape=False,
-            trim_blocks=True,
-            lstrip_blocks=True
-        )
-
-        # Ensure vault directories exist
+        # Set up directories
         self.directories = {
             "characters": os.path.join(vault_path, "Characters"),
             "locations": os.path.join(vault_path, "Locations"),
             "events": os.path.join(vault_path, "Events"),
             "sessions": os.path.join(vault_path, "Sessions"),
             "quests": os.path.join(vault_path, "Quests"),
-            "items": os.path.join(vault_path, "Items")
+            "items": os.path.join(vault_path, "Items"),
+            "runs": os.path.join(vault_path, "Runs"),
+            "journals": os.path.join(vault_path, "Journals")
         }
 
+        # Create directories if they don't exist
         for directory in self.directories.values():
-            if not os.path.exists(directory):
-                os.makedirs(directory)
+            os.makedirs(directory, exist_ok=True)
 
-        # Create or update the index file
-        self._update_index()
+        # Create subdirectories for journal entries and thoughts
+        os.makedirs(os.path.join(self.directories["journals"], "Entries"), exist_ok=True)
+        os.makedirs(os.path.join(self.directories["journals"], "Thoughts"), exist_ok=True)
+
+        # Set up Jinja2 environment for templating
+        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+        self.jinja_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(template_dir),
+            autoescape=jinja2.select_autoescape(['html', 'xml']),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
+
+        # Ensure the index file exists
+        index_path = os.path.join(vault_path, "Index.md")
+        if not os.path.exists(index_path):
+            with open(index_path, 'w') as f:
+                f.write("# Game Index\n\nThis file serves as an index for your game content.")
+
+        # Create central reference files if they don't exist
+        self._create_central_reference_files()
 
     def _sanitize_filename(self, name: str) -> str:
         """
@@ -56,9 +69,8 @@ class ObsidianLogger:
         Returns:
             A sanitized filename
         """
-        # Replace spaces with hyphens and remove invalid characters
+        # Remove invalid characters but preserve spaces
         sanitized = re.sub(r'[\\/*?:"<>|]', "", name)
-        sanitized = sanitized.replace(" ", "-")
         return sanitized
 
     def _create_internal_link(self, text: str, target: Optional[str] = None) -> str:
@@ -90,7 +102,8 @@ class ObsidianLogger:
             "Events": "Notable events that have occurred",
             "Sessions": "Game sessions and summaries",
             "Quests": "Active and completed quests",
-            "Items": "Notable items and artifacts"
+            "Items": "Items discovered during gameplay",
+            "Journals": "Character journals and internal thoughts"
         }
 
         for category, description in categories.items():
@@ -129,7 +142,7 @@ class ObsidianLogger:
             The rendered template string
         """
         try:
-            template = self.template_env.get_template(f"{template_name}.md")
+            template = self.jinja_env.get_template(f"{template_name}.md")
             return template.render(**context)
         except jinja2.exceptions.TemplateNotFound:
             self.logger.warning(f"Template {template_name}.md not found. Using fallback.")
@@ -137,6 +150,116 @@ class ObsidianLogger:
         except Exception as e:
             self.logger.error(f"Error rendering template {template_name}: {e}")
             return f"# {context.get('name', 'Error')}\n\nError rendering template: {e}"
+
+    def _create_central_reference_files(self):
+        """
+        Create central reference files for each entity type if they don't exist.
+        These files serve as indices for each entity type.
+        """
+        reference_files = {
+            "characters": "Characters.md",
+            "locations": "Locations.md",
+            "events": "Events.md",
+            "sessions": "Sessions.md",
+            "quests": "Quests.md",
+            "items": "Items.md"
+        }
+
+        for entity_type, filename in reference_files.items():
+            filepath = os.path.join(self.directories[entity_type], filename)
+            if not os.path.exists(filepath):
+                self.logger.info(f"Creating central reference file for {entity_type}: {filepath}")
+
+                # Create basic template for central reference file
+                content = f"""---
+title: {entity_type.capitalize()}
+created: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+updated: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+---
+
+# {entity_type.capitalize()}
+
+This is the central reference file for all {entity_type} in the game. This file is automatically updated when new {entity_type} are created or existing {entity_type} are modified.
+
+## List of {entity_type.capitalize()}
+
+*This section will be automatically populated as {entity_type} are created.*
+
+## Tags
+#{entity_type} #reference
+"""
+                with open(filepath, 'w') as f:
+                    f.write(content)
+
+    def _update_central_reference_file(self, entity_type: str, entity_name: str, action: str = "added"):
+        """
+        Update the central reference file for an entity type when a new entity is created or updated.
+
+        Args:
+            entity_type: Type of entity (characters, locations, etc.)
+            entity_name: Name of the entity
+            action: Action performed on the entity (added, updated, removed)
+        """
+        if entity_type not in self.directories:
+            self.logger.warning(f"Unknown entity type: {entity_type}")
+            return
+
+        reference_file = os.path.join(self.directories[entity_type], f"{entity_type.capitalize()}.md")
+
+        if not os.path.exists(reference_file):
+            self.logger.warning(f"Central reference file for {entity_type} not found, creating it")
+            self._create_central_reference_files()
+
+        try:
+            # Read current content
+            with open(reference_file, 'r') as f:
+                content = f.read()
+
+            # Update the "updated" timestamp in frontmatter
+            content = re.sub(
+                r"updated: .*",
+                f"updated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                content
+            )
+
+            # Check if entity is already listed
+            entity_link = self._create_internal_link(entity_name)
+            list_section = f"## List of {entity_type.capitalize()}"
+
+            if list_section in content:
+                # Find the section
+                section_pattern = f"{list_section}.*?(?=^#|$)"
+                section_match = re.search(section_pattern, content, re.DOTALL | re.MULTILINE)
+
+                if section_match:
+                    section_content = section_match.group(0)
+
+                    # Check if entity is already in the list
+                    if entity_link in section_content:
+                        # Entity already exists, nothing to do if just updating the list
+                        pass
+                    else:
+                        # Add entity to the list
+                        new_section_content = section_content.replace(
+                            "*This section will be automatically populated as",
+                            f"- {entity_link} - Added on {datetime.datetime.now().strftime('%Y-%m-%d')}\n*This section will be automatically populated as"
+                        )
+
+                        if new_section_content == section_content:  # No placeholder text found
+                            # Add to the end of the section
+                            new_line = f"\n- {entity_link} - Added on {datetime.datetime.now().strftime('%Y-%m-%d')}"
+                            new_section_content = section_content + new_line
+
+                        content = content.replace(section_content, new_section_content)
+
+            # Write updated content
+            with open(reference_file, 'w') as f:
+                f.write(content)
+
+            self.logger.info(f"Updated central reference file for {entity_type} with {entity_name}")
+
+        except Exception as e:
+            self.logger.error(f"Error updating central reference file for {entity_type}: {e}")
 
     def log_character(self, character_data: Dict[str, Any]):
         """
@@ -177,6 +300,9 @@ class ObsidianLogger:
         # Update index
         self._update_index()
 
+        # Update the central reference file
+        self._update_central_reference_file("characters", character_data["name"], "added")
+
         return name
 
     def log_location(self, location_data: Dict[str, Any]):
@@ -186,7 +312,15 @@ class ObsidianLogger:
         Args:
             location_data: Dictionary with location information
         """
+        if not location_data:
+            self.logger.warning("Empty location data provided to log_location")
+            return None
+
         name = location_data.get("name", "Unknown Location")
+        if not name or name == "Unknown Location":
+            self.logger.warning(f"Missing or invalid location name: {name}")
+            # Still proceed but with a warning
+
         file_name = self._sanitize_filename(name)
         file_path = os.path.join(self.directories["locations"], f"{file_name}.md")
 
@@ -206,19 +340,32 @@ class ObsidianLogger:
         if "notes" not in location_context:
             location_context["notes"] = "No additional notes."
 
-        # Render location file content using the template
-        content = self._render_template("Location", location_context)
+        # Include characters present if available
+        if "characters" not in location_context and location_data.get("name"):
+            # If game_manager is accessible, we could get characters present
+            # Currently, we'll use any provided in the location_data
+            location_context["characters"] = location_data.get("characters", [])
 
-        # Write to file
-        with open(file_path, 'w') as f:
-            f.write(content)
+        try:
+            # Render location file content using the template
+            content = self._render_template("Location", location_context)
 
-        self.logger.info(f"Logged location: {name} to {file_path}")
+            # Write to file
+            with open(file_path, 'w') as f:
+                f.write(content)
 
-        # Update index
-        self._update_index()
+            self.logger.info(f"Logged location: {name} to {file_path}")
 
-        return name
+            # Update index
+            self._update_index()
+
+            # Update the central reference file
+            self._update_central_reference_file("locations", location_data["name"], "added")
+
+            return name
+        except Exception as e:
+            self.logger.error(f"Error logging location {name}: {e}")
+            return None
 
     def log_event(self, event_data: Dict[str, Any]):
         """
@@ -288,6 +435,9 @@ class ObsidianLogger:
                     event_context.get("summary", "Participated in this event")
                 )
 
+        # Update the central reference file
+        self._update_central_reference_file("events", event_data["name"], "added")
+
         return name
 
     def log_session(self, session_data: Dict[str, Any]):
@@ -328,6 +478,9 @@ class ObsidianLogger:
 
         # Update index
         self._update_index()
+
+        # Update the central reference file
+        self._update_central_reference_file("sessions", session_data["name"], "added")
 
         return name
 
@@ -385,6 +538,9 @@ class ObsidianLogger:
         # Update index
         self._update_index()
 
+        # Update the central reference file
+        self._update_central_reference_file("quests", quest_data["name"], "added")
+
         return name
 
     def log_item(self, item_data: Dict[str, Any]):
@@ -431,6 +587,9 @@ class ObsidianLogger:
 
         # Update index
         self._update_index()
+
+        # Update the central reference file
+        self._update_central_reference_file("items", item_data["name"], "added")
 
         return name
 
@@ -493,6 +652,9 @@ class ObsidianLogger:
 
         # Update index
         self._update_index()
+
+        # Update the central reference file
+        self._update_central_reference_file("events", combat_data["name"], "added")
 
         return name
 

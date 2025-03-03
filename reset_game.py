@@ -33,7 +33,7 @@ CONFIG = {
         {"path": "Index.md", "is_template": True},
         {"path": "Runs/README.md", "is_template": True},
         {"path": "Dashboard.md", "is_template": True}
-        # Current-Run.md is now created only when a game is started
+        # Current Run.md is now created only when a game is started
     ],
     "entity_templates": [
         {"type": "character", "template": "Character.md"},
@@ -125,7 +125,7 @@ Welcome to your AI-driven D&D adventure! This page explains how to follow along 
 ## Current Progress
 
 > **Active Game Session**
-> [[Current-Run|🎲 View Current Game Session]]
+> [[Current Run|🎲 View Current Game Session]]
 
 ## Following the Adventure
 
@@ -195,7 +195,7 @@ Artifacts, equipment, and treasures.
 
 ## Game Management
 
-- `[[Current-Run]]` - 🎲 Current Game Session
+- `[[Current Run]]` - 🎲 Current Game Session
 - `[[Runs/Archived/README|Archived Runs]]` - 📚 Previous Sessions
 - `[[Dashboard]]` - 📊 Status Dashboard
 - `[[Start]]` - 📖 How to Follow Along
@@ -256,7 +256,7 @@ Archives are read-only. To restore an archive, you would need to copy its conten
 {% endfor %}
 
 ## Navigation
-- [[Current-Run|🎲 Current Game Session]]
+- [[Current Run|🎲 Current Game Session]]
 - [[Index|📑 Game Index]]
 - [[Characters/|👤 Characters]]
 - [[Locations/|🗺️ Locations]]
@@ -313,13 +313,13 @@ def archive_current_vault(archive_name=None):
         logger.error(f"Cannot archive: Vault path {vault_path} does not exist")
         return None
 
-    # Extract run ID from Current-Run.md if possible
+    # Extract run ID from Current Run.md if possible
     run_id = extract_run_id_from_current(vault_path)
 
     # Generate archive name if not provided
     if not archive_name:
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        archive_name = f"Run-{run_id}-{timestamp}" if run_id else f"Run-{timestamp}"
+        archive_name = f"Run {run_id} {timestamp}" if run_id else f"Run {timestamp}"
 
     archive_dir = os.path.join(CONFIG["archive_dir"], archive_name)
     archive_path = os.path.join(vault_path, "Runs", "Archived")
@@ -386,8 +386,8 @@ def archive_current_vault(archive_name=None):
     return archive_name
 
 def extract_run_id_from_current(vault_path):
-    """Extract run ID from Current-Run.md if it exists."""
-    current_run_path = os.path.join(vault_path, "Current-Run.md")
+    """Extract run ID from Current Run.md if it exists."""
+    current_run_path = os.path.join(vault_path, "Current Run.md")
     if not os.path.exists(current_run_path):
         return None
 
@@ -489,11 +489,11 @@ Archives are read-only snapshots and cannot be modified.
     return True
 
 def create_current_run_file():
-    """Create a new Current-Run.md file for a fresh game."""
+    """Create a new Current Run.md file for a fresh game."""
     run_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    logger.info(f"Creating new Current-Run.md with run_id: {run_id}")
+    logger.info(f"Creating new Current Run.md with run_id: {run_id}")
 
     context = {
         "run_id": run_id,
@@ -503,10 +503,10 @@ def create_current_run_file():
     }
 
     # Generate the file using the template
-    generate_file_from_template("Current_Run", os.path.join(CONFIG["vault_name"], "Current-Run.md"), context)
+    generate_file_from_template("Current_Run", os.path.join(CONFIG["vault_name"], "Current Run.md"), context)
 
     # Double-check that the file was generated with the correct run_id
-    current_run_path = os.path.join(CONFIG["vault_name"], "Current-Run.md")
+    current_run_path = os.path.join(CONFIG["vault_name"], "Current Run.md")
 
     try:
         with open(current_run_path, 'r') as f:
@@ -514,7 +514,7 @@ def create_current_run_file():
 
         # If the template variables weren't replaced properly, do it manually
         if "{{run_id}}" in content or "{{ run_id }}" in content:
-            logger.warning("Template variables weren't replaced properly in Current-Run.md, fixing manually")
+            logger.warning("Template variables weren't replaced properly in Current Run.md, fixing manually")
             content = re.sub(r'{{[\s]*run_id[\s]*}}', run_id, content)
             content = re.sub(r'{{[\s]*timestamp[\s]*}}', timestamp, content)
             content = re.sub(r'{{[\s]*turn_count\|default\(0\)[\s]*}}', "0", content)
@@ -527,20 +527,20 @@ def create_current_run_file():
             with open(current_run_path, 'w') as f:
                 f.write(content)
 
-            logger.info(f"Fixed template variables in Current-Run.md")
+            logger.info(f"Fixed template variables in Current Run.md")
 
         # Verify the run_id is properly set in the file
         with open(current_run_path, 'r') as f:
             content = f.read()
             if f"run_id: {run_id}" not in content:
-                logger.warning("run_id not found in Current-Run.md after generation, forcing update")
+                logger.warning("run_id not found in Current Run.md after generation, forcing update")
                 # Force the correct run_id in the YAML frontmatter
                 content = re.sub(r'run_id:.*\n', f'run_id: {run_id}\n', content)
                 with open(current_run_path, 'w') as f:
                     f.write(content)
-                logger.info(f"Forced run_id update in Current-Run.md")
+                logger.info(f"Forced run_id update in Current Run.md")
     except Exception as e:
-        logger.error(f"Error processing Current-Run.md: {e}")
+        logger.error(f"Error processing Current Run.md: {e}")
         # Create a minimal file with the correct run_id as a fallback
         minimal_content = f"""---
 run_id: {run_id}
@@ -559,7 +559,7 @@ This is a fresh game run created on {timestamp}.
 """
         with open(current_run_path, 'w') as f:
             f.write(minimal_content)
-        logger.info(f"Created minimal Current-Run.md file with run_id {run_id}")
+        logger.info(f"Created minimal Current Run.md file with run_id {run_id}")
 
     return run_id
 
@@ -567,7 +567,7 @@ def reset_vault(create_current_run=False):
     """Reset the vault to a clean state, archiving the current contents if they exist.
 
     Args:
-        create_current_run: If True, create a Current-Run.md file. Default is False.
+        create_current_run: If True, create a Current Run.md file. Default is False.
 
     Returns:
         If create_current_run is True, returns the run_id; otherwise returns True on success
@@ -624,13 +624,13 @@ def reset_vault(create_current_run=False):
                 shutil.copy2(source_file, dest_file)
                 logger.info(f"Copied {source_file} to {dest_file}")
 
-    # Explicitly check for and delete Current-Run.md to ensure a clean factory state
-    current_run_path = os.path.join(vault_path, "Current-Run.md")
+    # Explicitly check for and delete Current Run.md to ensure a clean factory state
+    current_run_path = os.path.join(vault_path, "Current Run.md")
     if os.path.exists(current_run_path):
         os.remove(current_run_path)
-        logger.info("Deleted existing Current-Run.md file for clean reset")
+        logger.info("Deleted existing Current Run.md file for clean reset")
 
-    # Create a new Current-Run.md file only if requested
+    # Create a new Current Run.md file only if requested
     run_id = None
     if create_current_run:
         run_id = create_current_run_file()
@@ -642,11 +642,11 @@ def reset_vault(create_current_run=False):
         logger.info(f"Vault reset complete. New run ID: {run_id}")
         return run_id
     else:
-        logger.info("Vault reset complete. No Current-Run.md file created.")
+        logger.info("Vault reset complete. No Current Run.md file created.")
         return True
 
 if __name__ == "__main__":
     # Reset the vault when script is run directly
-    reset_vault(create_current_run=False)  # Don't create Current-Run.md when run directly
+    reset_vault(create_current_run=False)  # Don't create Current Run.md when run directly
     logger.info("Vault has been reset and is ready for a new game.")
     logger.info(f"To start the game, run: python {CONFIG['run_program']}")

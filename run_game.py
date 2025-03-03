@@ -28,8 +28,8 @@ event_logger.setLevel(logging.DEBUG)
 event_logger.addHandler(file_handler)
 
 def extract_run_id():
-    """Extract run ID from Current-Run.md."""
-    current_run_path = os.path.join("ai-dnd-test-vault", "Current-Run.md")
+    """Extract run ID from Current Run.md."""
+    current_run_path = os.path.join("ai-dnd-test-vault", "Current Run.md")
     if not os.path.exists(current_run_path):
         return None
 
@@ -49,7 +49,7 @@ def extract_run_id():
     return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
 def update_current_run(obsidian, run_data):
-    """Update the Current-Run.md file with the latest game state."""
+    """Update the Current Run.md file with the latest game state."""
     run_id = run_data.get('run_id')
     if not run_id:
         run_id = extract_run_id()
@@ -128,12 +128,12 @@ Current Turn: {run_data.get('turn_count', 0)}
     content += "*This run is currently in progress. Content will be updated as the game progresses.*\n"
 
     # Write the updated file
-    current_run_path = os.path.join(obsidian.vault_path, "Current-Run.md")
+    current_run_path = os.path.join(obsidian.vault_path, "Current Run.md")
     with open(current_run_path, 'w') as f:
         f.write(content)
 
     # Log at debug level instead of info to reduce noise during frequent updates
-    logging.debug(f"Updated Current-Run.md (Run ID: {run_id}, Turn: {run_data.get('turn_count', 0)})")
+    logging.debug(f"Updated Current Run.md (Run ID: {run_id}, Turn: {run_data.get('turn_count', 0)})")
 
 def update_dashboard(obsidian, run_data):
     """Update the Dashboard.md file with the latest game state."""
@@ -184,7 +184,7 @@ def update_dashboard(obsidian, run_data):
 
     # Add navigation links
     content += """## Navigation
-- [[Current-Run|🎲 Current Game Session]]
+- [[Current Run|🎲 Current Game Session]]
 - [[Index|📑 Game Index]]
 - [[Characters/|👤 Characters]]
 - [[Locations/|🗺️ Locations]]
@@ -210,16 +210,16 @@ def run_game():
         logger.error(f"Vault not found at {vault_path}. Run reset_game.py first to set up the vault.")
         sys.exit(1)
 
-    # Check if Current-Run.md exists (indicating game is ready)
-    if not os.path.exists(os.path.join(vault_path, "Current-Run.md")):
-        logger.error(f"Current-Run.md not found. Run reset_game.py first to set up the vault.")
+    # Check if Current Run.md exists (indicating game is ready)
+    if not os.path.exists(os.path.join(vault_path, "Current Run.md")):
+        logger.error(f"Current Run.md not found. Run reset_game.py first to set up the vault.")
         sys.exit(1)
 
     # Initialize Obsidian logger
     obsidian = ObsidianLogger(vault_path)
     logging.info("Initialized Obsidian logger for the game.")
 
-    # Extract run ID from Current-Run.md
+    # Extract run ID from Current Run.md
     run_id = extract_run_id()
     # Ensure run_id is valid and not a template variable
     if not run_id or "{{" in run_id:
@@ -246,9 +246,9 @@ def run_game():
     event_manager = GameEventManager(obsidian, run_data)
     logging.info("Initialized event manager for real-time updates.")
 
-    # Update the Current-Run.md file immediately with the valid run_id
+    # Update the Current Run.md file immediately with the valid run_id
     update_current_run(obsidian, run_data)
-    logging.info(f"Updated Current-Run.md with run ID: {run_id}")
+    logging.info(f"Updated Current Run.md with run ID: {run_id}")
 
     # Initialize game
     logging.info("\nInitializing D&D Game...")
@@ -303,12 +303,12 @@ def run_game():
         "objectives": ["Complete the adventure"],
         "start_date": start_time
     }
-    obsidian.log_quest(quest_data)
-    logging.info("Logged quest to Obsidian.")
+    obsidian.log_quest_with_event(quest_data, event_manager)
+    logging.info(f"Quest logged to Obsidian: {quest_data['name']}")
     run_data["quest"] = "Main Quest"
 
     # Create session data
-    session_name = f"Session-{time.strftime('%Y%m%d')}"
+    session_name = f"Session {time.strftime('%Y%m%d')}"
     session_data = {
         "name": session_name,
         "date": datetime.datetime.now().strftime("%Y-%m-%d"),
@@ -328,7 +328,7 @@ def run_game():
     obsidian.log_session(session_data)
     run_data["session"] = session_name
 
-    # Update Current-Run.md with initial state
+    # Update Current Run.md with initial state
     update_current_run(obsidian, run_data)
 
     # Update Dashboard.md
@@ -353,7 +353,7 @@ def run_game():
 
             # Log the scene as an event
             event_data = {
-                "name": f"Scene-Turn{turn_count}",
+                "name": f"Scene Turn {turn_count}",
                 "type": "Scene",
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "location": game.current_location,
@@ -429,7 +429,7 @@ def run_game():
 
                     # Log the encounter as an event
                     encounter_data = {
-                        "name": f"Encounter-Turn{turn_count}",
+                        "name": f"Encounter Turn {turn_count}",
                         "type": "Encounter",
                         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "location": game.current_location,
@@ -442,7 +442,7 @@ def run_game():
 
             # If enemies are present, conduct combat
             if game.enemies:
-                combat_name = f"Combat-Turn{turn_count}"
+                combat_name = f"Combat Turn {turn_count}"
                 combat_log = []
 
                 # Log combat start
@@ -562,7 +562,7 @@ def run_game():
                 obsidian.log_combat(combat_data)
                 run_data["combat"].append(combat_name)
 
-            # Update Current-Run.md and Dashboard
+            # Update Current Run.md and Dashboard
             update_current_run(obsidian, run_data)
             update_dashboard(obsidian, run_data)
 
@@ -585,7 +585,7 @@ def run_game():
 
         # Log the conclusion as an event
         conclusion_event = {
-            "name": "Adventure-Conclusion",
+            "name": "Adventure Conclusion",
             "type": "Conclusion",
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "location": game.current_location,
@@ -596,7 +596,7 @@ def run_game():
         obsidian.log_event(conclusion_event)
         run_data["events"].append(conclusion_event["name"])
 
-        # Final updates to Current-Run.md and Dashboard
+        # Final updates to Current Run.md and Dashboard
         update_current_run(obsidian, run_data)
         update_dashboard(obsidian, run_data)
 
