@@ -48,15 +48,27 @@ AI-DnD is designed to integrate seamlessly with **Obsidian**, allowing it to gen
 5. **Navigate the Campaign in Obsidian**  
    - Open the generated Markdown files in Obsidian to explore the AI-generated world, review past events, and track character development over time.  
 
-## Usage  
-To start AI-DnD:  
+## Usage
+To start AI-DnD:
 
-1. Launch the program from the command line or terminal.  
-2. Select a pre-made campaign or create your own.  
-3. Observe the AI-driven adventure unfold.  
-4. Open Obsidian to view real-time campaign logs.  
+1. Launch the program from the command line or terminal.
+2. Select a pre-made campaign or create your own.
+3. Observe the AI-driven adventure unfold.
+4. Open Obsidian to view real-time campaign logs.
 
-For additional commands and gameplay mechanics, refer to the user documentation.  
+For additional commands and gameplay mechanics, refer to the user documentation.
+
+### Want a quick peek?
+If you just want to see the core combat and logging loop in action without
+connecting to Ollama, run the lightweight showcase demo:
+
+```bash
+cd examples/simple_demo
+python demo_app.py --turns 4
+```
+
+The demo swaps in a deterministic narrative engine so you can visualize the
+Rich HUD and battle flow immediately.
 
 ## Modules  
 ### Core Components  
