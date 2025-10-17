@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-DnD Chronomancer Console</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="console-shell">
+      <header class="console-header panel">
+        <div class="header-title">
+          <h1>Chronomancer Console</h1>
+          <p>
+            A glowing 90s field terminal complete with scanlines, pixel-gem
+            toggles, and neon gauges. Load a chronicle, scrub the timeline, and
+            inspect every combatant without losing track of the story.
+          </p>
+        </div>
+        <div class="header-actions">
+          <label class="service-field">
+            <span class="service-label">Session service</span>
+            <input
+              id="service-url"
+              class="glyph-input"
+              type="text"
+              inputmode="url"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="http://127.0.0.1:8001"
+            />
+            <span class="service-hint">Adjust host and port before launching live mode.</span>
+          </label>
+          <button id="live-session-button" class="glyph-button emphasis" type="button">
+            Start live session
+          </button>
+          <button id="refresh-button" class="glyph-button" type="button">
+            Load fresh chronicle
+          </button>
+          <label class="glyph-button file-loader">
+            Import ledger
+            <input id="file-input" type="file" accept="application/json" />
+          </label>
+          <p id="session-indicator" class="console-status hidden" role="status"></p>
+          <p id="status" class="console-status hidden" role="status"></p>
+        </div>
+      </header>
+
+      <main class="console-body">
+        <section class="story-lane">
+          <article id="quest-card" class="quest-card panel">
+            <header>
+              <h2>Quest Briefing</h2>
+            </header>
+            <p class="quest-text">
+              Invoke
+              <code>python generate_data.py --turns 4 --seed 7</code> to imprint a
+              chronicle on this console.
+            </p>
+          </article>
+
+          <section class="turn-brief panel" id="turn-brief">
+            <div class="phase-line">
+              <div class="phase-copy">
+                <span class="label">Current Phase</span>
+                <h3 id="turn-title">Awaiting activation</h3>
+              </div>
+              <span id="turn-label" class="turn-tag">--</span>
+            </div>
+
+            <dl class="brief-grid">
+              <div>
+                <dt>Allies ready</dt>
+                <dd id="party-count">--</dd>
+              </div>
+              <div>
+                <dt>Foes active</dt>
+                <dd id="enemy-count">--</dd>
+              </div>
+              <div>
+                <dt>Rounds logged</dt>
+                <dd id="round-count">--</dd>
+              </div>
+            </dl>
+
+            <div class="momentum-panel">
+              <span class="label">Momentum</span>
+              <div
+                class="momentum-track"
+                role="meter"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="50"
+                aria-labelledby="momentum-label"
+              >
+                <span id="momentum-fill" class="momentum-fill"></span>
+              </div>
+              <span id="momentum-label" class="momentum-label">EVEN FOOTING</span>
+            </div>
+          </section>
+
+          <section class="timeline-panel panel" id="timeline-panel">
+            <header class="timeline-header">
+              <div>
+                <span class="label">Chronicle Timeline</span>
+                <h3 id="timeline-title">Turn progression</h3>
+              </div>
+              <span id="timeline-readout">--</span>
+            </header>
+            <input
+              type="range"
+              id="timeline-slider"
+              class="timeline-slider"
+              min="0"
+              max="0"
+              value="0"
+              step="1"
+              disabled
+            />
+            <ul id="timeline-marks" class="timeline-marks"></ul>
+            <ul id="turn-digest" class="turn-digest"></ul>
+          </section>
+        </section>
+
+        <section class="chronicle-lane panel" id="scene-panel">
+          <header class="scene-header">
+            <div>
+              <span class="label">Encounter Feed</span>
+              <h3>Chronicle Notebook</h3>
+            </div>
+            <div class="log-tabs" role="tablist">
+              <button
+                type="button"
+                class="glyph-button tab-button active"
+                data-log-view="turn"
+                role="tab"
+                aria-selected="true"
+              >
+                Turn events
+              </button>
+              <button
+                type="button"
+                class="glyph-button tab-button"
+                data-log-view="chronicle"
+                role="tab"
+                aria-selected="false"
+              >
+                Chronicle log
+              </button>
+            </div>
+          </header>
+          <div class="log-window">
+            <ul id="event-log" class="log-list" role="tabpanel"></ul>
+            <ul
+              id="cumulative-log"
+              class="log-list hidden"
+              role="tabpanel"
+              aria-hidden="true"
+            ></ul>
+          </div>
+        </section>
+
+        <aside class="intel-column">
+          <section class="roster-bay panel" id="party-column">
+            <header>
+              <h2>Company Ledger</h2>
+            </header>
+            <div class="roster-groups">
+              <div class="roster-group">
+                <h3>Party</h3>
+                <ul class="roster-list" id="party-list"></ul>
+              </div>
+              <div class="roster-group">
+                <h3>Opposition</h3>
+                <ul class="roster-list" id="enemy-list"></ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="dossier panel" id="dossier-panel">
+            <header>
+              <h2>Field dossier</h2>
+            </header>
+            <div class="dossier-body">
+              <p id="dossier-empty">Select a combatant to review their vitals.</p>
+              <div id="dossier-content" class="hidden">
+                <div class="dossier-header">
+                  <div class="portrait" id="dossier-portrait" aria-hidden="true"></div>
+                  <div>
+                    <h3 id="dossier-name"></h3>
+                    <p id="dossier-role"></p>
+                  </div>
+                </div>
+                <dl class="dossier-stats">
+                  <div>
+                    <dt>Status</dt>
+                    <dd id="dossier-status">--</dd>
+                  </div>
+                  <div>
+                    <dt>Hit points</dt>
+                    <dd id="dossier-hp">--</dd>
+                  </div>
+                  <div>
+                    <dt>Side</dt>
+                    <dd id="dossier-side">--</dd>
+                  </div>
+                </dl>
+                <p id="dossier-note" class="dossier-note"></p>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="console-footer panel">
+        <div class="control-row">
+          <button id="previous-turn" class="glyph-button command" type="button">
+            ◀ Rewind
+          </button>
+          <button id="play-toggle" class="glyph-button command" type="button">
+            ▶ Auto-run
+          </button>
+          <button id="next-turn" class="glyph-button command" type="button">
+            Advance ▶
+          </button>
+        </div>
+        <p id="conclusion" class="console-conclusion hidden"></p>
+      </footer>
+    </div>
+
+    <template id="roster-entry">
+      <li class="roster-entry">
+        <button class="roster-card" type="button">
+          <div class="portrait" aria-hidden="true"></div>
+          <div class="stat-block">
+            <span class="name"></span>
+            <span class="meta"></span>
+            <span class="hp" data-status="up"></span>
+            <div class="hp-bar"><span class="hp-fill"></span></div>
+          </div>
+        </button>
+      </li>
+    </template>
+
+    <template id="event-line">
+      <li class="event-line"></li>
+    </template>
+
+    <template id="digest-entry">
+      <li class="digest-entry">
+        <button class="digest-card" type="button">
+          <span class="digest-label"></span>
+          <span class="digest-subtitle"></span>
+        </button>
+      </li>
+    </template>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>

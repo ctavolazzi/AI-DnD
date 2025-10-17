@@ -6,52 +6,76 @@ AI-DnD is a text-based Dungeons & Dragons simulator that combines traditional ro
 
 ## Core Architecture
 
-### Game Engine Components
+### Runtime Orchestration
 
-1. **DnDGame (dnd_game.py)**
-   - Central game engine managing characters, combat, and game state
-   - Handles turn progression and game conditions
-   - Implements core game mechanics
+1. **Main Entrypoint (`main.py`)**
+   - Parses CLI arguments (vault path, reset flag, model choice, etc.).
+   - Sets up logging and optionally resets the target Obsidian vault.
+   - Instantiates `DungeonMaster` and drives the overall run via `DungeonMaster.run_game()`.
 
-2. **Character System**
-   - Character classes in `dnd_game.py` (gameplay) and `character.py` (persistence)
-   - Class-specific abilities (Fighter, Wizard, Rogue, Cleric, etc.)
-   - Status effects, damage calculation, and character state management
+2. **DungeonMaster (`dungeon_master.py`)**
+   - Coordinates the high-level game lifecycle for a single Obsidian vault.
+   - Initializes run metadata, the `GameEventManager`, `GameManager`, and `DnDGame` engine.
+   - Persists run state to `Current Run.md` and orchestrates event propagation to Obsidian.
 
-3. **NarrativeEngine (narrative_engine.py)**
-   - Uses Ollama for AI-powered narrative generation
-   - Creates scene descriptions, dialogue, quests, and combat summaries
-   - Uses a "mistral" model by default with concise DM-style prompts
+3. **Game Loop (`run_game.py` / `dnd_game.py`)**
+   - `DnDGame` encapsulates combat resolution, character stats, and AI turns.
+   - Uses `NarrativeEngine` for moment-to-moment descriptions and quest content.
+   - Raises `GameError` for invalid operations (e.g., unknown classes, bad combat inputs).
 
-4. **World System (world.py)**
-   - Manages locations, connections, and world navigation
-   - Configuration-based approach to world definition
-   - Location descriptions and movement mechanics
+### Supporting Systems
 
-5. **Game Display (rich_game_display_integration.py)**
-   - Uses the Rich library for terminal UI
-   - Displays character stats, combat logs, and game progression
-   - Real-time updating interface
+1. **Character & State Models**
+   - `dnd_game.Character` contains combat stats and abilities.
+   - `character.py`, `character_state.py`, and `game_state.py` persist campaign entities and runtime snapshots.
+   - `game_state_manager.py` offers higher-level helpers for saving/restoring state.
+
+2. **Narrative & AI Integration (`narrative_engine.py`)**
+   - Wraps Ollama CLI calls with a compact system prompt (“15 words max” style direction).
+   - Provides helpers for scenes, combat, encounters, quests, dialogue, and conclusions.
+   - Falls back to a generic string if the Ollama invocation fails.
+
+3. **Event Propagation (`game_event_manager.py`)**
+   - Publishes structured events from the game loop.
+   - Keeps `run_data` in sync and triggers `DungeonMaster.update_current_run()` after each event.
+   - Allows other components to subscribe to granular event types.
+
+4. **World & Modules**
+   - `world.py` defines tile-based navigation and adjacency.
+   - `module_loader.py` supplies a minimal plug-in loader for optional rules modules.
+   - Modules currently default to placeholders, suggesting a future extension point.
+
+5. **Presentation Layers**
+   - `rich_game_display.py` and `rich_game_display_integration.py` integrate with the Rich TUI toolkit.
+   - `obsidian_logger.py` writes Markdown artefacts (characters, quests, sessions, etc.) into the vault.
+   - `JournalManager` and `game_manager.py` craft per-character journals and maintain knowledge graphs.
 
 ### Game Flow
 
-1. Initialization through main.py or run_game.py
-2. Character creation (players and enemies)
-3. Quest generation by the narrative engine
-4. Turn-based progression:
-   - Scene descriptions
-   - Combat interactions
-   - Random encounters
-   - Turn summaries
-5. Game conclusion after predetermined turns or when all players/enemies are defeated
+1. **Launch**
+   - `main.py` ensures the vault exists, optionally wipes it, and prints execution metadata.
+   - `DungeonMaster.initialize_run()` seeds `current_run_data` (run id, timestamps, quest placeholders).
+
+2. **Setup**
+   - `GameManager` subscribes to core events (character/location/quest/item updates).
+   - `ObsidianLogger` provisions directories (`Characters/`, `Events/`, `Runs/`, etc.) and templates.
+
+3. **Turn Loop**
+   - `DnDGame.run_turn()` (via `DungeonMaster.run_game`) updates characters, resolves combat, and posts events.
+   - `NarrativeEngine` generates narration for scenes, actions, and outcomes.
+   - `GameEventManager.publish()` pushes updates into `Current Run.md` and knowledge graphs in real time.
+
+4. **Completion**
+   - Upon success or failure, `DungeonMaster` marks the run status and writes summaries to the vault.
+   - Error handling routes through `error_logger.py` for structured logging.
 
 ## Technical Features
 
-1. **Modular Architecture**: Separate modules for different functionality
-2. **AI Integration**: Ollama for narrative content generation
-3. **Rich Terminal UI**: Visually appealing interface
-4. **Logging System**: Comprehensive logging for debugging and game events
-5. **Configuration-Based Design**: Config files define world elements
+1. **Obsidian-First Logging** – Markdown artefacts with YAML frontmatter + backlink-friendly links.
+2. **Knowledge Graph** – `GameManager` tracks awareness/relationships between entities (theory-of-mind light).
+3. **Autonomous Journaling** – `JournalManager` generates per-character diaries and “thoughts” entries.
+4. **Extensible Modules** – Loader infrastructure available for house rules and experimental mechanics.
+5. **Rich Terminal UI** – Optional live display for combat stats using the `rich` library.
 
 ## Project Structure
 
@@ -71,11 +95,10 @@ AI-DnD is a text-based Dungeons & Dragons simulator that combines traditional ro
 
 ## Dependencies
 
-The project relies on several Python libraries:
-- Rich (terminal UI)
-- Ollama (AI integration)
-- OpenAI (potential alternative AI integration)
-- Various utility libraries
+- **Core**: `jinja2`, `pytest`, `pydantic`, `python-dateutil`, etc. (see `requirements.txt`).
+- **UI**: `rich` (required by `rich_game_display*` modules — missing in the default environment).
+- **AI**: Local Ollama binary accessible via CLI for `NarrativeEngine`.
+- **File IO**: Relies on standard library modules for filesystem orchestration.
 
 ## Development Status
 
@@ -88,19 +111,17 @@ The project appears to be a fairly complete D&D simulator with:
 
 ## Key Observations
 
-1. The narrative engine uses local Ollama models which allows for offline gameplay
-2. The combat system includes abilities specific to character classes
-3. The game uses a turn-based approach with a maximum number of turns
-4. The project leverages Rich for terminal-based UI rather than a graphical interface
-5. Configuration is used to define world elements like locations
+1. Vault writes are central—almost every subsystem eventually funnels data through `ObsidianLogger`.
+2. Many modules assume synchronous filesystem access; async runtimes would require refactors.
+3. Narrative generation is intentionally terse (≤15 words), hinting at log-friendly summaries.
+4. Several tests depend on the `rich` package, so installing UI dependencies is necessary before running the suite.
+5. Module infrastructure exists but currently has minimal implementations, leaving room for custom content packs.
 
-## Next Steps for Exploration
+## Testing Notes
 
-- Investigate test files to understand testing strategy
-- Examine the self-playing game capabilities
-- Look at the narrative engine's interaction with Ollama
-- Study the Rich display integration for UI enhancements
-- Review the logging system for debugging capabilities
+- `pytest` currently fails during collection because `rich` is not installed (`ModuleNotFoundError`).
+- Most tests target journal creation, DM journaling, narrative pipelines, and logging consistency.
+- Installing the optional UI dependency should unblock the Rich display tests.
 
 ---
 
