@@ -19,19 +19,6 @@ By default the showcase animates four turns with a short pause between each
 update. Use `--turns`, `--delay`, or `--seed` to adjust the length, pacing, and
 randomness of the output.
 
-## Web viewer
-
-Prefer a browser-based walkthrough? Open the static viewer in
-`examples/web_frontend`. Generate `data/demo_run.json` with
-`python generate_data.py --turns 4 --seed 7` and then serve the folder with
-`python -m http.server 8000` to explore the same deterministic timeline in your
-browser.
-
-When you are ready to exercise the MVP session service, start it from the
-repository root with `python -m session_service --port 8001` and click **Start
-live session** inside the console to stream the same deterministic turns via
-HTTP.
-
 ## What you will see
 
 - A quest hook, party roster, and adversary roster generated from the existing
