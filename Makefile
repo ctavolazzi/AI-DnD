@@ -1,4 +1,10 @@
-.PHONY: reset run setup clean archive structure play-game check-journals
+.PHONY: reset run setup clean archive structure play-game check-journals mvp-data mvp-session mvp-serve mvp-demo
+
+MVP_TURNS ?= 4
+MVP_SEED ?= 7
+MVP_HOST ?= 127.0.0.1
+MVP_PORT ?= 8001
+MVP_CONSOLE_PORT ?= 8000
 
 # Default target - complete workflow to play the game
 play-game: setup
@@ -79,4 +85,27 @@ help:
 	@echo "  make clean       - Clean up generated files"
 	@echo "  make archive     - Archive the current run"
 	@echo "  make check-journals - View character journals and entries"
+	@echo "  make mvp-data    - Generate deterministic showcase data for the Chronomancer console"
+	@echo "  make mvp-session - Run the FastAPI MVP session service"
+	@echo "  make mvp-serve   - Serve the Chronomancer console over HTTP"
+	@echo "  make mvp-demo    - Generate demo data, run the session service, and serve the console"
 	@echo "  make help        - Show this help message"
+
+mvp-data:
+	@echo "Generating deterministic showcase data (turns=$(MVP_TURNS), seed=$(MVP_SEED))..."
+	@python examples/web_frontend/generate_data.py --turns $(MVP_TURNS) --seed $(MVP_SEED)
+
+mvp-session:
+	@echo "Starting session service on $(MVP_HOST):$(MVP_PORT)..."
+	@python -m session_service --host $(MVP_HOST) --port $(MVP_PORT)
+
+mvp-serve:
+	@echo "Serving Chronomancer console on http://127.0.0.1:$(MVP_CONSOLE_PORT)/ ..."
+	@cd examples/web_frontend && python -m http.server $(MVP_CONSOLE_PORT)
+
+mvp-demo:
+	@echo "Preparing full MVP loop (use separate shells for long-running commands)..."
+	@$(MAKE) --no-print-directory mvp-data
+	@echo "Launch the following in separate terminals:"
+	@echo "  make mvp-session [MVP_HOST=127.0.0.1 MVP_PORT=8001]"
+	@echo "  make mvp-serve [MVP_CONSOLE_PORT=8000]"

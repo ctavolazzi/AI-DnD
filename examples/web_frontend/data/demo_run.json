@@ -1,0 +1,464 @@
+{
+  "quest_hook": "Rescue miners trapped beneath Emberpeak and seal the shattered rune. (theme: showcase expedition)",
+  "frames": [
+    {
+      "turn": 0,
+      "players": [
+        {
+          "name": "Hero 1",
+          "char_class": "Rogue",
+          "hp": 50,
+          "max_hp": 50,
+          "alive": true
+        },
+        {
+          "name": "Hero 2",
+          "char_class": "Fighter",
+          "hp": 22,
+          "max_hp": 22,
+          "alive": true
+        }
+      ],
+      "enemies": [
+        {
+          "name": "Monster 1",
+          "char_class": "Skeleton",
+          "hp": 38,
+          "max_hp": 38,
+          "alive": true
+        },
+        {
+          "name": "Monster 2",
+          "char_class": "Orc",
+          "hp": 21,
+          "max_hp": 21,
+          "alive": true
+        }
+      ],
+      "new_events": [
+        "Initializing DnDGame",
+        "Quest Hook:",
+        "Rescue miners trapped beneath Emberpeak and seal the shattered rune. (theme: showcase expedition)",
+        "Hero 1 enters the tavern while the party observes, a new rogue joining the adventure.",
+        "Calmly, Hero 2 enters the tavern; the others nod at the a new fighter joining the adventure."
+      ],
+      "cumulative_events": [
+        "Initializing DnDGame",
+        "Quest Hook:",
+        "Rescue miners trapped beneath Emberpeak and seal the shattered rune. (theme: showcase expedition)",
+        "Hero 1 enters the tavern while the party observes, a new rogue joining the adventure.",
+        "Calmly, Hero 2 enters the tavern; the others nod at the a new fighter joining the adventure."
+      ],
+      "is_final": false
+    },
+    {
+      "turn": 1,
+      "players": [
+        {
+          "name": "Hero 1",
+          "char_class": "Rogue",
+          "hp": 50,
+          "max_hp": 50,
+          "alive": true
+        },
+        {
+          "name": "Hero 2",
+          "char_class": "Fighter",
+          "hp": 13,
+          "max_hp": 22,
+          "alive": true
+        }
+      ],
+      "enemies": [
+        {
+          "name": "Monster 1",
+          "char_class": "Skeleton",
+          "hp": 31,
+          "max_hp": 38,
+          "alive": true
+        },
+        {
+          "name": "Monster 2",
+          "char_class": "Orc",
+          "hp": 0,
+          "max_hp": 21,
+          "alive": false
+        }
+      ],
+      "new_events": [
+        "Encounter: A scarred scout requests aid tracking goblins near the ridge.",
+        "Hero 2, Monster 1, Hero 1, Monster 2 regroup inside Starting Tavern, lantern light brushing dusty maps.",
+        "Hero 2 performs Heavy Strike on Monster 2!",
+        "Damage Calculation:",
+        "- Incoming Damage: 26",
+        "- Target Defense: 4",
+        "- Final Damage: 26 - 4 = 22",
+        "Result: Monster 2 takes 22 damage! (HP: 21 -> 0)",
+        "Critical Event: Monster 2 has fallen!",
+        "Hero 2 attacks Monster 2, steel ringing for 21 damage.",
+        "Monster 1 prepares to attack Hero 2!",
+        "Combat Stats:",
+        "- Attacker (Monster 1): Attack = 5, HP = 38/38",
+        "- Defender (Hero 2): Defense = 1, HP = 22/22",
+        "Attack Roll: 5",
+        "Total Damage = 5 (base) + 5 (roll) = 10",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 1",
+        "- Final Damage: 10 - 1 = 9",
+        "Result: Hero 2 takes 9 damage! (HP: 22 -> 13)",
+        "With practiced ease, Monster 1 attacks Hero 2 for 9 damage.",
+        "Hero 1 performs Backstab on Monster 1, reducing defense from 5 to 3",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 3",
+        "- Final Damage: 10 - 3 = 7",
+        "Result: Monster 1 takes 7 damage! (HP: 38 -> 31)",
+        "Hero 1 sweeps toward Monster 1 and for 7 damage.",
+        "The skirmish resolves quickly and cleanly."
+      ],
+      "cumulative_events": [
+        "Initializing DnDGame",
+        "Quest Hook:",
+        "Rescue miners trapped beneath Emberpeak and seal the shattered rune. (theme: showcase expedition)",
+        "Hero 1 enters the tavern while the party observes, a new rogue joining the adventure.",
+        "Calmly, Hero 2 enters the tavern; the others nod at the a new fighter joining the adventure.",
+        "Encounter: A scarred scout requests aid tracking goblins near the ridge.",
+        "Hero 2, Monster 1, Hero 1, Monster 2 regroup inside Starting Tavern, lantern light brushing dusty maps.",
+        "Hero 2 performs Heavy Strike on Monster 2!",
+        "Damage Calculation:",
+        "- Incoming Damage: 26",
+        "- Target Defense: 4",
+        "- Final Damage: 26 - 4 = 22",
+        "Result: Monster 2 takes 22 damage! (HP: 21 -> 0)",
+        "Critical Event: Monster 2 has fallen!",
+        "Hero 2 attacks Monster 2, steel ringing for 21 damage.",
+        "Monster 1 prepares to attack Hero 2!",
+        "Combat Stats:",
+        "- Attacker (Monster 1): Attack = 5, HP = 38/38",
+        "- Defender (Hero 2): Defense = 1, HP = 22/22",
+        "Attack Roll: 5",
+        "Total Damage = 5 (base) + 5 (roll) = 10",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 1",
+        "- Final Damage: 10 - 1 = 9",
+        "Result: Hero 2 takes 9 damage! (HP: 22 -> 13)",
+        "With practiced ease, Monster 1 attacks Hero 2 for 9 damage.",
+        "Hero 1 performs Backstab on Monster 1, reducing defense from 5 to 3",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 3",
+        "- Final Damage: 10 - 3 = 7",
+        "Result: Monster 1 takes 7 damage! (HP: 38 -> 31)",
+        "Hero 1 sweeps toward Monster 1 and for 7 damage.",
+        "The skirmish resolves quickly and cleanly."
+      ],
+      "is_final": false
+    },
+    {
+      "turn": 2,
+      "players": [
+        {
+          "name": "Hero 1",
+          "char_class": "Rogue",
+          "hp": 50,
+          "max_hp": 50,
+          "alive": true
+        },
+        {
+          "name": "Hero 2",
+          "char_class": "Fighter",
+          "hp": 13,
+          "max_hp": 22,
+          "alive": true
+        }
+      ],
+      "enemies": [
+        {
+          "name": "Monster 1",
+          "char_class": "Skeleton",
+          "hp": 3,
+          "max_hp": 38,
+          "alive": true
+        },
+        {
+          "name": "Monster 2",
+          "char_class": "Orc",
+          "hp": 0,
+          "max_hp": 21,
+          "alive": false
+        }
+      ],
+      "new_events": [
+        "Footfalls echo through Starting Tavern as Hero 1, Monster 1, Hero 2 ready their next move.",
+        "Hero 1 prepares to attack Monster 1!",
+        "Combat Stats:",
+        "- Attacker (Hero 1): Attack = 7, HP = 50/50",
+        "- Defender (Monster 1): Defense = 3, HP = 31/38",
+        "Attack Roll: 4",
+        "Total Damage = 7 (base) + 4 (roll) = 11",
+        "Damage Calculation:",
+        "- Incoming Damage: 11",
+        "- Target Defense: 3",
+        "- Final Damage: 11 - 3 = 8",
+        "Result: Monster 1 takes 8 damage! (HP: 31 -> 23)",
+        "Hero 1 attacks Monster 1, steel ringing for 8 damage.",
+        "Monster 1 uses Bone Shield to double defense to 6!",
+        "Hero 2 performs Heavy Strike on Monster 1!",
+        "Damage Calculation:",
+        "- Incoming Damage: 26",
+        "- Target Defense: 6",
+        "- Final Damage: 26 - 6 = 20",
+        "Result: Monster 1 takes 20 damage! (HP: 23 -> 3)",
+        "With practiced ease, Hero 2 attacks Monster 1 for 20 damage."
+      ],
+      "cumulative_events": [
+        "Hero 2, Monster 1, Hero 1, Monster 2 regroup inside Starting Tavern, lantern light brushing dusty maps.",
+        "Hero 2 performs Heavy Strike on Monster 2!",
+        "Damage Calculation:",
+        "- Incoming Damage: 26",
+        "- Target Defense: 4",
+        "- Final Damage: 26 - 4 = 22",
+        "Result: Monster 2 takes 22 damage! (HP: 21 -> 0)",
+        "Critical Event: Monster 2 has fallen!",
+        "Hero 2 attacks Monster 2, steel ringing for 21 damage.",
+        "Monster 1 prepares to attack Hero 2!",
+        "Combat Stats:",
+        "- Attacker (Monster 1): Attack = 5, HP = 38/38",
+        "- Defender (Hero 2): Defense = 1, HP = 22/22",
+        "Attack Roll: 5",
+        "Total Damage = 5 (base) + 5 (roll) = 10",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 1",
+        "- Final Damage: 10 - 1 = 9",
+        "Result: Hero 2 takes 9 damage! (HP: 22 -> 13)",
+        "With practiced ease, Monster 1 attacks Hero 2 for 9 damage.",
+        "Hero 1 performs Backstab on Monster 1, reducing defense from 5 to 3",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 3",
+        "- Final Damage: 10 - 3 = 7",
+        "Result: Monster 1 takes 7 damage! (HP: 38 -> 31)",
+        "Hero 1 sweeps toward Monster 1 and for 7 damage.",
+        "The skirmish resolves quickly and cleanly.",
+        "Footfalls echo through Starting Tavern as Hero 1, Monster 1, Hero 2 ready their next move.",
+        "Hero 1 prepares to attack Monster 1!",
+        "Combat Stats:",
+        "- Attacker (Hero 1): Attack = 7, HP = 50/50",
+        "- Defender (Monster 1): Defense = 3, HP = 31/38",
+        "Attack Roll: 4",
+        "Total Damage = 7 (base) + 4 (roll) = 11",
+        "Damage Calculation:",
+        "- Incoming Damage: 11",
+        "- Target Defense: 3",
+        "- Final Damage: 11 - 3 = 8",
+        "Result: Monster 1 takes 8 damage! (HP: 31 -> 23)",
+        "Hero 1 attacks Monster 1, steel ringing for 8 damage.",
+        "Monster 1 uses Bone Shield to double defense to 6!",
+        "Hero 2 performs Heavy Strike on Monster 1!",
+        "Damage Calculation:",
+        "- Incoming Damage: 26",
+        "- Target Defense: 6",
+        "- Final Damage: 26 - 6 = 20",
+        "Result: Monster 1 takes 20 damage! (HP: 23 -> 3)",
+        "With practiced ease, Hero 2 attacks Monster 1 for 20 damage."
+      ],
+      "is_final": false
+    },
+    {
+      "turn": 3,
+      "players": [
+        {
+          "name": "Hero 1",
+          "char_class": "Rogue",
+          "hp": 50,
+          "max_hp": 50,
+          "alive": true
+        },
+        {
+          "name": "Hero 2",
+          "char_class": "Fighter",
+          "hp": 13,
+          "max_hp": 22,
+          "alive": true
+        }
+      ],
+      "enemies": [
+        {
+          "name": "Monster 1",
+          "char_class": "Skeleton",
+          "hp": 0,
+          "max_hp": 38,
+          "alive": false
+        },
+        {
+          "name": "Monster 2",
+          "char_class": "Orc",
+          "hp": 0,
+          "max_hp": 21,
+          "alive": false
+        }
+      ],
+      "new_events": [
+        "Encounter: A caravan master pleads for protection from lurking bandits.",
+        "A hushed wind slips across Starting Tavern while Hero 1, Monster 1, Hero 2 exchange quick glances.",
+        "Hero 1 performs Backstab on Monster 1, reducing defense from 6 to 4",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 4",
+        "- Final Damage: 10 - 4 = 6",
+        "Result: Monster 1 takes 6 damage! (HP: 3 -> 0)",
+        "Critical Event: Monster 1 has fallen!",
+        "Hero 1 sweeps toward Monster 1 and for 3 damage.",
+        "The skirmish resolves quickly and cleanly."
+      ],
+      "cumulative_events": [
+        "- Attacker (Monster 1): Attack = 5, HP = 38/38",
+        "- Defender (Hero 2): Defense = 1, HP = 22/22",
+        "Attack Roll: 5",
+        "Total Damage = 5 (base) + 5 (roll) = 10",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 1",
+        "- Final Damage: 10 - 1 = 9",
+        "Result: Hero 2 takes 9 damage! (HP: 22 -> 13)",
+        "With practiced ease, Monster 1 attacks Hero 2 for 9 damage.",
+        "Hero 1 performs Backstab on Monster 1, reducing defense from 5 to 3",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 3",
+        "- Final Damage: 10 - 3 = 7",
+        "Result: Monster 1 takes 7 damage! (HP: 38 -> 31)",
+        "Hero 1 sweeps toward Monster 1 and for 7 damage.",
+        "The skirmish resolves quickly and cleanly.",
+        "Footfalls echo through Starting Tavern as Hero 1, Monster 1, Hero 2 ready their next move.",
+        "Hero 1 prepares to attack Monster 1!",
+        "Combat Stats:",
+        "- Attacker (Hero 1): Attack = 7, HP = 50/50",
+        "- Defender (Monster 1): Defense = 3, HP = 31/38",
+        "Attack Roll: 4",
+        "Total Damage = 7 (base) + 4 (roll) = 11",
+        "Damage Calculation:",
+        "- Incoming Damage: 11",
+        "- Target Defense: 3",
+        "- Final Damage: 11 - 3 = 8",
+        "Result: Monster 1 takes 8 damage! (HP: 31 -> 23)",
+        "Hero 1 attacks Monster 1, steel ringing for 8 damage.",
+        "Monster 1 uses Bone Shield to double defense to 6!",
+        "Hero 2 performs Heavy Strike on Monster 1!",
+        "Damage Calculation:",
+        "- Incoming Damage: 26",
+        "- Target Defense: 6",
+        "- Final Damage: 26 - 6 = 20",
+        "Result: Monster 1 takes 20 damage! (HP: 23 -> 3)",
+        "With practiced ease, Hero 2 attacks Monster 1 for 20 damage.",
+        "Encounter: A caravan master pleads for protection from lurking bandits.",
+        "A hushed wind slips across Starting Tavern while Hero 1, Monster 1, Hero 2 exchange quick glances.",
+        "Hero 1 performs Backstab on Monster 1, reducing defense from 6 to 4",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 4",
+        "- Final Damage: 10 - 4 = 6",
+        "Result: Monster 1 takes 6 damage! (HP: 3 -> 0)",
+        "Critical Event: Monster 1 has fallen!",
+        "Hero 1 sweeps toward Monster 1 and for 3 damage.",
+        "The skirmish resolves quickly and cleanly."
+      ],
+      "is_final": false
+    },
+    {
+      "turn": 3,
+      "players": [
+        {
+          "name": "Hero 1",
+          "char_class": "Rogue",
+          "hp": 50,
+          "max_hp": 50,
+          "alive": true
+        },
+        {
+          "name": "Hero 2",
+          "char_class": "Fighter",
+          "hp": 13,
+          "max_hp": 22,
+          "alive": true
+        }
+      ],
+      "enemies": [
+        {
+          "name": "Monster 1",
+          "char_class": "Skeleton",
+          "hp": 0,
+          "max_hp": 38,
+          "alive": false
+        },
+        {
+          "name": "Monster 2",
+          "char_class": "Orc",
+          "hp": 0,
+          "max_hp": 21,
+          "alive": false
+        }
+      ],
+      "new_events": [
+        "Battered yet grinning, the heroes secure the night's campfire tale."
+      ],
+      "cumulative_events": [
+        "- Defender (Hero 2): Defense = 1, HP = 22/22",
+        "Attack Roll: 5",
+        "Total Damage = 5 (base) + 5 (roll) = 10",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 1",
+        "- Final Damage: 10 - 1 = 9",
+        "Result: Hero 2 takes 9 damage! (HP: 22 -> 13)",
+        "With practiced ease, Monster 1 attacks Hero 2 for 9 damage.",
+        "Hero 1 performs Backstab on Monster 1, reducing defense from 5 to 3",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 3",
+        "- Final Damage: 10 - 3 = 7",
+        "Result: Monster 1 takes 7 damage! (HP: 38 -> 31)",
+        "Hero 1 sweeps toward Monster 1 and for 7 damage.",
+        "The skirmish resolves quickly and cleanly.",
+        "Footfalls echo through Starting Tavern as Hero 1, Monster 1, Hero 2 ready their next move.",
+        "Hero 1 prepares to attack Monster 1!",
+        "Combat Stats:",
+        "- Attacker (Hero 1): Attack = 7, HP = 50/50",
+        "- Defender (Monster 1): Defense = 3, HP = 31/38",
+        "Attack Roll: 4",
+        "Total Damage = 7 (base) + 4 (roll) = 11",
+        "Damage Calculation:",
+        "- Incoming Damage: 11",
+        "- Target Defense: 3",
+        "- Final Damage: 11 - 3 = 8",
+        "Result: Monster 1 takes 8 damage! (HP: 31 -> 23)",
+        "Hero 1 attacks Monster 1, steel ringing for 8 damage.",
+        "Monster 1 uses Bone Shield to double defense to 6!",
+        "Hero 2 performs Heavy Strike on Monster 1!",
+        "Damage Calculation:",
+        "- Incoming Damage: 26",
+        "- Target Defense: 6",
+        "- Final Damage: 26 - 6 = 20",
+        "Result: Monster 1 takes 20 damage! (HP: 23 -> 3)",
+        "With practiced ease, Hero 2 attacks Monster 1 for 20 damage.",
+        "Encounter: A caravan master pleads for protection from lurking bandits.",
+        "A hushed wind slips across Starting Tavern while Hero 1, Monster 1, Hero 2 exchange quick glances.",
+        "Hero 1 performs Backstab on Monster 1, reducing defense from 6 to 4",
+        "Damage Calculation:",
+        "- Incoming Damage: 10",
+        "- Target Defense: 4",
+        "- Final Damage: 10 - 4 = 6",
+        "Result: Monster 1 takes 6 damage! (HP: 3 -> 0)",
+        "Critical Event: Monster 1 has fallen!",
+        "Hero 1 sweeps toward Monster 1 and for 3 damage.",
+        "The skirmish resolves quickly and cleanly.",
+        "Battered yet grinning, the heroes secure the night's campfire tale."
+      ],
+      "is_final": true
+    }
+  ],
+  "conclusion": "Battered yet grinning, the heroes secure the night's campfire tale."
+}
