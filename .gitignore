@@ -195,3 +195,20 @@ logs/
 .AppleDouble
 .LSOverride
 ._*
+
+# cursor-coding-protocols installation files
+.cursor/
+.mcp-servers/
+mcp-jungle-gym/
+scripts/cursor-protocols-cli.js
+scripts/mcp-error-analyzer.sh
+scripts/mcp-test-runner.sh
+scripts/version-manager.js
+shared/
+.cursor-protocols-version.json
+package.json
+AGENTS.md
+_work_efforts_/
+
+# Session summaries and documentation
+SESSION_SUMMARY_*.md
