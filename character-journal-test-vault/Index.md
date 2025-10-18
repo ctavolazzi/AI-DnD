@@ -1,6 +1,6 @@
 # AI-DnD Game Index
 
-Last updated: 2025-10-18 07:08:01
+Last updated: 2025-10-18 07:49:38
 
 ## Characters
 
@@ -32,10 +32,10 @@ Notable events that have occurred
 - [[Scene 1]]
 - [[Scene 2]]
 - [[Scene 3]]
-- [[Skill Check Hero 1 - Intimidation (STR)]]
+- [[Skill Check Hero 1 - CHA]]
 - [[Skill Check Hero 1 - Perception (WIS)]]
-- [[Skill Check Hero 2 - CHA]]
 - [[Skill Check Hero 2 - Insight (WIS)]]
+- [[Skill Check Hero 2 - Perception (WIS)]]
 
 ## Sessions
 

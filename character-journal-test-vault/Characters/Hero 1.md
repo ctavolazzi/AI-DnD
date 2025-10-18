@@ -1,27 +1,27 @@
 ---
 name: Hero 1
-class: Fighter
+class: Cleric
 status: Active
-hp: 28
-max_hp: 28
-attack: 5
-defense: 1
+hp: 27
+max_hp: 27
+attack: 6
+defense: 2
 team: Player
 ---
 
 # Hero 1
 
-> Active - HP: 28/28
+> Active - HP: 27/27
 
 ## Character Stats
-- **Class**: Fighter
-- **HP**: 28/28
-- **Attack**: 5
-- **Defense**: 1
+- **Class**: Cleric
+- **HP**: 27/27
+- **Attack**: 6
+- **Defense**: 2
 - **Status**: Active
 
 ## Abilities
-- **Heavy Strike**
+- **Heal**
 
 ## Status Effects
 - No current status effects
@@ -30,7 +30,7 @@ team: Player
 - [[Hero 1's Journal]]
 
 ## Biography
-A brave Fighter on a grand adventure.
+A brave Cleric on a grand adventure.
 
 ## Inventory
 - No items

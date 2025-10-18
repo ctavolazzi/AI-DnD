@@ -1,19 +1,19 @@
 ---
 name: Scene 2
 type: Scene
-timestamp: 2025-10-18 07:07:58
+timestamp: 2025-10-18 07:47:14
 location: Starting Tavern
 ---
 
 # Scene 2
 
-*2025-10-18 07:07:58 at [[Starting Tavern]]*
+*2025-10-18 07:47:14 at [[Starting Tavern]]*
 
 ## Summary
 A new scene unfolds
 
 ## Detailed Description
-
+Dreary evening falls upon the Red Griffin Inn's dimly lit tavern.
 
 ## Participants
 - [[Hero 1]]

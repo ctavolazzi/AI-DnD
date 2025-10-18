@@ -1,22 +1,22 @@
 ---
-name: Skill Check: Hero 2 - CHA
+name: Skill Check: Hero 1 - CHA
 type: Skill Check
-timestamp: 2025-10-18 07:07:58
+timestamp: 2025-10-18 07:48:22
 location: Unknown Location
 ---
 
-# Skill Check: Hero 2 - CHA
+# Skill Check: Hero 1 - CHA
 
-*2025-10-18 07:07:58 at [[Unknown Location]]*
+*2025-10-18 07:48:22 at [[Unknown Location]]*
 
 ## Summary
-Hero 2 makes a CHA check
+Hero 1 makes a CHA check
 
 ## Detailed Description
-Hero 2 rolled 6 vs DC 10: FAILURE
+Hero 1 rolled 7 vs DC 10: FAILURE
 
 ## Participants
-- [[Hero 2]]
+- [[Hero 1]]
 
 ## Outcomes
 - No outcomes recorded

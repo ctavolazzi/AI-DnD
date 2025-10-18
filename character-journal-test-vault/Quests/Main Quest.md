@@ -2,15 +2,15 @@
 name: Main Quest
 difficulty: Medium
 status: Active
-started: 2025-10-18 07:07:55
+started: 2025-10-18 07:45:25
 ---
 
 # Main Quest
 
-> 
+> "The Last Stand of Eldrador: Defend the Wizard's Spire against the Dark Legion."
 
 ## Overview
-A grand adventure awaits: 
+A grand adventure awaits: "The Last Stand of Eldrador: Defend the Wizard's Spire against the Dark Legion."
 
 ## Status: Active
 

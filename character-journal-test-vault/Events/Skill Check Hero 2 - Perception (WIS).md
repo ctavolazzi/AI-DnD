@@ -1,22 +1,22 @@
 ---
-name: Skill Check: Hero 1 - Intimidation (STR)
+name: Skill Check: Hero 2 - Perception (WIS)
 type: Skill Check
-timestamp: 2025-10-18 07:07:58
+timestamp: 2025-10-18 07:48:47
 location: Unknown Location
 ---
 
-# Skill Check: Hero 1 - Intimidation (STR)
+# Skill Check: Hero 2 - Perception (WIS)
 
-*2025-10-18 07:07:58 at [[Unknown Location]]*
+*2025-10-18 07:48:47 at [[Unknown Location]]*
 
 ## Summary
-Hero 1 makes a Intimidation (STR) check
+Hero 2 makes a Perception (WIS) check
 
 ## Detailed Description
-Hero 1 rolled 17 vs DC 12: SUCCESS
+Hero 2 rolled 7 vs DC 12: FAILURE
 
 ## Participants
-- [[Hero 1]]
+- [[Hero 2]]
 
 ## Outcomes
 - No outcomes recorded

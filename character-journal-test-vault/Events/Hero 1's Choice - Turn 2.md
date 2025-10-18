@@ -1,20 +1,20 @@
 ---
 name: Hero 1's Choice - Turn 2
 type: Player Choice
-timestamp: 2025-10-18 07:07:58
+timestamp: 2025-10-18 07:47:36
 location: Starting Tavern
 ---
 
 # Hero 1's Choice - Turn 2
 
-*2025-10-18 07:07:58 at [[Starting Tavern]]*
+*2025-10-18 07:47:36 at [[Starting Tavern]]*
 
 ## Summary
 Hero 1 makes a decision
 
 ## Detailed Description
-Choice: Use your martial presence to intimidate potential threats
-Outcome: 
+Choice: Try to communicate with any nearby beings
+Outcome: The hero's words fall flat, met with only the eerie silence of the abandoned temple.
 
 ## Participants
 - [[Hero 1]]

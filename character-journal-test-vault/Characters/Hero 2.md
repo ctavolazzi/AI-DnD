@@ -2,22 +2,22 @@
 name: Hero 2
 class: Cleric
 status: Active
-hp: 45
-max_hp: 45
-attack: 10
-defense: 4
+hp: 48
+max_hp: 48
+attack: 15
+defense: 2
 team: Player
 ---
 
 # Hero 2
 
-> Active - HP: 45/45
+> Active - HP: 48/48
 
 ## Character Stats
 - **Class**: Cleric
-- **HP**: 45/45
-- **Attack**: 10
-- **Defense**: 4
+- **HP**: 48/48
+- **Attack**: 15
+- **Defense**: 2
 - **Status**: Active
 
 ## Abilities

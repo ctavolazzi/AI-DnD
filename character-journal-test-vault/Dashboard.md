@@ -5,7 +5,7 @@ aliases: [📊 Dashboard]
 # Game Dashboard
 
 > **Status**: Active Run in Progress
-> **Last Updated**: 2025-10-18 07:08:01
+> **Last Updated**: 2025-10-18 07:49:38
 
 ## Current Game
 
@@ -22,7 +22,7 @@ aliases: [📊 Dashboard]
 - [[Hero 2]]
 
 ## Recent Events
-- [[Skill Check: Hero 2 - Insight (WIS)]]
+- [[Skill Check: Hero 2 - Perception (WIS)]]
 - [[Hero 2's Choice - Turn 3]]
 - [[Adventure Conclusion]]
 

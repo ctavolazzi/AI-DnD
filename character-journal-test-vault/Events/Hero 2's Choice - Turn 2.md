@@ -1,20 +1,20 @@
 ---
 name: Hero 2's Choice - Turn 2
 type: Player Choice
-timestamp: 2025-10-18 07:07:58
+timestamp: 2025-10-18 07:47:58
 location: Starting Tavern
 ---
 
 # Hero 2's Choice - Turn 2
 
-*2025-10-18 07:07:58 at [[Starting Tavern]]*
+*2025-10-18 07:47:58 at [[Starting Tavern]]*
 
 ## Summary
 Hero 2 makes a decision
 
 ## Detailed Description
-Choice: Try to communicate with any nearby beings
-Outcome: 
+Choice: Seek divine guidance about the situation
+Outcome: A dark, swirling mist obscures Hero 2's vision, shattering their spiritual connection utterly.
 
 ## Participants
 - [[Hero 2]]

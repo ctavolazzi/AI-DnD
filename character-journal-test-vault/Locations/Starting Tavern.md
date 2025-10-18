@@ -1,7 +1,7 @@
 ---
 name: Starting Tavern
 type: Starting Area
-discovered: 2025-10-18 07:07:55
+discovered: 2025-10-18 07:46:01
 ---
 
 # Starting Tavern
