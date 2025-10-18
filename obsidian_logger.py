@@ -484,6 +484,43 @@ This is the central reference file for all {entity_type} in the game. This file 
 
         return name
 
+    def log_skill_check(self, check_data: Dict[str, Any], event_manager=None):
+        """
+        Log a skill check as an event.
+
+        Args:
+            check_data: Dictionary with skill check information
+            event_manager: Optional event manager for tracking
+        """
+        character = check_data.get("character", "Unknown")
+        ability = check_data.get("ability", "")
+        skill = check_data.get("skill", "")
+        total = check_data.get("total", 0)
+        dc = check_data.get("dc", 0)
+        success = check_data.get("success", False)
+
+        # Create skill check description
+        skill_str = f"{skill} ({ability})" if skill else ability
+        result_str = "SUCCESS" if success else "FAILURE"
+
+        event_data = {
+            "name": f"Skill Check: {character} - {skill_str}",
+            "type": "Skill Check",
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "summary": f"{character} makes a {skill_str} check",
+            "description": f"{character} rolled {total} vs DC {dc}: {result_str}",
+            "participants": [character],
+            "result": result_str,
+            "check_details": check_data
+        }
+
+        if event_manager:
+            self.log_event_with_event(event_data, event_manager)
+        else:
+            self.log_event(event_data)
+
+        return event_data
+
     def log_quest(self, quest_data: Dict[str, Any]):
         """
         Log a quest to the vault.

@@ -51,3 +51,138 @@ class NarrativeEngine:
     def generate_conclusion(self):
         prompt = "Conclude this D&D adventure with an epic final scene."
         return self._call_ollama(prompt)
+
+    def generate_player_choices(self, player_name: str, char_class: str,
+                               location: str, context: str, num_choices: int = 3) -> list:
+        """
+        Generate meaningful choices for a player character.
+
+        Args:
+            player_name: Name of the player
+            char_class: Character's class
+            location: Current location
+            context: Current situation context
+            num_choices: Number of choices to generate
+
+        Returns:
+            List of choice dictionaries
+        """
+        # For now, return predefined contextual choices
+        # In a full implementation, this would call the AI
+
+        base_choices = [
+            {
+                "id": "investigate",
+                "text": "Investigate the surroundings carefully",
+                "type": "action",
+                "requires_check": True,
+                "ability": "WIS",
+                "skill": "Perception",
+                "dc": 12
+            },
+            {
+                "id": "talk",
+                "text": "Try to communicate with any nearby beings",
+                "type": "dialogue",
+                "requires_check": True,
+                "ability": "CHA",
+                "skill": None,
+                "dc": 10
+            },
+            {
+                "id": "prepare",
+                "text": "Take a defensive stance and prepare for danger",
+                "type": "tactical",
+                "requires_check": False
+            },
+            {
+                "id": "search",
+                "text": "Search for useful items or resources",
+                "type": "action",
+                "requires_check": True,
+                "ability": "INT",
+                "skill": "Investigation",
+                "dc": 13
+            },
+            {
+                "id": "rest",
+                "text": "Take a moment to rest and recover",
+                "type": "rest",
+                "requires_check": False
+            }
+        ]
+
+        # Customize based on class
+        class_specific = {
+            "Fighter": {
+                "id": "intimidate",
+                "text": "Use your martial presence to intimidate potential threats",
+                "type": "social",
+                "requires_check": True,
+                "ability": "STR",
+                "skill": "Intimidation",
+                "dc": 12
+            },
+            "Wizard": {
+                "id": "arcana",
+                "text": "Examine the area for magical traces or anomalies",
+                "type": "knowledge",
+                "requires_check": True,
+                "ability": "INT",
+                "skill": "Arcana",
+                "dc": 14
+            },
+            "Rogue": {
+                "id": "stealth",
+                "text": "Move stealthily to scout ahead",
+                "type": "stealth",
+                "requires_check": True,
+                "ability": "DEX",
+                "skill": "Stealth",
+                "dc": 13
+            },
+            "Cleric": {
+                "id": "insight",
+                "text": "Seek divine guidance about the situation",
+                "type": "divine",
+                "requires_check": True,
+                "ability": "WIS",
+                "skill": "Insight",
+                "dc": 11
+            }
+        }
+
+        # Include class-specific choice if available
+        choices = base_choices[:num_choices-1]
+        if char_class in class_specific:
+            choices.append(class_specific[char_class])
+        else:
+            choices.append(base_choices[num_choices-1])
+
+        return choices[:num_choices]
+
+    def describe_choice_outcome(self, player_name: str, choice: dict,
+                               success: bool = None, context: str = "") -> str:
+        """
+        Generate a narrative description of a choice outcome.
+
+        Args:
+            player_name: Name of the player
+            choice: The choice that was made
+            success: Whether a skill check succeeded (if applicable)
+            context: Additional context
+
+        Returns:
+            Narrative description of the outcome
+        """
+        choice_text = choice.get("text", "takes action")
+
+        if choice.get("requires_check") and success is not None:
+            if success:
+                prompt = f"{player_name} successfully {choice_text}. Describe the positive outcome in 15 words."
+            else:
+                prompt = f"{player_name} attempts to {choice_text} but fails. Describe the setback in 15 words."
+        else:
+            prompt = f"{player_name} {choice_text}. Describe what happens in 15 words."
+
+        return self._call_ollama(prompt)

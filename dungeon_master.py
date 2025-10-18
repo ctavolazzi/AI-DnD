@@ -11,6 +11,7 @@ from dnd_game import DnDGame, GameError, Character
 from obsidian_logger import ObsidianLogger
 from game_event_manager import GameEventManager
 from game_manager import GameManager
+from quest_system import QuestManager, QuestObjective
 
 class DungeonMaster:
     """
@@ -33,6 +34,7 @@ class DungeonMaster:
         self.obsidian = None
         self.event_manager = None
         self.game_manager = None
+        self.quest_manager = None
         self.game = None
         self.logger = logging.getLogger("dungeon_master")
 
@@ -124,6 +126,10 @@ class DungeonMaster:
         # Initialize game manager
         self.game_manager = GameManager(self.obsidian, self.event_manager)
         self.logger.info("Initialized game manager for entity tracking and theory of mind")
+
+        # Initialize quest manager
+        self.quest_manager = QuestManager()
+        self.logger.info("Initialized quest manager for quest tracking")
 
         # Update Current Run.md immediately - ensure it exists
         self.update_current_run(force_create=True)
@@ -332,6 +338,15 @@ aliases: [📊 Dashboard]
             self.logger.info("Quest logged to Obsidian: Main Quest")
             self.current_run_data["quest"] = "Main Quest"
 
+            # Create structured quest in quest manager
+            if self.quest_manager:
+                starter_quest = self.quest_manager.generate_starter_quest(
+                    location=self.game.current_location,
+                    characters=[p.name for p in self.game.players]
+                )
+                self.current_run_data["quest_id"] = starter_quest.quest_id
+                self.logger.info(f"Created structured quest: {starter_quest.title}")
+
             # After quest is created, now process locations and characters
             # Log initial world locations to Obsidian
             if hasattr(self.game, 'current_location'):
@@ -470,6 +485,9 @@ aliases: [📊 Dashboard]
                 )
                 self.logger.info(f"\nScene: {scene}")
 
+                # Increment scene counter
+                self.game.scene_counter += 1
+
                 # Log the scene as an event
                 scene_data = {
                     "name": f"Scene {self.game.scene_counter}",
@@ -482,43 +500,128 @@ aliases: [📊 Dashboard]
                 }
                 self.obsidian.log_event_with_event(scene_data, self.event_manager)
 
-                # Process character actions
+                # Display active quest objectives
+                if self.quest_manager:
+                    active_objectives = self.quest_manager.get_all_active_objectives()
+                    if active_objectives:
+                        self.logger.info("\n=== ACTIVE OBJECTIVES ===")
+                        for quest_title, objective in active_objectives:
+                            progress_str = f"({objective.progress}/{objective.quantity})" if objective.quantity > 1 else ""
+                            self.logger.info(f"  - {objective.description} {progress_str}")
+                        self.logger.info("")
+
+                # Process character actions with choices
                 for player in self.game.players:
                     if not player.alive:
                         continue
 
-                    # Generate player actions - this requires a method in DnDGame
-                    try:
-                        action = self.game.generate_player_action(player)
-                        self.logger.info(f"{player.name}: {action}")
+                    self.logger.info(f"\n--- {player.name}'s Turn ---")
 
-                        # Log as an event
-                        action_data = {
-                            "name": f"Action {player.name} Turn {turn+1}",
-                            "type": "Character Action",
-                            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "location": self.game.current_location,
-                            "summary": f"{player.name} takes action",
-                            "description": action,
-                            "participants": [player.name],
-                            "related_quests": ["Main Quest"]  # Add Main Quest by default
-                        }
-                        self.obsidian.log_event_with_event(action_data, self.event_manager)
+                    # Generate player choices
+                    choices = self.game.narrative_engine.generate_player_choices(
+                        player.name,
+                        player.char_class,
+                        self.game.current_location,
+                        scene
+                    )
 
-                        # Theory of mind: Notify other characters at this location
-                        self.game_manager.notify_entities_at_location(
-                            self.game.current_location,
-                            action_data,
-                            exclude=[player.name]
+                    # Display choices (in actual game, player would select)
+                    self.logger.info(f"\n{player.name} considers the options:")
+                    for i, choice in enumerate(choices, 1):
+                        self.logger.info(f"  {i}. {choice['text']}")
+
+                    # AI automatically selects a choice (for autonomous gameplay)
+                    selected_choice = random.choice(choices)
+                    self.logger.info(f"\n{player.name} chooses: {selected_choice['text']}")
+
+                    # Resolve the choice
+                    success = None
+                    check_data = None
+
+                    if selected_choice.get('requires_check'):
+                        # Make ability check
+                        ability = selected_choice.get('ability', 'WIS')
+                        skill = selected_choice.get('skill')
+                        dc = selected_choice.get('dc', 12)
+
+                        check_data = player.ability_check(ability, dc, skill)
+                        success = check_data['success']
+
+                        # Log the skill check
+                        if self.obsidian:
+                            self.obsidian.log_skill_check(check_data, self.event_manager)
+
+                    # Generate outcome narrative
+                    outcome = self.game.narrative_engine.describe_choice_outcome(
+                        player.name,
+                        selected_choice,
+                        success,
+                        scene
+                    )
+                    self.logger.info(f"\nOutcome: {outcome}")
+
+                    # Log the choice as an event
+                    action_data = {
+                        "name": f"{player.name}'s Choice - Turn {turn+1}",
+                        "type": "Player Choice",
+                        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "location": self.game.current_location,
+                        "summary": f"{player.name} makes a decision",
+                        "description": f"Choice: {selected_choice['text']}\nOutcome: {outcome}",
+                        "participants": [player.name],
+                        "related_quests": ["Main Quest"],
+                        "choice_data": selected_choice,
+                        "skill_check": check_data
+                    }
+                    self.obsidian.log_event_with_event(action_data, self.event_manager)
+
+                    # Update quest progress
+                    if self.quest_manager:
+                        quest_updated = self.quest_manager.check_objective_triggers(
+                            "player_action",
+                            {"player": player.name, "choice": selected_choice, "success": success}
                         )
-                    except AttributeError:
-                        # Handle missing method gracefully
-                        self.logger.warning(f"Failed to generate action for {player.name}: method not implemented")
+                        if quest_updated:
+                            self.logger.info(f"Quest objectives updated!")
 
-                # Handle enemies and encounters (simplified for now)
+                    # Theory of mind: Notify other characters at this location
+                    self.game_manager.notify_entities_at_location(
+                        self.game.current_location,
+                        action_data,
+                        exclude=[player.name]
+                    )
+
+                # Handle enemies and encounters
                 if hasattr(self.game, 'process_encounter') and random.random() < 0.3:  # 30% chance per turn
-                    self.logger.info("Processing random encounter...")
+                    self.logger.info("\n=== ENCOUNTER ===")
                     self.game.process_encounter()
+
+                    # Update quest progress for combat
+                    if self.quest_manager:
+                        quest_updated = self.quest_manager.check_objective_triggers(
+                            "combat_victory",
+                            {"location": self.game.current_location}
+                        )
+
+                # Check quest completion
+                if self.quest_manager:
+                    for quest in self.quest_manager.get_active_quests():
+                        if quest.check_completion():
+                            self.logger.info(f"\n🎉 QUEST COMPLETED: {quest.title} 🎉")
+                            self.logger.info(f"Rewards: {quest.rewards}")
+
+                            # Log quest completion
+                            quest_complete_data = {
+                                "name": f"Quest Complete: {quest.title}",
+                                "type": "Quest Completion",
+                                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                "location": self.game.current_location,
+                                "summary": f"Quest '{quest.title}' has been completed!",
+                                "description": f"The party has completed {quest.title}. Rewards: {quest.rewards}",
+                                "participants": [p.name for p in self.game.players],
+                                "quest_data": quest.to_dict()
+                            }
+                            self.obsidian.log_event_with_event(quest_complete_data, self.event_manager)
 
                 # Update Current Run.md and Dashboard after each turn
                 self.update_current_run()

@@ -39,6 +39,15 @@ class Character:
         self.alive = True
         self.status_effects: List[str] = []
 
+        # Initialize D&D ability scores based on class
+        self.ability_scores = self._generate_ability_scores(char_class)
+
+        # Initialize proficiency bonus (starts at +2)
+        self.proficiency_bonus = 2
+
+        # Initialize skill proficiencies based on class
+        self.skill_proficiencies = self._get_class_proficiencies(char_class)
+
         # Initialize abilities
         self.abilities = {}
         if char_class == "Fighter":
@@ -58,6 +67,106 @@ class Character:
             self.abilities["Rage"] = self._rage
         elif char_class == "Goblin":
             self.abilities["Fury"] = self._fury
+
+    def _generate_ability_scores(self, char_class: str) -> dict:
+        """Generate D&D ability scores based on class."""
+        if char_class == "Fighter":
+            return {"STR": 16, "DEX": 12, "CON": 14, "INT": 10, "WIS": 12, "CHA": 10}
+        elif char_class == "Wizard":
+            return {"STR": 8, "DEX": 12, "CON": 12, "INT": 16, "WIS": 14, "CHA": 10}
+        elif char_class == "Rogue":
+            return {"STR": 10, "DEX": 16, "CON": 12, "INT": 12, "WIS": 12, "CHA": 14}
+        elif char_class == "Cleric":
+            return {"STR": 12, "DEX": 10, "CON": 14, "INT": 10, "WIS": 16, "CHA": 12}
+        else:  # Monsters
+            return {"STR": 12, "DEX": 12, "CON": 12, "INT": 10, "WIS": 10, "CHA": 10}
+
+    def _get_class_proficiencies(self, char_class: str) -> List[str]:
+        """Get skill proficiencies based on class."""
+        proficiencies = {
+            "Fighter": ["Athletics", "Intimidation"],
+            "Wizard": ["Arcana", "Investigation"],
+            "Rogue": ["Stealth", "Sleight of Hand", "Perception"],
+            "Cleric": ["Medicine", "Insight"],
+        }
+        return proficiencies.get(char_class, ["Perception"])
+
+    def get_ability_modifier(self, ability: str) -> int:
+        """Calculate D&D ability modifier from ability score."""
+        score = self.ability_scores.get(ability, 10)
+        return (score - 10) // 2
+
+    @staticmethod
+    def roll_d20(advantage: bool = False, disadvantage: bool = False) -> int:
+        """Roll a d20 with optional advantage/disadvantage."""
+        roll1 = random.randint(1, 20)
+
+        if advantage and not disadvantage:
+            roll2 = random.randint(1, 20)
+            result = max(roll1, roll2)
+            logger.info(f"Rolling with advantage: {roll1}, {roll2} -> {result}")
+            return result
+        elif disadvantage and not advantage:
+            roll2 = random.randint(1, 20)
+            result = min(roll1, roll2)
+            logger.info(f"Rolling with disadvantage: {roll1}, {roll2} -> {result}")
+            return result
+        else:
+            logger.info(f"Rolling d20: {roll1}")
+            return roll1
+
+    def ability_check(self, ability: str, dc: int, skill: str = None,
+                     advantage: bool = False, disadvantage: bool = False) -> dict:
+        """
+        Make an ability check against a DC.
+
+        Args:
+            ability: The ability to check (STR, DEX, CON, INT, WIS, CHA)
+            dc: Difficulty Class to beat
+            skill: Optional skill for proficiency bonus
+            advantage: Whether to roll with advantage
+            disadvantage: Whether to roll with disadvantage
+
+        Returns:
+            Dict with roll, modifier, total, success, and description
+        """
+        roll = self.roll_d20(advantage, disadvantage)
+        modifier = self.get_ability_modifier(ability)
+
+        # Add proficiency if skilled
+        if skill and skill in self.skill_proficiencies:
+            modifier += self.proficiency_bonus
+            proficient = True
+        else:
+            proficient = False
+
+        total = roll + modifier
+        success = total >= dc
+
+        result = {
+            "character": self.name,
+            "ability": ability,
+            "skill": skill,
+            "roll": roll,
+            "modifier": modifier,
+            "total": total,
+            "dc": dc,
+            "success": success,
+            "proficient": proficient,
+            "natural_20": roll == 20,
+            "natural_1": roll == 1
+        }
+
+        # Log the check
+        proficiency_str = f" ({skill}, proficient)" if proficient else f" ({skill})" if skill else ""
+        logger.info(f"{self.name} {ability} check{proficiency_str}: {roll} + {modifier} = {total} vs DC {dc} -> {'SUCCESS' if success else 'FAILURE'}")
+
+        if roll == 20:
+            logger.info(f"NATURAL 20! Critical success!")
+        elif roll == 1:
+            logger.info(f"NATURAL 1! Critical failure!")
+
+        return result
 
     def take_damage(self, damage: int) -> None:
         if damage < 0:
@@ -173,6 +282,7 @@ class DnDGame:
         self.narrative_engine = NarrativeEngine(model)
         self.current_location = "Starting Tavern"
         self.current_quest = None
+        self.scene_counter = 0
         if auto_create_characters:
             self._create_characters(generate_intros=False)  # Don't generate intros during init
 
