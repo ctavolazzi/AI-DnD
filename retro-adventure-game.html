@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI D&D - The Emberpeak Expedition</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        body {
+            font-family: 'Courier New', 'Courier', monospace;
+            background: #000;
+            color: #0f0;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* CRT Effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Scanline effect */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(0, 255, 0, 0.1);
+            z-index: 999;
+            animation: scanline 6s linear infinite;
+            pointer-events: none;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 10px;
+            padding: 20px;
+            height: 100vh;
+            background: linear-gradient(to bottom, #001a00 0%, #000a00 100%);
+            animation: flicker 0.15s infinite;
+        }
+
+        .panel {
+            background: rgba(0, 20, 0, 0.8);
+            border: 3px solid #0f0;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow:
+                inset 0 0 20px rgba(0, 255, 0, 0.1),
+                0 0 20px rgba(0, 255, 0, 0.3);
+            position: relative;
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #0f0, #0a0, #0f0);
+            border-radius: 5px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .panel-title {
+            color: #0ff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #0ff;
+            border-bottom: 2px solid #0f0;
+            padding-bottom: 5px;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 32px;
+            color: #ff0;
+            text-shadow:
+                0 0 10px #ff0,
+                0 0 20px #ff0,
+                0 0 30px #ff0;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #0ff;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+
+        /* Main Display Area */
+        .main-display {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .viewport {
+            height: 250px;
+            background: #000;
+            border: 2px solid #0a0;
+            padding: 10px;
+            font-size: 13px;
+            line-height: 1.4;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .viewport::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .viewport::-webkit-scrollbar-track {
+            background: #001a00;
+        }
+
+        .viewport::-webkit-scrollbar-thumb {
+            background: #0f0;
+            border-radius: 4px;
+        }
+
+        .text-line {
+            margin-bottom: 8px;
+            color: #0f0;
+        }
+
+        .text-line.combat {
+            color: #ff0;
+        }
+
+        .text-line.damage {
+            color: #f00;
+        }
+
+        .text-line.success {
+            color: #0ff;
+        }
+
+        .text-line.quest {
+            color: #f0f;
+        }
+
+        .cursor::after {
+            content: "█";
+            animation: blink 1s infinite;
+        }
+
+        /* Navigation */
+        .navigation {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            height: 200px;
+        }
+
+        .nav-button {
+            background: linear-gradient(to bottom, #0a4000, #052000);
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-shadow: 0 0 5px #0f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-button:hover {
+            background: linear-gradient(to bottom, #0f6000, #083000);
+            box-shadow: 0 0 15px #0f0;
+            transform: scale(1.02);
+        }
+
+        .nav-button:active {
+            background: #0f0;
+            color: #000;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        #north { grid-column: 2; grid-row: 1; }
+        #west { grid-column: 1; grid-row: 2; }
+        #examine { grid-column: 2; grid-row: 2; background: linear-gradient(to bottom, #404000, #202000); border-color: #ff0; color: #ff0; }
+        #east { grid-column: 3; grid-row: 2; }
+        #south { grid-column: 2; grid-row: 3; }
+
+        /* Map */
+        .map-display {
+            height: 200px;
+            background: #000;
+            border: 2px solid #0a0;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 30px);
+            grid-template-rows: repeat(5, 30px);
+            gap: 2px;
+        }
+
+        .map-cell {
+            background: #001a00;
+            border: 1px solid #0a0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            position: relative;
+        }
+
+        .map-cell.visited {
+            background: #003300;
+        }
+
+        .map-cell.current {
+            background: #0f0;
+            color: #000;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        .map-cell.unexplored {
+            background: #000;
+            border-color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Character Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .stat-label {
+            color: #0ff;
+        }
+
+        .stat-value {
+            color: #ff0;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .hp-bar-container {
+            grid-column: 1 / -1;
+            background: #000;
+            border: 1px solid #0a0;
+            height: 20px;
+            margin-top: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hp-bar {
+            height: 100%;
+            background: linear-gradient(to right, #0f0, #0a0);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .hp-bar.low {
+            background: linear-gradient(to right, #ff0, #cc0);
+        }
+
+        .hp-bar.critical {
+            background: linear-gradient(to right, #f00, #a00);
+            animation: blink 0.5s infinite;
+        }
+
+        /* Inventory */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .inventory-item {
+            background: #001a00;
+            border: 1px solid #0a0;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .inventory-item:hover {
+            background: #003300;
+            border-color: #0f0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .item-name {
+            color: #ff0;
+            font-weight: bold;
+        }
+
+        .item-desc {
+            color: #0a0;
+            font-size: 10px;
+        }
+
+        /* Action Buttons */
+        .action-panel {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .action-button {
+            background: linear-gradient(to bottom, #404000, #202000);
+            border: 2px solid #ff0;
+            color: #ff0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-shadow: 0 0 5px #ff0;
+        }
+
+        .action-button:hover {
+            background: linear-gradient(to bottom, #606000, #303000);
+            box-shadow: 0 0 15px #ff0;
+            transform: translateY(-2px);
+        }
+
+        .action-button:active {
+            background: #ff0;
+            color: #000;
+            transform: translateY(0);
+        }
+
+        .action-button.primary {
+            background: linear-gradient(to bottom, #004040, #002020);
+            border-color: #0ff;
+            color: #0ff;
+            text-shadow: 0 0 5px #0ff;
+        }
+
+        .action-button.primary:hover {
+            box-shadow: 0 0 15px #0ff;
+        }
+
+        .action-button.danger {
+            background: linear-gradient(to bottom, #400000, #200000);
+            border-color: #f00;
+            color: #f00;
+            text-shadow: 0 0 5px #f00;
+        }
+
+        .action-button.danger:hover {
+            box-shadow: 0 0 15px #f00;
+        }
+
+        /* Choice Buttons */
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .choice-button {
+            background: #001a00;
+            border: 2px solid #0a0;
+            color: #0f0;
+            padding: 10px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .choice-button:hover {
+            background: #003300;
+            border-color: #0f0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            transform: translateX(5px);
+        }
+
+        .choice-button::before {
+            content: "> ";
+            color: #ff0;
+        }
+
+        /* Quest Panel */
+        .quest-objectives {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .objective {
+            margin: 5px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .objective::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #ff0;
+        }
+
+        .objective.completed {
+            color: #0a0;
+            text-decoration: line-through;
+        }
+
+        .objective.completed::before {
+            content: "✓";
+            color: #0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Header -->
+        <div class="header panel">
+            <div class="game-title">⚔ THE EMBERPEAK EXPEDITION ⚔</div>
+            <div class="subtitle">AN AI-POWERED DUNGEON & DRAGONS ADVENTURE</div>
+        </div>
+
+        <!-- Main Display Area -->
+        <div class="main-display">
+            <!-- Viewport -->
+            <div class="panel">
+                <div class="panel-title">[ ADVENTURE LOG ]</div>
+                <div class="viewport" id="viewport">
+                    <div class="text-line quest">Welcome, brave adventurer!</div>
+                    <div class="text-line quest">Your quest: Rescue miners trapped beneath Emberpeak and seal the shattered rune.</div>
+                    <div class="text-line">You find yourself in a dimly lit tavern. The air is thick with pipe smoke and hushed conversations.</div>
+                    <div class="text-line">Two seasoned adventurers sit at the bar - a cunning Rogue and a battle-hardened Fighter.</div>
+                    <div class="text-line">They turn to greet you as you approach...</div>
+                    <div class="text-line cursor"></div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="panel">
+                <div class="panel-title">[ NAVIGATION ]</div>
+                <div class="navigation">
+                    <button class="nav-button" id="north">▲<br>NORTH</button>
+                    <button class="nav-button" id="west">◄<br>WEST</button>
+                    <button class="nav-button" id="examine">👁<br>LOOK</button>
+                    <button class="nav-button" id="east">►<br>EAST</button>
+                    <button class="nav-button" id="south">▼<br>SOUTH</button>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="panel">
+                <div class="panel-title">[ MAP ]</div>
+                <div class="map-display">
+                    <div class="map-grid" id="map"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Character Stats -->
+            <div class="panel">
+                <div class="panel-title">[ CHARACTER ]</div>
+                <div class="stats-grid">
+                    <div class="stat-label">Name:</div>
+                    <div class="stat-value" id="char-name">Hero 1</div>
+
+                    <div class="stat-label">Class:</div>
+                    <div class="stat-value" id="char-class">Rogue</div>
+
+                    <div class="stat-label">Level:</div>
+                    <div class="stat-value">3</div>
+
+                    <div class="hp-bar-container">
+                        <div class="hp-bar" id="hp-bar" style="width: 100%">
+                            <span id="hp-text">50 / 50 HP</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-label">STR:</div>
+                    <div class="stat-value">14 (+2)</div>
+
+                    <div class="stat-label">DEX:</div>
+                    <div class="stat-value">18 (+4)</div>
+
+                    <div class="stat-label">CON:</div>
+                    <div class="stat-value">12 (+1)</div>
+                </div>
+            </div>
+
+            <!-- Quest Info -->
+            <div class="panel">
+                <div class="panel-title">[ QUEST LOG ]</div>
+                <div class="quest-objectives">
+                    <div class="objective" id="obj1">Gather your party</div>
+                    <div class="objective" id="obj2">Reach Emberpeak Mines</div>
+                    <div class="objective" id="obj3">Rescue the trapped miners</div>
+                    <div class="objective" id="obj4">Seal the shattered rune</div>
+                </div>
+            </div>
+
+            <!-- Inventory -->
+            <div class="panel">
+                <div class="panel-title">[ INVENTORY ]</div>
+                <div class="inventory-grid" id="inventory">
+                    <div class="inventory-item">
+                        <div class="item-name">Dagger</div>
+                        <div class="item-desc">1d4 dmg</div>
+                    </div>
+                    <div class="inventory-item">
+                        <div class="item-name">Lockpicks</div>
+                        <div class="item-desc">+2 lockpick</div>
+                    </div>
+                    <div class="inventory-item">
+                        <div class="item-name">Rope (50ft)</div>
+                        <div class="item-desc">Useful tool</div>
+                    </div>
+                    <div class="inventory-item">
+                        <div class="item-name">Torch</div>
+                        <div class="item-desc">Light source</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="action-panel">
+            <button class="action-button primary" id="talk-btn">💬 TALK</button>
+            <button class="action-button" id="attack-btn">⚔ ATTACK</button>
+            <button class="action-button" id="skill-btn">🎯 SKILL CHECK</button>
+            <button class="action-button danger" id="rest-btn">🛌 REST</button>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            currentLocation: { x: 3, y: 2 },
+            playerHP: 50,
+            maxHP: 50,
+            turn: 0,
+            locations: {
+                '3,2': { name: 'Starting Tavern', visited: true, description: 'A warm tavern filled with adventurers.' },
+                '3,1': { name: 'Town Square', visited: false, description: 'The bustling heart of the village.' },
+                '4,2': { name: 'Market Street', visited: false, description: 'Merchants hawk their wares.' },
+                '2,2': { name: 'Blacksmith', visited: false, description: 'The clang of hammer on anvil rings out.' },
+                '3,3': { name: 'City Gates', visited: false, description: 'The path leads to adventure beyond.' },
+                '3,4': { name: 'Forest Path', visited: false, description: 'Dark woods surround the winding trail.' },
+                '4,4': { name: 'Hidden Grove', visited: false, description: 'A mystical clearing pulses with energy.' },
+                '2,4': { name: 'Bandit Camp', visited: false, description: 'Danger lurks in this makeshift hideout.' },
+            },
+            inventory: ['Dagger', 'Lockpicks', 'Rope', 'Torch'],
+            objectives: [
+                { id: 'obj1', text: 'Gather your party', completed: false },
+                { id: 'obj2', text: 'Reach Emberpeak Mines', completed: false },
+                { id: 'obj3', text: 'Rescue the trapped miners', completed: false },
+                { id: 'obj4', text: 'Seal the shattered rune', completed: false }
+            ]
+        };
+
+        // Initialize map
+        function initMap() {
+            const mapContainer = document.getElementById('map');
+            for (let y = 0; y < 5; y++) {
+                for (let x = 0; x < 7; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'map-cell unexplored';
+                    cell.id = `map-${x}-${y}`;
+
+                    const locationKey = `${x},${y}`;
+                    if (gameState.locations[locationKey]) {
+                        if (gameState.locations[locationKey].visited) {
+                            cell.classList.add('visited');
+                            cell.classList.remove('unexplored');
+                        }
+                        if (x === gameState.currentLocation.x && y === gameState.currentLocation.y) {
+                            cell.classList.add('current');
+                            cell.textContent = '@';
+                        }
+                    }
+
+                    mapContainer.appendChild(cell);
+                }
+            }
+        }
+
+        // Update map
+        function updateMap() {
+            document.querySelectorAll('.map-cell').forEach(cell => {
+                cell.classList.remove('current');
+            });
+
+            const currentCell = document.getElementById(`map-${gameState.currentLocation.x}-${gameState.currentLocation.y}`);
+            if (currentCell) {
+                currentCell.classList.add('current');
+                currentCell.classList.remove('unexplored');
+                currentCell.classList.add('visited');
+                currentCell.textContent = '@';
+            }
+        }
+
+        // Add text to viewport
+        function addText(text, className = '') {
+            const viewport = document.getElementById('viewport');
+            const cursor = document.querySelector('.cursor');
+
+            const line = document.createElement('div');
+            line.className = 'text-line ' + className;
+            line.textContent = text;
+
+            viewport.insertBefore(line, cursor);
+            viewport.scrollTop = viewport.scrollHeight;
+        }
+
+        // Navigation
+        function move(direction) {
+            const { x, y } = gameState.currentLocation;
+            let newX = x, newY = y;
+
+            switch(direction) {
+                case 'north': newY--; break;
+                case 'south': newY++; break;
+                case 'east': newX++; break;
+                case 'west': newX--; break;
+            }
+
+            const locationKey = `${newX},${newY}`;
+
+            if (gameState.locations[locationKey]) {
+                gameState.currentLocation = { x: newX, y: newY };
+                const location = gameState.locations[locationKey];
+
+                if (!location.visited) {
+                    location.visited = true;
+                    addText(`You discover: ${location.name}!`, 'success');
+                } else {
+                    addText(`You move to: ${location.name}`);
+                }
+
+                addText(location.description);
+                updateMap();
+
+                // Random encounter chance
+                if (Math.random() < 0.3) {
+                    setTimeout(() => {
+                        triggerEncounter();
+                    }, 1000);
+                }
+            } else {
+                addText("You can't go that way.", 'damage');
+            }
+        }
+
+        // Trigger random encounter
+        function triggerEncounter() {
+            const encounters = [
+                { text: "A wild goblin appears!", enemy: "Goblin", hp: 15 },
+                { text: "You spot a skeleton warrior!", enemy: "Skeleton", hp: 20 },
+                { text: "An orc blocks your path!", enemy: "Orc", hp: 25 }
+            ];
+
+            const encounter = encounters[Math.floor(Math.random() * encounters.length)];
+            addText(encounter.text, 'combat');
+            addText(`${encounter.enemy} HP: ${encounter.hp}`, 'combat');
+
+            // Show combat choices
+            showCombatChoices(encounter);
+        }
+
+        // Show combat choices
+        function showCombatChoices(encounter) {
+            const viewport = document.getElementById('viewport');
+            const choicesDiv = document.createElement('div');
+            choicesDiv.className = 'choices';
+
+            const attackBtn = document.createElement('button');
+            attackBtn.className = 'choice-button';
+            attackBtn.textContent = 'Attack with your dagger';
+            attackBtn.onclick = () => {
+                const damage = Math.floor(Math.random() * 6) + 3;
+                addText(`You strike for ${damage} damage!`, 'combat');
+                encounter.hp -= damage;
+
+                if (encounter.hp <= 0) {
+                    addText(`${encounter.enemy} defeated!`, 'success');
+                    addText('You gain 50 XP!', 'success');
+                } else {
+                    const enemyDamage = Math.floor(Math.random() * 4) + 1;
+                    addText(`${encounter.enemy} attacks back for ${enemyDamage} damage!`, 'damage');
+                    updateHP(gameState.playerHP - enemyDamage);
+                }
+
+                choicesDiv.remove();
+            };
+
+            const skillBtn = document.createElement('button');
+            skillBtn.className = 'choice-button';
+            skillBtn.textContent = 'Attempt to sneak past (DEX check)';
+            skillBtn.onclick = () => {
+                const roll = Math.floor(Math.random() * 20) + 1;
+                const total = roll + 4; // DEX modifier
+
+                addText(`You roll ${roll} + 4 (DEX) = ${total}`, 'success');
+
+                if (total >= 12) {
+                    addText('Success! You slip past unnoticed.', 'success');
+                } else {
+                    addText('Failed! Combat is inevitable!', 'damage');
+                    const enemyDamage = Math.floor(Math.random() * 4) + 1;
+                    addText(`${encounter.enemy} attacks for ${enemyDamage} damage!`, 'damage');
+                    updateHP(gameState.playerHP - enemyDamage);
+                }
+
+                choicesDiv.remove();
+            };
+
+            choicesDiv.appendChild(attackBtn);
+            choicesDiv.appendChild(skillBtn);
+            viewport.appendChild(choicesDiv);
+        }
+
+        // Update HP
+        function updateHP(newHP) {
+            gameState.playerHP = Math.max(0, Math.min(newHP, gameState.maxHP));
+            const hpBar = document.getElementById('hp-bar');
+            const hpText = document.getElementById('hp-text');
+            const percent = (gameState.playerHP / gameState.maxHP) * 100;
+
+            hpBar.style.width = percent + '%';
+            hpText.textContent = `${gameState.playerHP} / ${gameState.maxHP} HP`;
+
+            hpBar.className = 'hp-bar';
+            if (percent < 25) hpBar.classList.add('critical');
+            else if (percent < 50) hpBar.classList.add('low');
+
+            if (gameState.playerHP <= 0) {
+                addText('You have been defeated!', 'damage');
+                addText('Game Over. Refresh to try again.', 'damage');
+            }
+        }
+
+        // Action buttons
+        document.getElementById('talk-btn').onclick = () => {
+            const dialogues = [
+                "The Fighter nods: 'We should head to the mines soon.'",
+                "The Rogue whispers: 'I heard strange sounds from the east...'",
+                "The innkeeper warns: 'Dangerous times, dangerous roads.'",
+                "A stranger mutters: 'The rune... it calls to me...'"
+            ];
+            addText(dialogues[Math.floor(Math.random() * dialogues.length)], 'success');
+        };
+
+        document.getElementById('attack-btn').onclick = () => {
+            addText("There's nothing to attack here. Try moving to find encounters!", 'damage');
+        };
+
+        document.getElementById('skill-btn').onclick = () => {
+            const roll = Math.floor(Math.random() * 20) + 1;
+            const skills = ['Perception', 'Investigation', 'Stealth', 'Sleight of Hand'];
+            const skill = skills[Math.floor(Math.random() * skills.length)];
+            const bonus = Math.floor(Math.random() * 5) + 1;
+            const total = roll + bonus;
+
+            addText(`${skill} Check: d20(${roll}) + ${bonus} = ${total}`, 'success');
+
+            if (total >= 15) {
+                addText('Critical Success! You discover a hidden passage!', 'success');
+            } else if (total >= 10) {
+                addText('Success! You notice something interesting...', 'success');
+            } else {
+                addText('You find nothing of note.', '');
+            }
+        };
+
+        document.getElementById('rest-btn').onclick = () => {
+            const healed = Math.min(gameState.maxHP - gameState.playerHP, 20);
+            updateHP(gameState.playerHP + healed);
+            addText(`You take a short rest and recover ${healed} HP.`, 'success');
+        };
+
+        document.getElementById('examine').onclick = () => {
+            const key = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
+            const location = gameState.locations[key];
+            if (location) {
+                addText(`You examine ${location.name}...`);
+                addText(location.description);
+            }
+        };
+
+        // Navigation buttons
+        document.getElementById('north').onclick = () => move('north');
+        document.getElementById('south').onclick = () => move('south');
+        document.getElementById('east').onclick = () => move('east');
+        document.getElementById('west').onclick = () => move('west');
+
+        // Initialize
+        initMap();
+        addText('> Type your commands or use the buttons to play!', 'success');
+    </script>
+</body>
+</html>
