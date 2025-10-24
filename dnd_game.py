@@ -1,9 +1,10 @@
 import random
 import logging
 import sys
-from typing import List
+from typing import List, Dict, Any
 from narrative_engine import NarrativeEngine
 from items import Inventory, get_loot_from_enemy
+from spells import SpellBook, get_class_starting_spells
 
 # Get logger without adding handlers (main.py will configure logging)
 logger = logging.getLogger("dnd_game")
@@ -40,14 +41,22 @@ class Character:
         self.alive = True
         self.status_effects: List[str] = []
 
+        # Initialize D&D ability scores based on class
+        self.ability_scores = self._generate_ability_scores(char_class)
+
+        # Initialize mana system
+        self.max_mana = 50 + (self.get_ability_modifier('INT') * 10)
+        self.mana = self.max_mana
+
         # Initialize inventory system
         self.inventory = Inventory(capacity=20)
 
-        # Give starting equipment based on class
-        self._give_starting_equipment(char_class)
+        # Initialize spellbook
+        self.spellbook = SpellBook()
 
-        # Initialize D&D ability scores based on class
-        self.ability_scores = self._generate_ability_scores(char_class)
+        # Give starting equipment and spells based on class
+        self._give_starting_equipment(char_class)
+        self._learn_starting_spells(char_class)
 
         # Initialize proficiency bonus (starts at +2)
         self.proficiency_bonus = 2
@@ -114,6 +123,7 @@ class Character:
             self.inventory.add_item("quarterstaff", 1)
             self.inventory.add_item("spellbook", 1)
             self.inventory.add_item("health_potion", 2)
+            self.inventory.add_item("mana_potion", 3)
         elif char_class == "Rogue":
             self.inventory.add_item("dagger", 2)
             self.inventory.add_item("lockpicks", 1)
@@ -124,11 +134,19 @@ class Character:
             self.inventory.add_item("mace", 1)
             self.inventory.add_item("holy_symbol", 1)
             self.inventory.add_item("health_potion", 3)
+            self.inventory.add_item("mana_potion", 2)
             self.inventory.equip("mace")
         else:
             # Monsters/enemies get basic items
             self.inventory.add_item("rusty_dagger", 1)
             self.inventory.add_item("gold_coin", random.randint(1, 10))
+
+    def _learn_starting_spells(self, char_class: str) -> None:
+        """Learn starting spells based on class."""
+        starting_spells = get_class_starting_spells(char_class)
+        for spell_id in starting_spells:
+            self.spellbook.learn_spell(spell_id)
+            logger.info(f"{self.name} learned spell: {spell_id}")
 
     def get_ability_modifier(self, ability: str) -> int:
         """Calculate D&D ability modifier from ability score."""
@@ -206,6 +224,26 @@ class Character:
             logger.info(f"NATURAL 1! Critical failure!")
 
         return result
+
+    def cast_spell(self, spell_id: str, target: "Character" = None) -> Dict[str, Any]:
+        """
+        Cast a spell from spellbook.
+
+        Args:
+            spell_id: ID of spell to cast
+            target: Optional target character
+
+        Returns:
+            Dict with result of spell cast
+        """
+        return self.spellbook.cast_spell(spell_id, self, target)
+
+    def regenerate_mana(self, amount: int = None) -> None:
+        """Regenerate mana (default: 10% of max per turn)."""
+        if amount is None:
+            amount = max(5, int(self.max_mana * 0.1))
+        self.mana = min(self.max_mana, self.mana + amount)
+        logger.debug(f"{self.name} regenerated {amount} mana ({self.mana}/{self.max_mana})")
 
     def take_damage(self, damage: int) -> dict:
         """
