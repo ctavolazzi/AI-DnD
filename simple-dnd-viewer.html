@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI DnD Game Viewer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(to bottom, #0a0e27 0%, #1a1e3a 100%);
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        h2 {
+            color: #ffff00;
+            border-bottom: 2px solid #ffff00;
+            padding-bottom: 5px;
+            margin: 20px 0 10px 0;
+        }
+        h3 {
+            color: #ff00ff;
+            margin: 15px 0 5px 0;
+        }
+        .quest-box {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .turn-nav {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ffff00;
+            border-radius: 5px;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #00ffff;
+            box-shadow: 0 0 10px #00ffff;
+        }
+        button:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+        }
+        .characters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .char-card {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .char-card.enemy {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: #ff0000;
+        }
+        .char-card h4 {
+            color: #00ffff;
+            margin-bottom: 5px;
+        }
+        .hp-bar {
+            background: #333;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            border: 1px solid #666;
+        }
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(to right, #00ff00, #00aa00);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #000;
+            font-weight: bold;
+        }
+        .hp-fill.low {
+            background: linear-gradient(to right, #ffaa00, #ff6600);
+        }
+        .hp-fill.critical {
+            background: linear-gradient(to right, #ff0000, #aa0000);
+        }
+        .events {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid #00ff00;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .event-item {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(0, 255, 0, 0.05);
+            border-radius: 3px;
+        }
+        .status {
+            color: #888;
+            font-size: 12px;
+        }
+        .alive { color: #00ff00; }
+        .dead { color: #ff0000; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 20px;
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .turn-counter {
+            font-size: 24px;
+            color: #ffff00;
+            margin: 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚔️ AI D&D Game Viewer ⚔️</h1>
+
+        <div id="loading" class="loading">
+            Loading game data...
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="quest-box">
+                <h2>📜 Quest</h2>
+                <p id="quest-text"></p>
+            </div>
+
+            <div class="turn-nav">
+                <button id="prevBtn" onclick="previousTurn()">◀ Previous</button>
+                <span class="turn-counter">Turn <span id="turnNum">0</span> / <span id="maxTurn">0</span></span>
+                <button id="nextBtn" onclick="nextTurn()">Next ▶</button>
+                <br><br>
+                <button onclick="currentTurn = 0; displayTurn()">⏮ First</button>
+                <button onclick="currentTurn = gameData.frames.length - 1; displayTurn()">⏭ Last</button>
+            </div>
+
+            <div id="turn-content">
+                <h2>🎭 Party Members</h2>
+                <div id="players" class="characters"></div>
+
+                <h2>👹 Enemies</h2>
+                <div id="enemies" class="characters"></div>
+
+                <h2>📖 Events This Turn</h2>
+                <div id="events" class="events"></div>
+            </div>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        let gameData = null;
+        let currentTurn = 0;
+
+        // Load the game data
+        async function loadGameData() {
+            try {
+                const response = await fetch('examples/web_frontend/data/demo_run.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load game data');
+                }
+                gameData = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                initializeGame();
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = 'Error loading game data: ' + error.message +
+                    '\\n\\nMake sure you\\'re viewing this file from the /home/user/AI-DnD directory.';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function initializeGame() {
+            document.getElementById('quest-text').textContent = gameData.quest_hook;
+            document.getElementById('maxTurn').textContent = gameData.frames.length - 1;
+            displayTurn();
+        }
+
+        function displayTurn() {
+            if (!gameData || !gameData.frames[currentTurn]) return;
+
+            const frame = gameData.frames[currentTurn];
+
+            // Update turn counter
+            document.getElementById('turnNum').textContent = currentTurn;
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentTurn === 0;
+            document.getElementById('nextBtn').disabled = currentTurn === gameData.frames.length - 1;
+
+            // Display players
+            displayCharacters('players', frame.players, false);
+
+            // Display enemies
+            displayCharacters('enemies', frame.enemies, true);
+
+            // Display events
+            displayEvents('events', frame.new_events);
+        }
+
+        function displayCharacters(containerId, characters, isEnemy) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            characters.forEach(char => {
+                const card = document.createElement('div');
+                card.className = 'char-card' + (isEnemy ? ' enemy' : '');
+
+                const hpPercent = (char.hp / char.max_hp) * 100;
+                let hpClass = '';
+                if (hpPercent < 25) hpClass = 'critical';
+                else if (hpPercent < 50) hpClass = 'low';
+
+                const status = char.alive ?
+                    '<span class="alive">✓ Alive</span>' :
+                    '<span class="dead">✗ Dead</span>';
+
+                card.innerHTML = `
+                    <h4>${char.name}</h4>
+                    <div class="status">${char.char_class} | ${status}</div>
+                    <div class="hp-bar">
+                        <div class="hp-fill ${hpClass}" style="width: ${hpPercent}%">
+                            ${char.hp} / ${char.max_hp}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function displayEvents(containerId, events) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            if (!events || events.length === 0) {
+                container.innerHTML = '<div class="event-item">No events this turn.</div>';
+                return;
+            }
+
+            events.forEach(event => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'event-item';
+                eventDiv.textContent = event;
+                container.appendChild(eventDiv);
+            });
+        }
+
+        function nextTurn() {
+            if (currentTurn < gameData.frames.length - 1) {
+                currentTurn++;
+                displayTurn();
+            }
+        }
+
+        function previousTurn() {
+            if (currentTurn > 0) {
+                currentTurn--;
+                displayTurn();
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextTurn();
+            else if (e.key === 'ArrowLeft') previousTurn();
+            else if (e.key === 'Home') { currentTurn = 0; displayTurn(); }
+            else if (e.key === 'End') { currentTurn = gameData.frames.length - 1; displayTurn(); }
+        });
+
+        // Load data on page load
+        loadGameData();
+    </script>
+</body>
+</html>

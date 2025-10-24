@@ -1,8 +1,10 @@
 import random
 import logging
 import sys
-from typing import List
+from typing import List, Dict, Any
 from narrative_engine import NarrativeEngine
+from items import Inventory, get_loot_from_enemy
+from spells import SpellBook, get_class_starting_spells
 
 # Get logger without adding handlers (main.py will configure logging)
 logger = logging.getLogger("dnd_game")
@@ -41,6 +43,20 @@ class Character:
 
         # Initialize D&D ability scores based on class
         self.ability_scores = self._generate_ability_scores(char_class)
+
+        # Initialize mana system
+        self.max_mana = 50 + (self.get_ability_modifier('INT') * 10)
+        self.mana = self.max_mana
+
+        # Initialize inventory system
+        self.inventory = Inventory(capacity=20)
+
+        # Initialize spellbook
+        self.spellbook = SpellBook()
+
+        # Give starting equipment and spells based on class
+        self._give_starting_equipment(char_class)
+        self._learn_starting_spells(char_class)
 
         # Initialize proficiency bonus (starts at +2)
         self.proficiency_bonus = 2
@@ -90,6 +106,47 @@ class Character:
             "Cleric": ["Medicine", "Insight"],
         }
         return proficiencies.get(char_class, ["Perception"])
+
+    def _give_starting_equipment(self, char_class: str) -> None:
+        """Give starting equipment based on class."""
+        # Starting gold (use add_item with "gold_coin")
+        self.inventory.add_item("gold_coin", random.randint(10, 50))
+
+        # Class-specific starting gear
+        if char_class == "Fighter":
+            self.inventory.add_item("longsword", 1)
+            self.inventory.add_item("shield", 1)
+            self.inventory.add_item("chainmail", 1)
+            self.inventory.equip("longsword")
+            self.inventory.equip("chainmail")
+        elif char_class == "Wizard":
+            self.inventory.add_item("quarterstaff", 1)
+            self.inventory.add_item("spellbook", 1)
+            self.inventory.add_item("health_potion", 2)
+            self.inventory.add_item("mana_potion", 3)
+        elif char_class == "Rogue":
+            self.inventory.add_item("dagger", 2)
+            self.inventory.add_item("lockpicks", 1)
+            self.inventory.add_item("leather_armor", 1)
+            self.inventory.equip("dagger")
+            self.inventory.equip("leather_armor")
+        elif char_class == "Cleric":
+            self.inventory.add_item("mace", 1)
+            self.inventory.add_item("holy_symbol", 1)
+            self.inventory.add_item("health_potion", 3)
+            self.inventory.add_item("mana_potion", 2)
+            self.inventory.equip("mace")
+        else:
+            # Monsters/enemies get basic items
+            self.inventory.add_item("rusty_dagger", 1)
+            self.inventory.add_item("gold_coin", random.randint(1, 10))
+
+    def _learn_starting_spells(self, char_class: str) -> None:
+        """Learn starting spells based on class."""
+        starting_spells = get_class_starting_spells(char_class)
+        for spell_id in starting_spells:
+            self.spellbook.learn_spell(spell_id)
+            logger.info(f"{self.name} learned spell: {spell_id}")
 
     def get_ability_modifier(self, ability: str) -> int:
         """Calculate D&D ability modifier from ability score."""
@@ -168,7 +225,33 @@ class Character:
 
         return result
 
-    def take_damage(self, damage: int) -> None:
+    def cast_spell(self, spell_id: str, target: "Character" = None) -> Dict[str, Any]:
+        """
+        Cast a spell from spellbook.
+
+        Args:
+            spell_id: ID of spell to cast
+            target: Optional target character
+
+        Returns:
+            Dict with result of spell cast
+        """
+        return self.spellbook.cast_spell(spell_id, self, target)
+
+    def regenerate_mana(self, amount: int = None) -> None:
+        """Regenerate mana (default: 10% of max per turn)."""
+        if amount is None:
+            amount = max(5, int(self.max_mana * 0.1))
+        self.mana = min(self.max_mana, self.mana + amount)
+        logger.debug(f"{self.name} regenerated {amount} mana ({self.mana}/{self.max_mana})")
+
+    def take_damage(self, damage: int) -> dict:
+        """
+        Apply damage to character and return loot if character dies.
+
+        Returns:
+            Dict with 'died' bool and 'loot' dict of item_id: quantity
+        """
         if damage < 0:
             raise ValueError("Damage cannot be negative.")
 
@@ -183,34 +266,45 @@ class Character:
         if actual_damage > 0:
             logger.info(f"Result: {self.name} takes {actual_damage} damage! (HP: {old_hp} -> {self.hp})")
 
+        result = {"died": False, "loot": {}}
+
         if self.hp <= 0:
             self.alive = False
             logger.info(f"Critical Event: {self.name} has fallen!")
 
-    def _heavy_strike(self, target: "Character") -> None:
+            # Generate loot if this is an enemy
+            if self.team == "enemies":
+                loot = get_loot_from_enemy(self.char_class)
+                result["died"] = True
+                result["loot"] = loot
+                logger.info(f"Loot dropped: {loot}")
+
+        return result
+
+    def _heavy_strike(self, target: "Character") -> dict:
         logger.info(f"{self.name} performs Heavy Strike on {target.name}!")
         damage = self.attack * 2
-        target.take_damage(damage)
+        return target.take_damage(damage)
 
-    def _fireball(self, target: "Character") -> None:
+    def _fireball(self, target: "Character") -> dict:
         logger.info(f"{self.name} casts Fireball on {target.name}!")
         damage = random.randint(15, 20)
-        target.take_damage(damage)
+        return target.take_damage(damage)
 
-    def _backstab(self, target: "Character") -> None:
+    def _backstab(self, target: "Character") -> dict:
         original_defense = target.defense
         target.defense = max(0, target.defense - 2)
         logger.info(f"{self.name} performs Backstab on {target.name}, reducing defense from {original_defense} to {target.defense}")
         damage = int(self.attack * 1.5)
-        target.take_damage(damage)
+        return target.take_damage(damage)
 
-    def _cheap_shot(self, target: "Character") -> None:
+    def _cheap_shot(self, target: "Character") -> dict:
         if random.random() < 0.3 and "stunned" not in target.status_effects:
             target.status_effects.append("stunned")
             logger.info(f"{target.name} is stunned by {self.name}!")
         logger.info(f"{self.name} performs Cheap Shot on {target.name}!")
         damage = int(self.attack * 1.2)
-        target.take_damage(damage)
+        return target.take_damage(damage)
 
     def _heal(self, target: "Character") -> None:
         if not target.alive:
@@ -222,40 +316,64 @@ class Character:
         if actual_heal > 0:
             logger.info(f"{self.name} heals {target.name} for {actual_heal} HP (from {old_hp} to {target.hp})")
 
-    def _bone_shield(self, target: "Character") -> None:
+    def _bone_shield(self, target: "Character") -> dict:
         self.defense *= 2
         logger.info(f"{self.name} uses Bone Shield to double defense to {self.defense}!")
+        return {"died": False, "loot": {}}
 
-    def _rage(self, target: "Character") -> None:
+    def _rage(self, target: "Character") -> dict:
         self.attack += 3
         self.defense += 2
         logger.info(f"{self.name} uses Rage! Attack +3, Defense +2")
         # Deal damage after increasing stats
         damage = int(self.attack * 1.5)  # Deal 150% damage like Backstab
-        target.take_damage(damage)
+        return target.take_damage(damage)
 
-    def _fury(self, target: "Character") -> None:
+    def _fury(self, target: "Character") -> dict:
         self.attack += 2
         damage = self.attack - target.defense
-        target.take_damage(damage)
-        target.take_damage(damage)
+        result1 = target.take_damage(damage)
+        result2 = target.take_damage(damage)
         logger.info(f"{self.name} uses Fury for a double attack on {target.name}!")
+        # Return the second result as it includes death/loot if applicable
+        return result2 if result2["died"] else result1
 
-    def attack_target(self, target: "Character") -> None:
+    def attack_target(self, target: "Character") -> dict:
+        """
+        Attack a target and collect loot if they die.
+
+        Returns:
+            Dict with combat result including any loot collected
+        """
+        result = {"damage_dealt": 0, "loot_collected": {}}
+
         if not self.alive or not target.alive:
-            return
+            return result
 
         # Heal ally if possible
         if "Heal" in self.abilities and self.team == target.team and target.hp < target.max_hp:
             self._heal(target)
-            return
+            return result
 
         # Attack enemy
         if self.team is None or target.team is None or self.team != target.team:
             if self.abilities and random.random() < 0.3:
                 ability = next(iter(self.abilities.values()))
-                ability(target)
-                return
+                damage_result = ability(target)
+
+                # Collect loot if target died from ability
+                if damage_result.get("died") and damage_result.get("loot"):
+                    for item_id, quantity in damage_result["loot"].items():
+                        if self.inventory.add_item(item_id, quantity):
+                            if item_id == "gold_coin":
+                                logger.info(f"{self.name} collected {quantity} gold!")
+                            else:
+                                logger.info(f"{self.name} collected {quantity}x {item_id}")
+                        else:
+                            logger.info(f"{self.name}'s inventory is full! Couldn't collect {item_id}")
+                    result["loot_collected"] = damage_result["loot"]
+
+                return result
 
             # Normal attack
             logger.info(f"\n{self.name} prepares to attack {target.name}!")
@@ -268,7 +386,22 @@ class Character:
             logger.info(f"Attack Roll: {roll}")
             logger.info(f"Total Damage = {self.attack} (base) + {roll} (roll) = {damage}")
 
-            target.take_damage(damage)
+            damage_result = target.take_damage(damage)
+            result["damage_dealt"] = damage
+
+            # Collect loot if target died
+            if damage_result["died"] and damage_result["loot"]:
+                for item_id, quantity in damage_result["loot"].items():
+                    if self.inventory.add_item(item_id, quantity):
+                        if item_id == "gold_coin":
+                            logger.info(f"{self.name} collected {quantity} gold!")
+                        else:
+                            logger.info(f"{self.name} collected {quantity}x {item_id}")
+                    else:
+                        logger.info(f"{self.name}'s inventory is full! Couldn't collect {item_id}")
+                result["loot_collected"] = damage_result["loot"]
+
+        return result
 
     def clear_temporary_effects(self) -> None:
         if "stunned" in self.status_effects:

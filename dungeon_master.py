@@ -12,6 +12,7 @@ from obsidian_logger import ObsidianLogger
 from game_event_manager import GameEventManager
 from game_manager import GameManager
 from quest_system import QuestManager, QuestObjective
+from world_builder import WorldManager
 
 class DungeonMaster:
     """
@@ -35,6 +36,7 @@ class DungeonMaster:
         self.event_manager = None
         self.game_manager = None
         self.quest_manager = None
+        self.world_manager = None
         self.game = None
         self.logger = logging.getLogger("dungeon_master")
 
@@ -130,6 +132,10 @@ class DungeonMaster:
         # Initialize quest manager
         self.quest_manager = QuestManager()
         self.logger.info("Initialized quest manager for quest tracking")
+
+        # Initialize world manager
+        self.world_manager = WorldManager()
+        self.logger.info("Initialized world manager with Emberpeak Region")
 
         # Update Current Run.md immediately - ensure it exists
         self.update_current_run(force_create=True)
@@ -319,6 +325,14 @@ aliases: [📊 Dashboard]
             self.logger.info("\nInitializing D&D Game...")
             self.game = DnDGame(model=self.model)
 
+            # Set starting location from world manager
+            if self.world_manager:
+                self.game.current_location = self.world_manager.current_location_id
+                current_loc = self.world_manager.get_current_location()
+                self.logger.info(f"Starting location: {current_loc.name}")
+            else:
+                self.logger.warning("World manager not initialized, using default location")
+
             # Generate initial quest FIRST before any character processing
             self.logger.info("\nGenerating main quest...")
             quest_intro = self.game.narrative_engine.generate_quest(difficulty="medium", theme="epic battle")
@@ -353,13 +367,26 @@ aliases: [📊 Dashboard]
                 # Get the character names for the starting location
                 character_names = [player.name for player in self.game.players]
 
-                location_data = {
-                    "name": self.game.current_location,
-                    "description": f"The starting location of the adventure.",
-                    "connections": {},
-                    "type": "Starting Area",
-                    "characters": character_names  # Include the characters present
-                }
+                # Get location details from world manager if available
+                if self.world_manager:
+                    current_loc = self.world_manager.get_current_location()
+                    location_data = {
+                        "name": current_loc.name,
+                        "description": current_loc.description,
+                        "connections": current_loc.connections,
+                        "type": current_loc.location_type,
+                        "characters": character_names,
+                        "npcs": current_loc.npcs,
+                        "services": current_loc.services
+                    }
+                else:
+                    location_data = {
+                        "name": self.game.current_location,
+                        "description": f"The starting location of the adventure.",
+                        "connections": {},
+                        "type": "Starting Area",
+                        "characters": character_names
+                    }
                 # Use event-aware logging for real-time updates
                 self.obsidian.log_location_with_event(location_data, self.event_manager)
                 self.logger.info(f"Logged starting location: {self.game.current_location}")
