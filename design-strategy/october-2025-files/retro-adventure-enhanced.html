@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Emberpeak Expedition - Enhanced</title>
+    <link rel="stylesheet" href="retro-adventure-enhanced.css">
+</head>
+<body>
+    <!-- Settings Menu (Hidden by default) -->
+    <div id="settingsMenu" class="settings-menu hidden">
+        <div class="settings-content">
+            <h2>Settings</h2>
+            <div class="setting-item">
+                <label for="themeSelect">Theme:</label>
+                <select id="themeSelect">
+                    <option value="classic">Black & White</option>
+                    <option value="sepia">Sepia</option>
+                    <option value="forest">Forest</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="textSize">Text Size:</label>
+                <input type="range" id="textSize" min="12" max="20" value="16">
+            </div>
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="soundEffects" checked>
+                    Sound Effects
+                </label>
+            </div>
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="animations" checked>
+                    Animations
+                </label>
+            </div>
+            <button class="btn-close" onclick="closeSettings()">Close</button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <!-- Header -->
+        <header class="game-header">
+            <button class="btn-icon btn-close-game" title="Close Window">✕</button>
+            <h1 class="game-title">THE EMBERPEAK EXPEDITION</h1>
+            <button class="btn-icon btn-settings" onclick="openSettings()" title="Settings (S)">⚙</button>
+        </header>
+
+        <!-- Main Game Area -->
+        <div class="game-main">
+            <!-- Left Column: Adventure Log -->
+            <section class="adventure-log-section">
+                <h2 class="section-header">ADVENTURE LOG</h2>
+                <div class="adventure-log">
+                    <div class="log-entry location">
+                        <span class="location-icon">📍</span>
+                        <strong>Starting Tavern</strong>
+                    </div>
+                    
+                    <div class="log-divider"></div>
+                    
+                    <div class="log-entry title-card">
+                        ✦ THE EMBERPEAK EXPEDITION ✦
+                    </div>
+                    
+                    <div class="log-entry narrative">
+                        Welcome, brave adventurer!
+                    </div>
+                    
+                    <div class="log-entry quest">
+                        <span class="quest-icon">⚔</span>
+                        <strong>Your quest:</strong> Rescue miners trapped beneath Emberpeak and seal the shattered rune.
+                    </div>
+                    
+                    <div class="log-entry narrative">
+                        You find yourself in a dimly lit tavern.
+                    </div>
+                    
+                    <div class="log-entry description">
+                        The air is thick with pipe smoke and hushed conversations.
+                    </div>
+                    
+                    <div class="log-entry description">
+                        Two seasoned adventurers sit at the bar – a cunning Rogue and a battle-hardened Fighter.
+                    </div>
+
+                    <div class="log-entry new-message">
+                        <span class="new-badge">NEW</span>
+                    </div>
+                </div>
+                <div class="log-controls">
+                    <button class="btn-secondary btn-small" onclick="scrollLogToTop()">↑ Top</button>
+                    <button class="btn-secondary btn-small" onclick="scrollLogToBottom()">↓ Bottom</button>
+                </div>
+            </section>
+
+            <!-- Right Column: Character & Scene -->
+            <div class="right-column">
+                <!-- Character Panel -->
+                <section class="character-panel">
+                    <h2 class="section-header">CHARACTER</h2>
+                    <div class="character-content">
+                        <div class="character-info">
+                            <div class="info-row">
+                                <label>Name:</label>
+                                <input type="text" value="Hero" class="char-input" readonly>
+                            </div>
+                            <div class="info-row">
+                                <label>Class:</label>
+                                <input type="text" value="Rogue" class="char-input" readonly>
+                            </div>
+                            <div class="info-row">
+                                <label>Level:</label>
+                                <span class="level-badge">3</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hp-container">
+                            <div class="hp-label">
+                                <span>HP</span>
+                                <span class="hp-value">30 / 50</span>
+                            </div>
+                            <div class="hp-bar">
+                                <div class="hp-fill" style="width: 60%"></div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-item" title="Strength: Physical power and melee damage">
+                                <span class="stat-icon">💪</span>
+                                <div class="stat-info">
+                                    <label>STR</label>
+                                    <span class="stat-value">16 <span class="stat-modifier">(+3)</span></span>
+                                </div>
+                            </div>
+                            <div class="stat-item" title="Dexterity: Agility and ranged attacks">
+                                <span class="stat-icon">🏃</span>
+                                <div class="stat-info">
+                                    <label>DEX</label>
+                                    <span class="stat-value">18 <span class="stat-modifier">(+4)</span></span>
+                                </div>
+                            </div>
+                            <div class="stat-item" title="Constitution: Health and endurance">
+                                <span class="stat-icon">❤️</span>
+                                <div class="stat-info">
+                                    <label>CON</label>
+                                    <span class="stat-value">14 <span class="stat-modifier">(+2)</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Scene Viewer -->
+                <section class="scene-viewer">
+                    <h2 class="section-header">SCENE VIEWER ⚔</h2>
+                    <div class="scene-content">
+                        <div class="scene-image">
+                            <img src="data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect fill='%23654321' width='200' height='200'/%3E%3Ctext x='100' y='100' font-size='60' text-anchor='middle' fill='%23F5DEB3'%3E👤%3C/text%3E%3C/svg%3E" alt="Character Portrait">
+                        </div>
+                        <p class="scene-description">Tavern interior with flickering candlelight</p>
+                    </div>
+                </section>
+
+                <!-- Reference Tabs -->
+                <section class="reference-panel">
+                    <h2 class="section-header">REFERENCE</h2>
+                    <div class="tabs">
+                        <button class="tab active" data-tab="inventory">
+                            <span class="tab-icon">🎒</span>
+                            INVENTORY
+                        </button>
+                        <button class="tab" data-tab="map">
+                            <span class="tab-icon">🗺️</span>
+                            MAP
+                        </button>
+                        <button class="tab" data-tab="quest">
+                            <span class="tab-icon">📜</span>
+                            QUEST LOG
+                        </button>
+                    </div>
+                    
+                    <div class="tab-content active" id="inventory">
+                        <div class="inventory-grid">
+                            <div class="item-slot filled" title="Rusty Sword">
+                                <span class="item-icon">🗡️</span>
+                            </div>
+                            <div class="item-slot filled" title="Health Potion">
+                                <span class="item-icon">🧪</span>
+                            </div>
+                            <div class="item-slot empty" title="Empty slot"></div>
+                            <div class="item-slot empty" title="Empty slot"></div>
+                            <div class="item-slot empty" title="Empty slot"></div>
+                            <div class="item-slot empty" title="Empty slot"></div>
+                            <div class="item-slot empty" title="Empty slot"></div>
+                            <div class="item-slot empty" title="Empty slot"></div>
+                        </div>
+                        <p class="inventory-info">2 / 20 items</p>
+                    </div>
+                    
+                    <div class="tab-content" id="map">
+                        <div class="map-placeholder">
+                            <p>🗺️ Map will be revealed as you explore</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="quest">
+                        <div class="quest-list">
+                            <div class="quest-item active-quest">
+                                <strong>⚔ Rescue the Miners</strong>
+                                <p>Find and rescue the trapped miners beneath Emberpeak.</p>
+                                <span class="quest-status">In Progress</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Bottom Section: Actions & Navigation -->
+        <div class="game-bottom">
+            <!-- Actions -->
+            <section class="actions-section">
+                <h2 class="section-header">ACTIONS</h2>
+                <div class="actions-grid">
+                    <button class="action-btn" data-action="examine" title="Examine your surroundings (E)">
+                        <span class="action-icon">🔍</span>
+                        <span class="action-text">EXAMINE</span>
+                        <span class="keyboard-hint">E</span>
+                    </button>
+                    <button class="action-btn" data-action="talk" title="Talk to someone (T)">
+                        <span class="action-icon">💬</span>
+                        <span class="action-text">TALK</span>
+                        <span class="keyboard-hint">T</span>
+                    </button>
+                    <button class="action-btn disabled" data-action="attack" title="Attack (A) - No enemies nearby">
+                        <span class="action-icon">⚔️</span>
+                        <span class="action-text">ATTACK</span>
+                        <span class="keyboard-hint">A</span>
+                    </button>
+                    <button class="action-btn" data-action="rest" title="Rest and recover (R)">
+                        <span class="action-icon">💤</span>
+                        <span class="action-text">REST</span>
+                        <span class="keyboard-hint">R</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Navigation -->
+            <section class="navigation-section">
+                <h2 class="section-header">NAVIGATION</h2>
+                <div class="compass">
+                    <button class="compass-btn" data-direction="north" title="Go North">
+                        <span class="direction-icon">⬆️</span>
+                        NORTH
+                    </button>
+                    <div class="compass-middle">
+                        <button class="compass-btn" data-direction="west" title="Go West">
+                            <span class="direction-icon">⬅️</span>
+                            WEST
+                        </button>
+                        <button class="compass-btn compass-center" title="Look around">
+                            <span class="compass-icon">🧭</span>
+                            LOOK
+                        </button>
+                        <button class="compass-btn" data-direction="east" title="Go East">
+                            <span class="direction-icon">➡️</span>
+                            EAST
+                        </button>
+                    </div>
+                    <button class="compass-btn disabled" data-direction="south" title="South - Path blocked">
+                        <span class="direction-icon">⬇️</span>
+                        SOUTH
+                    </button>
+                </div>
+                <p class="navigation-hint">Use arrow keys or click to navigate</p>
+            </section>
+        </div>
+
+        <!-- Help Button -->
+        <button class="help-btn" onclick="toggleHelp()" title="Help (H)">?</button>
+        
+        <!-- Help Overlay -->
+        <div id="helpOverlay" class="help-overlay hidden">
+            <div class="help-content">
+                <h2>Quick Reference Guide</h2>
+                <div class="help-section">
+                    <h3>Keyboard Shortcuts</h3>
+                    <ul>
+                        <li><kbd>E</kbd> - Examine</li>
+                        <li><kbd>T</kbd> - Talk</li>
+                        <li><kbd>A</kbd> - Attack</li>
+                        <li><kbd>R</kbd> - Rest</li>
+                        <li><kbd>Arrow Keys</kbd> - Navigate</li>
+                        <li><kbd>S</kbd> - Settings</li>
+                        <li><kbd>H</kbd> - Help</li>
+                        <li><kbd>ESC</kbd> - Close dialogs</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>Stats Explained</h3>
+                    <ul>
+                        <li><strong>STR (Strength)</strong> - Physical power and melee damage</li>
+                        <li><strong>DEX (Dexterity)</strong> - Agility, accuracy, and stealth</li>
+                        <li><strong>CON (Constitution)</strong> - Health and stamina</li>
+                    </ul>
+                </div>
+                <button class="btn-primary" onclick="toggleHelp()">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="retro-adventure-enhanced.js"></script>
+</body>
+</html>

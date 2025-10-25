@@ -1,0 +1,12 @@
+:root {
+  --bg: #f5deb3;
+  --text: #2c1810;
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Courier New, monospace;
+  background: var(--bg);
+  color: var(--text);
+}
+#app-root { min-height: 100vh; display: grid; place-items: center; }

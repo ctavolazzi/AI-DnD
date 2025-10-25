@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI D&D - The Emberpeak Expedition</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50'%20font-size='48'%3E%F0%9F%8F%9B%EF%B8%8F%3C/text%3E%3C/svg%3E">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -2305,6 +2306,15 @@
         </div>
     </div>
 
+    <!-- NPC Dialogue Modal -->
+    <div class="modal" id="npc-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-npc">&times;</span>
+            <div class="panel-title">NPCs</div>
+            <div id="npc-modal-body" style="margin-top: 20px; max-height: 400px; overflow: auto;"></div>
+        </div>
+    </div>
+
     <!-- Welcome Screen Modal -->
     <div class="modal welcome-modal active" id="welcome-modal">
         <div class="modal-content">
@@ -2382,6 +2392,10 @@
 
             quest(questEvent, details = {}) {
                 this.log('quest', questEvent, details);
+            },
+
+            combat(event, details = {}) {
+                this.log('combat', event, details);
             },
 
             save(operation, details = {}) {
@@ -3649,8 +3663,13 @@
         /**
          * Save game state to localStorage
          */
+        let __lastSaveTs = 0;
         function saveGameState() {
-            GameLogger.save('Saving game', { location: gameState.currentLocation });
+            const now = Date.now();
+            if (now - __lastSaveTs > 1500) {
+                GameLogger.save('Saving game', { location: gameState.currentLocation });
+                __lastSaveTs = now;
+            }
             const saveData = {
                 version: '1.0',
                 timestamp: Date.now(),
@@ -3667,11 +3686,13 @@
                 }
             };
             localStorage.setItem('aidnd_savegame', JSON.stringify(saveData));
-            GameLogger.save('Game saved successfully', {
+            if (Date.now() - __lastSaveTs > 250) {
+                GameLogger.save('Game saved successfully', {
                 timestamp: new Date(saveData.timestamp).toISOString(),
                 turn: saveData.state.turn,
                 location: saveData.state.currentLocation
-            });
+                });
+            }
             addSystemLog('💾 Game saved to localStorage', 'success');
         }
 
@@ -4104,9 +4125,14 @@
         // Trigger random encounter
         function triggerEncounter() {
             // Already in combat, skip
-            if (gameState.inCombat) return;
+            if (gameState.inCombat) {
+                GameLogger.combat('Encounter blocked', { reason: 'Already in combat' });
+                return;
+            }
 
             gameState.inCombat = true;
+            GameLogger.state('Combat mode', true, false);
+
             const locationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
             gameState.lastEncounterLocation = locationKey;
 
@@ -4132,6 +4158,16 @@
             }
 
             const encounter = encounters[Math.floor(Math.random() * encounters.length)];
+
+            // Log combat initiation
+            GameLogger.combat('Combat initiated', {
+                enemy: encounter.enemy,
+                enemyHP: encounter.hp,
+                playerHP: gameState.playerHP,
+                location: locationKey,
+                region: currentLocation?.region || 'surface'
+            });
+
             addText('━━━━━━━━━━━━━━━━━━━━', 'combat');
             addText(encounter.text, 'combat');
             addText(`${encounter.enemy} HP: ${encounter.hp}`, 'combat');
@@ -4141,8 +4177,18 @@
         }
 
         // End combat
-        function endCombat() {
+        function endCombat(result = 'unknown', details = {}) {
+            GameLogger.combat('Combat ended', {
+                result: result,
+                playerHP: gameState.playerHP,
+                remainingHP: details.remainingHP || null,
+                xpGained: details.xpGained || 0,
+                enemyDefeated: details.enemy || null
+            });
+
             gameState.inCombat = false;
+            GameLogger.state('Combat mode', false, true);
+
             gameState.encounterCooldown = 3; // 3 moves before next encounter can trigger
             addText('━━━━━━━━━━━━━━━━━━━━', 'success');
             updateContextualActions(); // Update to show non-combat actions
@@ -4174,17 +4220,46 @@
             attackBtn.textContent = 'Attack with your dagger';
             attackBtn.onclick = () => {
                 const damage = Math.floor(Math.random() * 6) + 3;
+
+                // Log player attack
+                GameLogger.combat('Player attacked', {
+                    damage: damage,
+                    weapon: 'dagger',
+                    enemyHPBefore: encounter.hp,
+                    enemyHPAfter: encounter.hp - damage
+                });
+
                 addText(`⚔️ You strike for ${damage} damage!`, 'combat');
                 encounter.hp -= damage;
 
                 if (encounter.hp <= 0) {
+                    // Victory!
+                    GameLogger.combat('Enemy defeated', {
+                        enemy: encounter.enemy,
+                        xpGained: 50,
+                        playerHP: gameState.playerHP
+                    });
+
                     addText(`✅ ${encounter.enemy} defeated!`, 'success');
                     addText('💰 You gain 50 XP!', 'success');
                     choicesDiv.remove();
-                    endCombat();
+                    endCombat('victory', {
+                        enemy: encounter.enemy,
+                        xpGained: 50,
+                        remainingHP: gameState.playerHP
+                    });
                 } else {
+                    // Enemy counter-attack
                     addText(`${encounter.enemy} HP: ${encounter.hp}`, 'combat');
                     const enemyDamage = Math.floor(Math.random() * 4) + 1;
+
+                    GameLogger.combat('Enemy attacked', {
+                        enemy: encounter.enemy,
+                        damage: enemyDamage,
+                        playerHPBefore: gameState.playerHP,
+                        playerHPAfter: gameState.playerHP - enemyDamage
+                    });
+
                     addText(`🗡️ ${encounter.enemy} attacks back for ${enemyDamage} damage!`, 'damage');
                     updateHP(gameState.playerHP - enemyDamage);
 
@@ -4193,8 +4268,18 @@
                         choicesDiv.remove();
                         showCombatChoices(encounter);
                     } else {
+                        // Player died
+                        GameLogger.combat('Player defeated', {
+                            enemy: encounter.enemy,
+                            finalHP: 0
+                        });
+
+                        addText('💀 You have been defeated...', 'damage');
                         choicesDiv.remove();
-                        endCombat();
+                        endCombat('defeat', {
+                            enemy: encounter.enemy,
+                            remainingHP: 0
+                        });
                     }
                 }
             };
@@ -4206,15 +4291,46 @@
                 const roll = Math.floor(Math.random() * 20) + 1;
                 const total = roll + 4; // DEX modifier
 
+                GameLogger.combat('Sneak attempt', {
+                    roll: roll,
+                    modifier: 4,
+                    total: total,
+                    dc: 12,
+                    success: total >= 12
+                });
+
                 addText(`🎲 You roll ${roll} + 4 (DEX) = ${total}`, 'success');
 
                 if (total >= 12) {
+                    // Successful sneak
+                    GameLogger.combat('Sneak successful', {
+                        enemy: encounter.enemy,
+                        playerHP: gameState.playerHP
+                    });
+
                     addText('✅ Success! You slip past unnoticed.', 'success');
                     choicesDiv.remove();
-                    endCombat();
+                    endCombat('escaped', {
+                        enemy: encounter.enemy,
+                        remainingHP: gameState.playerHP
+                    });
                 } else {
+                    // Failed sneak
+                    GameLogger.combat('Sneak failed', {
+                        enemy: encounter.enemy,
+                        damage: 'incoming'
+                    });
+
                     addText('❌ Failed! Combat is inevitable!', 'damage');
                     const enemyDamage = Math.floor(Math.random() * 4) + 1;
+
+                    GameLogger.combat('Enemy attacked (sneak punishment)', {
+                        enemy: encounter.enemy,
+                        damage: enemyDamage,
+                        playerHPBefore: gameState.playerHP,
+                        playerHPAfter: gameState.playerHP - enemyDamage
+                    });
+
                     addText(`🗡️ ${encounter.enemy} attacks for ${enemyDamage} damage!`, 'damage');
                     updateHP(gameState.playerHP - enemyDamage);
 
@@ -4223,8 +4339,17 @@
                         choicesDiv.remove();
                         showCombatChoices(encounter);
                     } else {
+                        GameLogger.combat('Player defeated (failed sneak)', {
+                            enemy: encounter.enemy,
+                            finalHP: 0
+                        });
+
+                        addText('💀 You have been defeated...', 'damage');
                         choicesDiv.remove();
-                        endCombat();
+                        endCombat('defeat', {
+                            enemy: encounter.enemy,
+                            remainingHP: 0
+                        });
                     }
                 }
             };
@@ -4235,8 +4360,12 @@
         }
 
         // Update HP
-        function updateHP(newHP) {
-            gameState.playerHP = Math.max(0, Math.min(newHP, gameState.maxHP));
+        function updateHP(newHP = null) {
+            // If newHP provided, update gameState; otherwise just refresh display
+            if (newHP !== null) {
+                gameState.playerHP = Math.max(0, Math.min(newHP, gameState.maxHP));
+            }
+
             const hpBar = document.getElementById('hp-bar');
             const hpText = document.getElementById('hp-text');
             const percent = (gameState.playerHP / gameState.maxHP) * 100;
@@ -4261,6 +4390,13 @@
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
+        }
+
+        function openNPCModal(locationKey, linesOverride = null) {
+            const body = document.getElementById('npc-modal-body');
+            const lines = linesOverride || locationDialogues[locationKey] || ["No one seems interested in talking right now."];
+            body.innerHTML = lines.map(l => `<div style="margin: 6px 0;">${l}</div>`).join('');
+            openModal('npc-modal');
         }
 
         // Location-based dialogues
@@ -4606,9 +4742,7 @@
                         }
                         addText("💬 You initiate a conversation...", 'system');
                         const locationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
-                        setTimeout(() => {
-                            handleQuestInteraction(locationKey);
-                        }, 200);
+                        openNPCModal(locationKey);
                     });
                 }
 
@@ -4639,25 +4773,37 @@
                 const btn = document.getElementById('examine');
                 if (btn) btn.click();
             });
-            addContextAction('💬 TALK', () => {
-                GameLogger.action('Context action: TALK (always available)', { location: gameState.currentLocation });
-                if (gameState.inCombat) {
-                    addText("⚠️ Not a great time for chatting!", 'damage');
-                    return;
-                }
-                addText("💬 You initiate a conversation...", 'system');
-                const locationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
-                setTimeout(() => {
-                    handleQuestInteraction(locationKey);
-                }, 200);
-            });
-            addContextAction('⚔️ ATTACK', () => {
-                GameLogger.action('Context action: ATTACK (always available)');
-                addText("⚔️ Preparing to attack...", 'combat');
-                setTimeout(() => {
-                    addText("There's nothing to attack here. Try moving to find encounters!", 'damage');
-                }, 200);
-            });
+            // Only add TALK/ATTACK when appropriate; otherwise disable with tooltip
+            if (location && location.npc) {
+                addContextAction('💬 TALK', () => {
+                    GameLogger.action('Context action: TALK', { location: location.name, npc: location.npc });
+                    if (gameState.inCombat) {
+                        addText("⚠️ Not a great time for chatting!", 'damage');
+                        return;
+                    }
+                    addText("💬 You initiate a conversation...", 'system');
+                    const locationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
+                    openNPCModal(locationKey);
+                });
+            } else {
+                const btn = addContextAction('💬 TALK', () => {});
+                btn.disabled = true;
+                btn.title = 'No one to talk to here';
+            }
+
+            if (gameState.inCombat) {
+                addContextAction('⚔️ ATTACK', () => {
+                    GameLogger.action('Context action: ATTACK', { inCombat: true });
+                    addText("⚔️ Preparing to attack...", 'combat');
+                    setTimeout(() => {
+                        addText("You strike at your foe!", 'combat');
+                    }, 200);
+                });
+            } else {
+                const btn = addContextAction('⚔️ ATTACK', () => {});
+                btn.disabled = true;
+                btn.title = 'No enemies present';
+            }
         }
 
         function addContextAction(label, callback) {
@@ -4666,6 +4812,7 @@
             button.textContent = label;
             button.onclick = callback;
             document.getElementById('contextual-actions').appendChild(button);
+            return button;
         }
 
         // Mobile modal buttons
