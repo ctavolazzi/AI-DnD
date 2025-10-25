@@ -6,42 +6,8 @@
     <title>AI D&D - The Emberpeak Expedition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-        /* ============================================
-           THEME DEFINITIONS - All theme colors here
-           ============================================
-
-           To add a new theme:
-           1. Copy any [data-theme="name"] block below
-           2. Change the theme name (e.g., [data-theme="forest"])
-           3. Update all color values to match your theme
-           4. Add the theme to THEMES object in JavaScript:
-              forest: 'Forest Green'
-           5. Done! No other changes needed.
-
-           CSS Variables Reference:
-           - --bg-deep-brown: Main background color
-           - --bg-darker-brown: Darker background for depth
-           - --panel-parchment: Panel/card backgrounds
-           - --panel-parchment-dark: Darker panel variant
-           - --border-wood: Primary border color
-           - --border-bronze: Accent border/frame color
-           - --primary-gold: Primary text highlight color
-           - --accent-amber: Secondary accent color
-           - --text-dark: Dark text (on light backgrounds)
-           - --text-light: Light text (on dark backgrounds)
-           - --text-cream: Medium contrast text
-           - --accent-brown: Brown accent color
-           - --alert-rust: Warning/alert color
-           - --hp-green: HP bar color (high health)
-           - --hp-yellow: HP bar color (medium health)
-           - --hp-red: HP bar color (low health)
-           - --stat-blue: Statistics display color
-           - --quest-complete: Completion indicator color
-           ============================================ */
-
-        /* Default Theme: Retro RPG */
         :root {
+            /* Retro RPG Theme - Default */
             --bg-deep-brown: #1a1410;        /* Dark brown background */
             --bg-darker-brown: #0f0a08;      /* Even darker brown */
             --panel-parchment: #e8d4b8;      /* Light cream panels */
@@ -69,7 +35,7 @@
             --space-xl: 20px;  /* Extra large */
         }
 
-        /* Theme: Ultima Fantasy - Warm Brown/Parchment */
+        /* Ultima Theme - Warm Brown/Parchment */
         [data-theme="ultima"] {
             --bg-deep-brown: #2a1810;
             --bg-darker-brown: #1a0f08;
@@ -89,7 +55,7 @@
             --hp-red: #8b2500;
         }
 
-        /* Theme: Cyber Terminal - Neon Green Cyberpunk */
+        /* Cyber Theme - Neon Green Cyberpunk */
         [data-theme="cyber"] {
             --bg-deep-brown: #000;
             --bg-darker-brown: #0a0e0a;
@@ -109,7 +75,7 @@
             --hp-red: #f00;
         }
 
-        /* Theme: Gold Box - Royal Blue & Gold */
+        /* Gold Box Theme - Royal Blue & Gold */
         [data-theme="goldbox"] {
             --bg-deep-brown: #001133;
             --bg-darker-brown: #000822;
@@ -129,7 +95,7 @@
             --hp-red: #8b2500;
         }
 
-        /* Theme: Dark Dungeon - Dark Charcoal & Torchlight */
+        /* Dungeon Theme - Dark Charcoal & Torchlight */
         [data-theme="dungeon"] {
             --bg-deep-brown: #0a0a0a;
             --bg-darker-brown: #050505;
@@ -148,10 +114,6 @@
             --hp-yellow: #daa520;
             --hp-red: #8b0000;
         }
-
-        /* ============================================
-           COMPONENT STYLES - Uses theme variables
-           ============================================ */
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -188,16 +150,16 @@
 
         .game-container {
             display: grid;
-            grid-template-columns: 70fr 30fr;  /* 70% main area, 30% sidebar */
-            grid-template-rows: 70px 1fr auto;  /* Header, content area, actions */
-            gap: 16px;  /* Increased from 12px for better spacing */
+            grid-template-columns: 220px 1fr 280px;
+            grid-template-rows: 70px minmax(0, 1fr) 200px 70px;  /* 160px → 200px for navigation */
+            gap: 8px;
             padding: 10px;
             height: 100vh;
             background: var(--bg-deep-brown);
             background-image:
                 repeating-linear-gradient(0deg, transparent, transparent 2px,
                 rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
-            overflow: auto;  /* hidden → auto to allow scroll if needed */
+            overflow: hidden;
         }
 
         .panel {
@@ -278,61 +240,10 @@
                 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        /* Main area - left side (70%) */
-        .main-area {
-            grid-column: 1;
-            grid-row: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            min-height: 400px;  /* Ensure content area is always visible */
-            overflow: auto;  /* Changed from hidden to auto for scrolling */
-        }
-
-        /* Main viewport - adventure log */
+        /* Main viewport - spans middle column */
         .viewport-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 300px;  /* Ensure adventure log is always visible */
-            overflow: visible;  /* Changed from hidden to visible */
-        }
-
-        /* Current Location Indicator */
-        .current-location-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: linear-gradient(180deg, var(--primary-gold), var(--accent-amber));
-            border: 2px solid var(--border-bronze);
-            border-radius: 4px;
-            margin-bottom: 8px;
-            margin-right: 8px;  /* Prevent overlap with sidebar */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .location-icon {
-            font-size: 16px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .location-name {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--text-dark);
-            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
-        }
-
-        /* System Console - spans middle column, row 3 */
-        .system-console-container {
             grid-column: 2;
-            grid-row: 3;
+            grid-row: 2;
             display: flex;
             flex-direction: column;
             min-height: 0;
@@ -353,21 +264,20 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--panel-parchment);
-            border: 3px solid var(--border-wood);  /* Hard pixel border, no glow */
-            border-radius: 0;  /* Sharp corners for pixel-art aesthetic */
-            padding: 8px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 0;
+            padding: 5px;
             min-height: 0;
             overflow: hidden;
             position: relative;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);  /* Subtle depth, no glow */
         }
 
         .scene-image {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            border: 3px solid var(--border-wood);  /* Hard pixel border */
+            border: 2px solid #000;
             display: none;
         }
 
@@ -432,30 +342,12 @@
             border: 3px solid var(--border-wood);
             border-radius: 4px;
             padding: 12px;
-            font-family: 'Courier New', 'Consolas', monospace;  /* More readable font for body text */
-            font-size: 14px;  /* Slightly larger for better readability */
-            line-height: 1.7;  /* More breathing room */
+            font-size: 13px;
+            line-height: 1.6;
             overflow-y: auto;
             position: relative;
             min-height: 0;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        /* System Console - terminal style */
-        .system-console {
-            flex: 1;
-            background: #0a0e0a;  /* Dark terminal background */
-            border: 3px solid var(--border-wood);
-            border-radius: 4px;
-            padding: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            line-height: 1.4;
-            overflow-y: auto;
-            position: relative;
-            min-height: 0;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
-            color: #0f0;  /* Green terminal text */
         }
 
         .viewport::-webkit-scrollbar {
@@ -474,24 +366,6 @@
 
         .viewport::-webkit-scrollbar-thumb:hover {
             background: var(--primary-gold);
-        }
-
-        /* System Console Scrollbar */
-        .system-console::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .system-console::-webkit-scrollbar-track {
-            background: #050805;
-        }
-
-        .system-console::-webkit-scrollbar-thumb {
-            background: #0f0;
-            border-radius: 4px;
-        }
-
-        .system-console::-webkit-scrollbar-thumb:hover {
-            background: #0c0;
         }
 
         .text-line {
@@ -525,13 +399,13 @@
             animation: blink 1s infinite;
         }
 
-        /* Right sidebar - 30% width */
+        /* Right sidebar - contains character + scene viewer */
         .right-sidebar {
-            grid-column: 2;
+            grid-column: 3;
             grid-row: 2;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
             min-height: 0;
             overflow: hidden;
         }
@@ -605,124 +479,12 @@
             animation: blink 0.5s infinite;
         }
 
-        /* Tabbed panel - bottom of sidebar */
-        .tabbed-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+        /* Quest panel - right bottom */
+        .quest-panel {
+            grid-column: 3;
+            grid-row: 3;
             min-height: 0;
             overflow: hidden;
-        }
-
-        .tab-buttons {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 8px;
-        }
-
-        .tab-button {
-            flex: 1;
-            background: linear-gradient(180deg, var(--panel-parchment), var(--panel-parchment-dark));
-            border: 3px solid var(--border-wood);
-            color: var(--text-dark);
-            font-family: 'Press Start 2P', monospace;
-            font-size: 9px;
-            padding: 8px 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-            position: relative;
-        }
-
-        .tab-button .tab-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--alert-rust);
-            color: var(--text-light);
-            font-size: 8px;
-            padding: 2px 6px;
-            border: 2px solid var(--border-wood);
-            border-radius: 0;
-            min-width: 18px;
-            text-align: center;
-            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        .tab-button .tab-hint {
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 7px;
-            color: var(--accent-brown);
-            opacity: 0;
-            white-space: nowrap;
-            transition: opacity 0.2s;
-            pointer-events: none;
-        }
-
-        .tab-button:hover .tab-hint {
-            opacity: 0.8;
-        }
-
-        .tab-button:hover {
-            background: linear-gradient(180deg, var(--primary-gold), var(--accent-amber));
-            transform: translateY(-2px);
-        }
-
-        .tab-button.active {
-            background: linear-gradient(180deg, var(--border-bronze), var(--accent-brown));
-            color: var(--text-light);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-            border-color: var(--primary-gold);
-            border-bottom: 4px solid var(--primary-gold);  /* Hard pixel border, no glow */
-            transform: translateY(0px);
-        }
-
-        .tab-button.active::before {
-            content: '▼';
-            position: absolute;
-            bottom: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: var(--primary-gold);
-            font-size: 10px;
-            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);  /* Hard shadow, not glow */
-        }
-
-        .tab-content {
-            flex: 1;
-            display: none;
-            min-height: 0;
-            overflow: auto;
-            opacity: 0;
-            transition: opacity 0.2s ease-in-out;
-        }
-
-        .tab-content.active {
-            display: flex;
-            flex-direction: column;
-            animation: fadeIn 0.2s ease-in-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Quest panel - inside tabbed panel */
-        .quest-panel {
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            overflow: visible;
         }
 
         .quest-objectives {
@@ -766,12 +528,12 @@
             color: var(--quest-complete);
         }
 
-        /* Map panel - inside tabbed panel */
+        /* Map panel - bottom left corner */
         .map-panel {
-            display: flex;
-            flex-direction: column;
+            grid-column: 1;
+            grid-row: 3;
             min-height: 0;
-            overflow: visible;
+            overflow: hidden;
         }
 
         .map-display {
@@ -806,24 +568,16 @@
             transition: all 0.2s;
         }
 
-        /* Fog of war - unexplored (NAVIGABLE - show with green tint) */
+        /* Fog of war - unexplored */
         .map-cell.unexplored {
-            background: linear-gradient(135deg, #3a2a1a, #3d3020);
-            border: 2px solid #5a7a5a;  /* Green tint to show navigability */
-            box-shadow: inset 0 0 8px rgba(90, 122, 90, 0.3);
+            background: #3a2a1a;
+            border-color: var(--border-wood);
         }
 
         .map-cell.unexplored::after {
             content: "?";
-            color: #7a9a7a;  /* Light green */
-            font-size: 16px;
-            font-weight: bold;
-            text-shadow: 0 0 4px rgba(90, 122, 90, 0.8);
-        }
-
-        .map-cell.unexplored:hover {
-            border-color: #6a9a6a;
-            box-shadow: inset 0 0 12px rgba(90, 122, 90, 0.5);
+            color: var(--accent-brown);
+            font-size: 14px;
         }
 
         /* Scouted locations (seen but not visited) */
@@ -853,26 +607,10 @@
             opacity: 1;
         }
 
-        /* Underground locations - Enhanced for clarity */
+        /* Underground locations */
         .map-cell.underground {
             background: #2a1a10;
             border-color: var(--border-wood);
-        }
-
-        .map-cell.underground.unexplored {
-            background: linear-gradient(135deg, #2a1a10, #2d1d15);
-            border: 2px solid #4a5a6a;  /* Blue-gray tint for underground */
-            box-shadow: inset 0 0 8px rgba(74, 90, 106, 0.3);
-        }
-
-        .map-cell.underground.unexplored::after {
-            color: #6a8a9a;  /* Light blue-gray */
-            text-shadow: 0 0 4px rgba(74, 90, 106, 0.8);
-        }
-
-        .map-cell.underground.unexplored:hover {
-            border-color: #5a7a8a;
-            box-shadow: inset 0 0 12px rgba(74, 90, 106, 0.5);
         }
 
         .map-cell.underground.visited {
@@ -907,82 +645,21 @@
             filter: brightness(1.5);
         }
 
-        /* Walls/Blocked paths - ENHANCED for visibility */
+        /* Walls/Blocked paths */
         .map-cell.wall-north {
-            border-top: 6px solid #000;
-            box-shadow: inset 0 4px 6px rgba(220, 20, 60, 0.4);
+            border-top: 3px solid #000;
         }
 
         .map-cell.wall-south {
-            border-bottom: 6px solid #000;
-            box-shadow: inset 0 -4px 6px rgba(220, 20, 60, 0.4);
+            border-bottom: 3px solid #000;
         }
 
         .map-cell.wall-east {
-            border-right: 6px solid #000;
-            box-shadow: inset -4px 0 6px rgba(220, 20, 60, 0.4);
+            border-right: 3px solid #000;
         }
 
         .map-cell.wall-west {
-            border-left: 6px solid #000;
-            box-shadow: inset 4px 0 6px rgba(220, 20, 60, 0.4);
-        }
-
-        /* Directional indicators for walls */
-        .map-cell.wall-north:not(.wall-south):not(.wall-east):not(.wall-west)::before {
-            content: "▲";
-            position: absolute;
-            top: 2px;
-            color: #ff4444;
-            font-size: 10px;
-            opacity: 0.8;
-        }
-
-        .map-cell.wall-south:not(.wall-north):not(.wall-east):not(.wall-west)::before {
-            content: "▼";
-            position: absolute;
-            bottom: 2px;
-            color: #ff4444;
-            font-size: 10px;
-            opacity: 0.8;
-        }
-
-        .map-cell.wall-east:not(.wall-north):not(.wall-south):not(.wall-west)::before {
-            content: "▶";
-            position: absolute;
-            right: 2px;
-            color: #ff4444;
-            font-size: 10px;
-            opacity: 0.8;
-        }
-
-        .map-cell.wall-west:not(.wall-north):not(.wall-south):not(.wall-east)::before {
-            content: "◀";
-            position: absolute;
-            left: 2px;
-            color: #ff4444;
-            font-size: 10px;
-            opacity: 0.8;
-        }
-
-        /* Completely blocked cell (all 4 walls) */
-        .map-cell.wall-north.wall-south.wall-east.wall-west {
-            background: #1a1010 !important;
-            border: 4px solid #8b0000 !important;
-            box-shadow: inset 0 0 12px rgba(139, 0, 0, 0.6);
-            cursor: not-allowed;
-        }
-
-        .map-cell.wall-north.wall-south.wall-east.wall-west::after {
-            content: "⛔";
-            color: #cd5c5c;
-            font-size: 18px;
-            position: absolute;
-            text-shadow: 0 0 6px rgba(205, 92, 92, 0.8);
-        }
-
-        .map-cell.wall-north.wall-south.wall-east.wall-west:hover {
-            border-color: #b22222;
+            border-left: 3px solid #000;
         }
 
         /* Hover tooltip */
@@ -1463,29 +1140,28 @@
             color: #0a0;
         }
 
-        /* Navigation panel - inside actions-navigation container */
+        /* Navigation - center bottom - split layout */
         .navigation-panel {
-            display: flex;
-            flex-direction: column;
+            grid-column: 2;
+            grid-row: 3;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 15px;
             min-height: 0;
-        }
-
-        .navigation-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            overflow: hidden;
+            padding: 15px;
+            align-items: center;
         }
 
         /* Contextual Actions - Left Side */
         .contextual-actions-panel {
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;  /* center → flex-start to prevent cutoff */
+            justify-content: center;
             align-items: stretch;
             border-right: 3px solid var(--border-wood);
             padding-right: 15px;
             gap: 8px;
-            height: 100%;  /* Ensure full height */
         }
 
         .contextual-actions {
@@ -1500,9 +1176,9 @@
             border: 3px solid var(--border-wood);
             border-radius: 6px;
             color: var(--text-light);
-            font-size: 11px;  /* 12px → 11px */
+            font-size: 12px;
             font-weight: bold;
-            padding: 12px 14px;  /* 14px 16px → 12px 14px */
+            padding: 14px 16px;
             cursor: pointer;
             text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
             box-shadow:
@@ -1530,17 +1206,16 @@
         .navigation-wrapper {
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;  /* center → flex-start */
+            justify-content: center;
             align-items: center;
             padding-left: 10px;
-            height: 100%;  /* Ensure full height */
         }
 
         .navigation {
             display: grid;
-            grid-template-columns: repeat(3, 85px);  /* 90px → 85px to fit better */
-            grid-template-rows: repeat(3, 42px);  /* 45px → 42px to fit all rows */
-            gap: 6px;  /* 8px → 6px to save space */
+            grid-template-columns: repeat(3, 90px);
+            grid-template-rows: repeat(3, 45px);
+            gap: 8px;
             max-width: 320px;
             justify-content: center;
         }
@@ -1593,12 +1268,15 @@
         #east { grid-column: 3; grid-row: 2; }
         #south { grid-column: 2; grid-row: 3; }
 
-        /* Actions & Navigation container - bottom of main area */
-        .actions-navigation-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            min-height: 150px;
+        /* Left sidebar - inventory and info */
+        .left-sidebar {
+            grid-column: 1;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+            overflow: hidden;
         }
 
         .inventory-panel {
@@ -1660,9 +1338,13 @@
             font-style: italic;
         }
 
-        /* Action Bar - HIDDEN (redundant with Actions panel) */
+        /* Action Bar */
         .action-panel {
-            display: none;  /* Removed from layout */
+            grid-column: 1 / -1;
+            grid-row: 4;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
         }
 
         .action-button {
@@ -1780,7 +1462,7 @@
             font-size: 24px;
             cursor: pointer;
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-            display: none;  /* Hidden by default on desktop */
+            display: flex;
             align-items: center;
             justify-content: center;
         }
@@ -1831,75 +1513,72 @@
         }
 
         /* Responsive Design */
-        @media (max-width: 600px) {
+        @media (max-width: 1024px) {
             .game-container {
                 grid-template-columns: 1fr;
-                grid-template-rows: auto auto auto;
+                grid-template-rows: auto 1fr auto auto;
             }
 
-            .header {
-                grid-column: 1;
-                grid-row: 1;
-            }
-
-            .main-area {
-                grid-column: 1;
-                grid-row: 2;
-            }
-
-            .right-sidebar {
+            .header { grid-column: 1; }
+            .viewport-container { grid-column: 1; grid-row: 2; }
+            .navigation-panel {
                 grid-column: 1;
                 grid-row: 3;
-                max-height: 400px;
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+            }
+            .action-panel { grid-column: 1; grid-row: 4; }
+
+            .left-sidebar,
+            .character-panel,
+            .quest-panel,
+            .map-panel {
+                display: none;
             }
 
             .mobile-buttons {
                 display: flex;
             }
 
-            .mobile-action-btn {
-                display: flex;  /* Show on mobile */
+            .contextual-actions-panel {
+                border-right: none;
+                border-bottom: 2px solid var(--border-wood);
+                padding-right: 0;
+                padding-bottom: 10px;
+                margin-bottom: 10px;
             }
 
-            .actions-navigation-container {
-                grid-template-columns: 1fr;
+            .navigation-wrapper {
+                padding-left: 0;
+                padding-top: 10px;
             }
 
             .navigation {
                 grid-template-columns: repeat(3, 100px);
                 grid-template-rows: repeat(3, 60px);
             }
-
-            .tabbed-panel {
-                max-height: 200px;
-            }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .game-title {
-                font-size: 18px;
+                font-size: 20px;
             }
 
             .subtitle {
-                font-size: 9px;
+                font-size: 10px;
             }
 
             .navigation {
-                grid-template-columns: repeat(3, 70px);
-                grid-template-rows: repeat(3, 45px);
+                grid-template-columns: repeat(3, 80px);
+                grid-template-rows: repeat(3, 50px);
             }
 
-            .tab-button {
-                font-size: 8px;
-                padding: 6px 2px;
-            }
-
-            .viewport {
-                font-size: 13px;
+            .action-panel {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
-        /* Theme Switcher Dropdown - Pixel Art Style */
+        /* Theme Switcher Dropdown */
         .theme-selector-container {
             position: absolute;
             top: 10px;
@@ -1911,50 +1590,38 @@
         }
 
         .theme-label {
-            color: var(--primary-gold);
-            font-size: 11px;
-            font-family: 'Press Start 2P', monospace;
-            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
         }
 
         .theme-dropdown {
-            background: linear-gradient(180deg, var(--panel-parchment), var(--panel-parchment-dark));
-            border: 3px solid var(--border-wood);
-            border-radius: 0;  /* Sharp corners for pixel-art */
-            color: var(--text-dark);
-            font-family: 'Press Start 2P', monospace;
-            font-size: 9px;
-            padding: 8px 12px;
+            background: #fff;
+            border: 2px solid #000;
+            color: #000;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 0;
             cursor: pointer;
-            box-shadow:
-                inset 1px 1px 0 var(--border-bronze),
-                2px 2px 4px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s;
+            transition: none;
             outline: none;
         }
 
         .theme-dropdown:hover {
-            background: linear-gradient(180deg, var(--primary-gold), var(--accent-amber));
-            border-color: var(--border-bronze);
-            transform: translateY(-1px);
-            box-shadow:
-                inset 1px 1px 0 var(--primary-gold),
-                3px 3px 6px rgba(0, 0, 0, 0.4);
+            background: #fff;
+            border-color: #000;
         }
 
         .theme-dropdown:focus {
-            border-color: var(--border-bronze);
-            box-shadow:
-                0 0 0 2px var(--primary-gold),
-                2px 2px 4px rgba(0, 0, 0, 0.3);
+            border-color: #000;
         }
 
         .theme-dropdown option {
-            background: var(--panel-parchment);
-            color: var(--text-dark);
-            font-family: 'Press Start 2P', monospace;
-            font-size: 9px;
-            padding: 8px;
+            background: #fff;
+            color: #000;
+            padding: 5px;
         }
     </style>
 </head>
@@ -1966,192 +1633,139 @@
             <div class="subtitle">AN AI-POWERED DUNGEON & DRAGONS ADVENTURE</div>
         </div>
 
-        <!-- Main Gameplay Area (70% - Left Side) -->
-        <div class="main-area">
-            <!-- Adventure Log -->
-            <div class="viewport-container panel">
-                <div class="panel-title">ADVENTURE LOG</div>
-                <div class="current-location-indicator" id="current-location">
-                    <span class="location-icon">📍</span>
-                    <span class="location-name">Starting Tavern</span>
-                </div>
-                <div class="viewport" id="viewport">
-                    <div class="text-line quest">Welcome, brave adventurer!</div>
-                    <div class="text-line quest">Your quest: Rescue miners trapped beneath Emberpeak and seal the shattered rune.</div>
-                    <div class="text-line">You find yourself in a dimly lit tavern. The air is thick with pipe smoke and hushed conversations.</div>
-                    <div class="text-line">Two seasoned adventurers sit at the bar - a cunning Rogue and a battle-hardened Fighter.</div>
-                    <div class="text-line">They turn to greet you as you approach...</div>
-                    <div class="text-line cursor"></div>
-                </div>
-            </div>
-
-            <!-- Actions & Navigation (Side by Side) -->
-            <div class="actions-navigation-container">
-                <!-- Actions Panel -->
-                <div class="contextual-actions-panel panel">
-                    <div class="panel-title">ACTIONS</div>
-                    <div class="contextual-actions" id="contextual-actions">
-                        <!-- Dynamically populated based on context -->
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
+            <!-- Inventory -->
+            <div class="panel inventory-panel">
+                <div class="panel-title">INVENTORY</div>
+                <div class="inventory-grid" id="inventory">
+                    <div class="inventory-item">
+                        <div class="item-name">Dagger</div>
+                        <div class="item-desc">1d4 damage</div>
                     </div>
-                </div>
-
-                <!-- Navigation Panel -->
-                <div class="navigation-panel panel">
-                    <div class="panel-title">NAVIGATION</div>
-                    <div class="navigation">
-                        <button class="nav-button" id="north">▲<br>NORTH</button>
-                        <button class="nav-button" id="west">◄<br>WEST</button>
-                        <button class="nav-button" id="examine">👁<br>LOOK</button>
-                        <button class="nav-button" id="east">►<br>EAST</button>
-                        <button class="nav-button" id="south">▼<br>SOUTH</button>
+                    <div class="inventory-item">
+                        <div class="item-name">Lockpicks</div>
+                        <div class="item-desc">+2 lockpick bonus</div>
+                    </div>
+                    <div class="inventory-item">
+                        <div class="item-name">Rope (50ft)</div>
+                        <div class="item-desc">Useful tool</div>
+                    </div>
+                    <div class="inventory-item">
+                        <div class="item-name">Torch</div>
+                        <div class="item-desc">Light source</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Player Status Sidebar (30% - Right Side) -->
+        <!-- Main Viewport -->
+        <div class="viewport-container panel">
+            <div class="panel-title">[ ADVENTURE LOG ]</div>
+            <div class="viewport" id="viewport">
+                <div class="text-line quest">Welcome, brave adventurer!</div>
+                <div class="text-line quest">Your quest: Rescue miners trapped beneath Emberpeak and seal the shattered rune.</div>
+                <div class="text-line">You find yourself in a dimly lit tavern. The air is thick with pipe smoke and hushed conversations.</div>
+                <div class="text-line">Two seasoned adventurers sit at the bar - a cunning Rogue and a battle-hardened Fighter.</div>
+                <div class="text-line">They turn to greet you as you approach...</div>
+                <div class="text-line cursor"></div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Character + Scene Viewer -->
         <div class="right-sidebar">
-            <!-- Character Panel (Top) -->
-            <div class="character-panel panel">
-                <div class="panel-title">CHARACTER</div>
-                <div class="stats-grid">
-                    <div class="stat-label">Name:</div>
-                    <div class="stat-value" id="char-name">Hero 1</div>
-
-                    <div class="stat-label">Class:</div>
-                    <div class="stat-value" id="char-class">Rogue</div>
-
-                    <div class="stat-label">Level:</div>
-                    <div class="stat-value">3</div>
-
-                    <div class="hp-bar-container">
-                        <div class="hp-bar" id="hp-bar" style="width: 100%">
-                            <span id="hp-text">50 / 50 HP</span>
-                        </div>
-                    </div>
-
-                    <div class="stat-label">STR:</div>
-                    <div class="stat-value">14 (+2)</div>
-
-                    <div class="stat-label">DEX:</div>
-                    <div class="stat-value">18 (+4)</div>
-
-                    <div class="stat-label">CON:</div>
-                    <div class="stat-value">12 (+1)</div>
+        <!-- Scene Viewer - AI Generated Imagery -->
+        <div class="scene-viewer-panel panel">
+            <div class="panel-title">SCENE VIEWER 🍌</div>
+            <div class="scene-viewer-content">
+                <img id="scene-image" class="scene-image" alt="Generated scene">
+                <div id="scene-loading" class="scene-loading">
+                    Generating scene with Nano Banana
                 </div>
+                <div id="scene-error" class="scene-error"></div>
+                <div id="scene-fallback" class="scene-fallback"></div>
             </div>
+        </div>
 
-            <!-- Scene Viewer (Middle) -->
-            <div class="scene-viewer-panel panel">
-                <div class="panel-title">SCENE VIEWER 🍌</div>
-                <div class="scene-viewer-content">
-                    <img id="scene-image" class="scene-image" alt="Generated scene">
-                    <div id="scene-loading" class="scene-loading">
-                        Generating scene with Nano Banana
-                    </div>
-                    <div id="scene-error" class="scene-error"></div>
-                    <div id="scene-fallback" class="scene-fallback"></div>
-                </div>
-            </div>
+            <!-- Character Panel -->
+        <div class="character-panel panel">
+            <div class="panel-title">CHARACTER</div>
+            <div class="stats-grid">
+                <div class="stat-label">Name:</div>
+                <div class="stat-value" id="char-name">Hero 1</div>
 
-            <!-- Tabbed Panel (Bottom) - Inventory/Map/Quest Log -->
-            <div class="tabbed-panel panel">
-                <div class="panel-title">REFERENCE</div>
+                <div class="stat-label">Class:</div>
+                <div class="stat-value" id="char-class">Rogue</div>
 
-                <!-- Tab Buttons -->
-                <div class="tab-buttons">
-                    <button class="tab-button active" data-tab="inventory">
-                        INVENTORY
-                        <span class="tab-badge" id="inventory-count">4</span>
-                        <span class="tab-hint">Press 1</span>
-                    </button>
-                    <button class="tab-button" data-tab="map">
-                        MAP
-                        <span class="tab-hint">Press 2</span>
-                    </button>
-                    <button class="tab-button" data-tab="quest">
-                        QUEST LOG
-                        <span class="tab-badge" id="quest-count">4</span>
-                        <span class="tab-hint">Press 3</span>
-                    </button>
-                </div>
+                <div class="stat-label">Level:</div>
+                <div class="stat-value">3</div>
 
-                <!-- Tab Content: Inventory -->
-                <div class="tab-content active" id="tab-inventory">
-                    <div class="inventory-panel">
-                        <div class="inventory-grid" id="inventory">
-                            <div class="inventory-item">
-                                <div class="item-name">Dagger</div>
-                                <div class="item-desc">1d4 damage</div>
-                            </div>
-                            <div class="inventory-item">
-                                <div class="item-name">Lockpicks</div>
-                                <div class="item-desc">+2 lockpick bonus</div>
-                            </div>
-                            <div class="inventory-item">
-                                <div class="item-name">Rope (50ft)</div>
-                                <div class="item-desc">Useful tool</div>
-                            </div>
-                            <div class="inventory-item">
-                                <div class="item-name">Torch</div>
-                                <div class="item-desc">Light source</div>
-                            </div>
-                        </div>
+                <div class="hp-bar-container">
+                    <div class="hp-bar" id="hp-bar" style="width: 100%">
+                        <span id="hp-text">50 / 50 HP</span>
                     </div>
                 </div>
 
-                <!-- Tab Content: Map -->
-                <div class="tab-content" id="tab-map">
-                    <div class="map-panel">
-                        <div class="map-display">
-                            <div class="map-grid" id="map"></div>
-                        </div>
-                        <div class="map-legend">
-                            <div class="map-legend-title">MAP LEGEND</div>
-                            <div class="map-legend-items">
-                                <div class="map-legend-item">
-                                    <div class="map-legend-symbol legend-unexplored">?</div>
-                                    <span style="color: var(--text-light);">Unexplored (Can Enter)</span>
-                                </div>
-                                <div class="map-legend-item">
-                                    <div class="map-legend-symbol legend-visited">🍺</div>
-                                    <span style="color: var(--text-light);">Visited</span>
-                                </div>
-                                <div class="map-legend-item">
-                                    <div class="map-legend-symbol legend-wall">▲</div>
-                                    <span style="color: var(--text-light);">Blocked Direction</span>
-                                </div>
-                                <div class="map-legend-item">
-                                    <div class="map-legend-symbol legend-blocked">⛔</div>
-                                    <span style="color: var(--text-light);">Fully Blocked</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div class="stat-label">STR:</div>
+                <div class="stat-value">14 (+2)</div>
 
-                <!-- Tab Content: Quest Log -->
-                <div class="tab-content" id="tab-quest">
-                    <div class="quest-panel">
-                        <div class="quest-objectives">
-                            <div class="objective" id="obj1">Gather your party</div>
-                            <div class="objective" id="obj2">Reach Emberpeak Mines</div>
-                            <div class="objective" id="obj3">Rescue the trapped miners</div>
-                            <div class="objective" id="obj4">Seal the shattered rune</div>
-                        </div>
-                    </div>
+                <div class="stat-label">DEX:</div>
+                <div class="stat-value">18 (+4)</div>
+
+                <div class="stat-label">CON:</div>
+                <div class="stat-value">12 (+1)</div>
                 </div>
             </div>
         </div>
 
-        <!-- System Console (Hidden by default - can be toggled) -->
-        <div class="system-console-container panel" style="display: none;">
-            <div class="panel-title">[ SYSTEM CONSOLE ]</div>
-            <div class="system-console" id="system-console">
-                <div class="system-log info">&gt; System initialized...</div>
-                <div class="system-log success">&gt; Backend connection: Ready</div>
-                <div class="system-log info">&gt; Awaiting game events...</div>
+        <!-- Map Panel - Bottom Left -->
+        <div class="map-panel panel">
+            <div class="panel-title">MAP</div>
+            <div class="map-display">
+                <div class="map-grid" id="map"></div>
             </div>
+        </div>
+
+        <!-- Navigation - Center Bottom -->
+        <div class="navigation-panel panel">
+            <!-- Left: Contextual Actions -->
+            <div class="contextual-actions-panel">
+                <div class="panel-title">ACTIONS</div>
+                <div class="contextual-actions" id="contextual-actions">
+                    <!-- Dynamically populated based on context -->
+                </div>
+            </div>
+
+            <!-- Right: Navigation -->
+            <div class="navigation-wrapper">
+                <div class="panel-title">NAVIGATION</div>
+                <div class="navigation">
+                    <button class="nav-button" id="north">▲<br>NORTH</button>
+                    <button class="nav-button" id="west">◄<br>WEST</button>
+                    <button class="nav-button" id="examine">👁<br>LOOK</button>
+                    <button class="nav-button" id="east">►<br>EAST</button>
+                    <button class="nav-button" id="south">▼<br>SOUTH</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quest Panel - Right Bottom -->
+        <div class="quest-panel panel">
+            <div class="panel-title">QUEST LOG</div>
+            <div class="quest-objectives">
+                <div class="objective" id="obj1">Gather your party</div>
+                <div class="objective" id="obj2">Reach Emberpeak Mines</div>
+                <div class="objective" id="obj3">Rescue the trapped miners</div>
+                <div class="objective" id="obj4">Seal the shattered rune</div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="action-panel">
+            <button class="action-button primary" id="talk-btn">💬 TALK</button>
+            <button class="action-button" id="attack-btn">⚔ ATTACK</button>
+            <button class="action-button" id="skill-btn">🎯 SKILL CHECK</button>
+            <button class="action-button danger" id="rest-btn">🛌 REST</button>
         </div>
     </div>
 
@@ -2245,74 +1859,7 @@
     </div>
 
     <script>
-        // ============================================
-        // TAB SWITCHING FUNCTIONALITY
-        // ============================================
-        document.addEventListener('DOMContentLoaded', function() {
-            // Tab switching
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            function switchTab(tabName) {
-                // Remove active class from all buttons and contents
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-
-                // Add active class to target tab
-                const targetButton = document.querySelector(`[data-tab="${tabName}"]`);
-                const targetContent = document.getElementById(`tab-${tabName}`);
-
-                if (targetButton && targetContent) {
-                    targetButton.classList.add('active');
-                    targetContent.classList.add('active');
-
-                    // Save last active tab to localStorage
-                    localStorage.setItem('lastActiveTab', tabName);
-                }
-            }
-
-            // Click handler
-            tabButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const tabName = this.getAttribute('data-tab');
-                    switchTab(tabName);
-                });
-            });
-
-            // Keyboard shortcuts: 1, 2, 3 for tabs (only when not typing)
-            document.addEventListener('keydown', function(e) {
-                // Don't trigger if user is typing in an input/textarea
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-                    return;
-                }
-
-                // Tab shortcuts
-                const keyMap = {
-                    '1': 'inventory',
-                    '2': 'map',
-                    '3': 'quest'
-                };
-
-                if (keyMap[e.key]) {
-                    e.preventDefault();
-                    switchTab(keyMap[e.key]);
-                    console.log(`🎹 Keyboard shortcut: Switched to ${keyMap[e.key]} tab`);
-                }
-            });
-
-            // Restore last active tab on load
-            const lastTab = localStorage.getItem('lastActiveTab');
-            if (lastTab) {
-                switchTab(lastTab);
-                console.log(`💾 Restored last tab: ${lastTab}`);
-            }
-
-            console.log('✅ Tab switching initialized (with keyboard shortcuts: 1, 2, 3)');
-        });
-
-        // ============================================
-        // ITEM DATABASE
-        // ============================================
+        // Item Database
         const itemDatabase = {
             'Dagger': {
                 name: 'Dagger',
@@ -2628,7 +2175,6 @@
                     cached.useCount = (cached.useCount || 0) + 1;
                     this.saveCache();
                     console.log(`📦 Using cached scene: ${key} (used ${cached.useCount} times)`);
-                    addSystemLog(`📦 Using cached scene: ${key} (used ${cached.useCount} times)`, 'cache');
                 }
 
                 return cached;
@@ -2653,7 +2199,6 @@
 
                 this.saveCache();
                 console.log(`💾 Cached scene: ${key}`);
-                addSystemLog(`💾 Cached scene: ${key}`, 'cache');
             }
 
             /**
@@ -2674,7 +2219,6 @@
                 if (removed > 0) {
                     this.saveCache();
                     console.log(`🗑️ Cleaned up ${removed} old scenes`);
-                    addSystemLog(`🗑️ Cleaned up ${removed} old scenes from cache`, 'cache');
                 }
             }
 
@@ -2697,7 +2241,6 @@
                 this.cache = {};
                 this.saveCache();
                 console.log('🗑️ Cleared all cached scenes');
-                addSystemLog('🗑️ Cleared all cached scenes', 'cache');
             }
         }
 
@@ -2753,7 +2296,6 @@
                 this.saveLibrary();
                 const promptInfo = customPrompt ? ` with custom prompt: "${customPrompt}"` : '';
                 console.log(`💾 Saved image ${imageId} for ${itemName}${promptInfo}`);
-                addSystemLog(`💾 Saved image ${imageId} for ${itemName}${promptInfo}`, 'success');
                 return imageId;
             }
 
@@ -2788,7 +2330,6 @@
                     this.library[itemName].featured = imageId;
                     this.saveLibrary();
                     console.log(`⭐ Set ${imageId} as featured for ${itemName}`);
-                    addSystemLog(`⭐ Set ${imageId} as featured for ${itemName}`, 'success');
                 }
             }
 
@@ -2830,8 +2371,6 @@
         class NanoBananaGenerator {
             constructor(apiUrl = 'http://localhost:8000/api/v1') {
                 this.apiUrl = apiUrl;
-                this.useBackend = true; // Toggle for testing - set to false for placeholder mode
-                this.backendAvailable = false;
                 this.imageCache = new Map();
                 this.isGenerating = false;
                 this.quotaExhausted = false;
@@ -2845,35 +2384,6 @@
                     timeOfDay: 'dawn',
                     weather: 'clear'
                 };
-            }
-
-            /**
-             * Initialize the generator and check backend connection
-             */
-            async initialize() {
-                console.log('🍌 Initializing Nano Banana Generator...');
-                addSystemLog('🍌 Initializing Nano Banana Generator...', 'info');
-
-                if (!this.useBackend) {
-                    console.warn('⚠️ Backend disabled by configuration');
-                    this.disabled = true;
-                    addText('⚠️ Image generation disabled (placeholder mode)', 'system');
-                    return false;
-                }
-
-                this.backendAvailable = await this.checkHealth();
-
-                if (!this.backendAvailable) {
-                    console.warn('⚠️ Backend offline, using placeholder mode');
-                    this.disabled = true;
-                    addText('⚠️ Image generation unavailable (backend offline)', 'system');
-                    return false;
-                }
-
-                console.log('✅ Backend connected and ready');
-                addSystemLog('✅ Backend connected and ready', 'success');
-                addText('✅ Image generation ready', 'system');
-                return true;
             }
 
             /**
@@ -2934,7 +2444,6 @@
 
                     // Step 1: Search database for existing image
                     console.log('🔍 Searching database for:', subjectName);
-                    addSystemLog(`🔍 Searching database for: ${subjectName}`, 'api');
                     const searchUrl = `${this.apiUrl}/images/search?subject_name=${encodeURIComponent(subjectName)}&subject_type=scene`;
                     const searchResponse = await fetch(searchUrl);
 
@@ -2942,7 +2451,6 @@
                         const searchData = await searchResponse.json();
                         if (searchData.total > 0) {
                             console.log('📦 Found in database! Loading from backend...');
-                            addSystemLog(`📦 Found in database! Loading image ${searchData.items[0].id}`, 'cache');
                             const image = searchData.items[0];
 
                             // Get the actual image data
@@ -3005,7 +2513,6 @@
                     // FastAPI backend returns image data directly
                     if (data.id && data.storage_path_full) {
                         console.log(`✅ Image generated in ${data.generation_time_ms}ms`);
-                        addSystemLog(`✅ Image generated in ${data.generation_time_ms}ms (ID: ${data.id})`, 'success');
 
                         // Get the image data
                         const imageResponse = await fetch(`${this.apiUrl}/images/${data.id}`);
@@ -3164,7 +2671,6 @@
             clearCache() {
                 this.imageCache.clear();
                 console.log('🗑️ Image cache cleared');
-                addSystemLog('🗑️ Image cache cleared', 'cache');
             }
 
             /**
@@ -3422,7 +2928,6 @@
         function debounceAction(actionFn, cooldownMs = 300) {
             if (actionCooldown) {
                 console.log('⏱️ Action on cooldown');
-                addSystemLog('⏱️ Action on cooldown', 'warning');
                 return;
             }
 
@@ -3459,7 +2964,6 @@
             };
             localStorage.setItem('aidnd_savegame', JSON.stringify(saveData));
             console.log('💾 Game saved');
-            addSystemLog('💾 Game saved to localStorage', 'success');
         }
 
         /**
@@ -3492,7 +2996,6 @@
 
                 addText('💾 Game loaded successfully!', 'success');
                 console.log('✅ Game loaded');
-                addSystemLog('✅ Game loaded from localStorage', 'success');
                 return true;
             } catch (e) {
                 console.error('❌ Load failed:', e);
@@ -3605,23 +3108,7 @@
             initMap('map-modal-grid');
         }
 
-        // Update location indicator display
-        function updateLocationIndicator() {
-            const { x, y } = gameState.currentLocation;
-            const locationKey = `${x},${y}`;
-            const location = gameState.locations[locationKey];
-
-            if (location) {
-                const locationIndicator = document.getElementById('current-location');
-                const locationIcon = locationIndicator.querySelector('.location-icon');
-                const locationName = locationIndicator.querySelector('.location-name');
-
-                locationIcon.textContent = location.icon || '📍';
-                locationName.textContent = location.name;
-            }
-        }
-
-        // Add text to viewport (Adventure Log)
+        // Add text to viewport
         function addText(text, className = '') {
             const viewport = document.getElementById('viewport');
             const cursor = document.querySelector('.cursor');
@@ -3641,28 +3128,6 @@
             viewport.scrollTop = viewport.scrollHeight;
         }
 
-        // Add text to system console (Technical Log)
-        function addSystemLog(text, type = 'info') {
-            const console = document.getElementById('system-console');
-
-            const line = document.createElement('div');
-            line.className = 'system-log ' + type;
-
-            // Add timestamp
-            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
-            line.textContent = `[${timestamp}] ${text}`;
-
-            console.appendChild(line);
-
-            // Limit message history to 200 lines for system console
-            const allLines = console.querySelectorAll('.system-log');
-            if (allLines.length > 200) {
-                allLines[0].remove();
-            }
-
-            console.scrollTop = console.scrollHeight;
-        }
-
         // Navigation
         function move(direction) {
             // Prevent movement during combat
@@ -3670,15 +3135,6 @@
                 addText("⚠️ You can't move during combat!", 'damage');
                 return;
             }
-
-            // Immediate feedback
-            const directionSymbol = {
-                'north': '⬆️',
-                'south': '⬇️',
-                'east': '➡️',
-                'west': '⬅️'
-            };
-            addText(`${directionSymbol[direction]} Moving ${direction}...`, 'system');
 
             const { x, y } = gameState.currentLocation;
             const currentKey = `${x},${y}`;
@@ -3737,7 +3193,6 @@
                 addText(location.description);
                 updateMap();
                 updateContextualActions(); // Update available actions based on new location
-                updateLocationIndicator(); // Update location display
                 saveGameState(); // Auto-save after movement
 
                 // Decrement cooldown
@@ -3997,24 +3452,16 @@
             ]
         };
 
-        // Action buttons (only if they exist - they may be dynamically created)
-        const talkBtn = document.getElementById('talk-btn');
-        if (talkBtn) {
-            talkBtn.onclick = () => {
-                if (gameState.inCombat) {
-                    addText("⚠️ Not a great time for chatting!", 'damage');
-                    return;
-                }
+        // Action buttons
+        document.getElementById('talk-btn').onclick = () => {
+            if (gameState.inCombat) {
+                addText("⚠️ Not a great time for chatting!", 'damage');
+                return;
+            }
 
-                // Immediate feedback
-                addText("💬 You initiate a conversation...", 'system');
-
-                const locationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
-                setTimeout(() => {
-                    handleQuestInteraction(locationKey);
-                }, 200); // Small delay for realism
-            };
-        }
+            const locationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
+            handleQuestInteraction(locationKey);
+        };
 
         // Quest interaction handler
         function handleQuestInteraction(locationKey) {
@@ -4115,31 +3562,21 @@
             }
         }
 
-        const attackBtn = document.getElementById('attack-btn');
-        if (attackBtn) {
-            attackBtn.onclick = () => {
-                addText("⚔️ Preparing to attack...", 'combat');  // Immediate feedback
-                setTimeout(() => {
-                    addText("There's nothing to attack here. Try moving to find encounters!", 'damage');
-                }, 200);
-            };
-        }
+        document.getElementById('attack-btn').onclick = () => {
+            addText("There's nothing to attack here. Try moving to find encounters!", 'damage');
+        };
 
-        const skillBtn = document.getElementById('skill-btn');
-        if (skillBtn) {
-            skillBtn.onclick = () => {
+        document.getElementById('skill-btn').onclick = () => {
             if (gameState.inCombat) {
                 addText("⚠️ You're too busy fighting!", 'damage');
                 return;
             }
 
-            addText("🎲 Rolling skill check...", 'system');  // Immediate feedback
-            setTimeout(() => {
-                const roll = Math.floor(Math.random() * 20) + 1;
-                const skills = ['Perception', 'Investigation', 'Stealth', 'Sleight of Hand'];
-                const skill = skills[Math.floor(Math.random() * skills.length)];
-                const bonus = Math.floor(Math.random() * 5) + 1;
-                const total = roll + bonus;
+            const roll = Math.floor(Math.random() * 20) + 1;
+            const skills = ['Perception', 'Investigation', 'Stealth', 'Sleight of Hand'];
+            const skill = skills[Math.floor(Math.random() * skills.length)];
+            const bonus = Math.floor(Math.random() * 5) + 1;
+            const total = roll + bonus;
 
             addText(`${skill} Check: d20(${roll}) + ${bonus} = ${total}`, 'success');
 
@@ -4185,29 +3622,20 @@
             } else {
                 addText('You find nothing of note.', '');
             }
-            }, 300); // End setTimeout for skill check
-            };
-        }
+        };
 
-        const restBtn = document.getElementById('rest-btn');
-        if (restBtn) {
-            restBtn.onclick = () => {
-                const healed = Math.min(gameState.maxHP - gameState.playerHP, 20);
-                updateHP(gameState.playerHP + healed);
-                addText(`You take a short rest and recover ${healed} HP.`, 'success');
-            };
-        }
+        document.getElementById('rest-btn').onclick = () => {
+            const healed = Math.min(gameState.maxHP - gameState.playerHP, 20);
+            updateHP(gameState.playerHP + healed);
+            addText(`You take a short rest and recover ${healed} HP.`, 'success');
+        };
 
         document.getElementById('examine').onclick = () => {
             const key = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
             const location = gameState.locations[key];
             if (location) {
-                addText(`👁 You look around...`, 'system');  // Immediate feedback
-                setTimeout(() => {
-                    addText(`You examine ${location.name}...`);
-                    addText(location.description);
-                    updateContextualActions(); // Refresh available actions
-                }, 200); // Small delay for realism
+                addText(`You examine ${location.name}...`);
+                addText(location.description);
             }
         };
 
@@ -4519,9 +3947,6 @@
             renderObjectives();
         }
 
-        // Update location indicator on page load
-        updateLocationIndicator();
-
         // Close modals on background click
         window.onclick = (event) => {
             if (event.target.classList.contains('modal')) {
@@ -4555,7 +3980,6 @@
             const cachedScene = nanoBanana.sceneCache.get(location, timeOfDay, weather);
             if (cachedScene) {
                 console.log('📦 Loading scene from cache (no API call needed)');
-                addSystemLog('📦 Loading scene from cache (no API call needed)', 'cache');
                 nanoBanana.displayImage(cachedScene.imageData);
                 addText('📦 Loaded cached scene - no generation needed!', 'success');
                 return;
@@ -4573,7 +3997,6 @@
 
             // 3. Generate NEW scene (only if not cached)
             console.log('🍌 No cached scene found - checking database or generating');
-            addSystemLog('🍌 No cached scene found - checking database or generating', 'info');
             const scenePrompt = 'the entrance to Emberpeak, a mountain village at dawn. Stone archway covered in moss, cobblestone path, misty mountain peaks in background, warm torchlight. Fantasy RPG setting, atmospheric lighting.';
 
             addText('🍌 Loading scene from backend...', 'info');
@@ -4588,7 +4011,6 @@
                 nanoBanana.sceneCache.set(location, result, timeOfDay, weather, scenePrompt);
                 addText('✅ Scene generated and cached!', 'success');
                 console.log('✅ Initial scene loaded and cached successfully');
-                addSystemLog('✅ Initial scene loaded and cached successfully', 'success');
             } else {
                 // Don't spam error messages - fallback art already shown
                 if (nanoBanana.quotaExhausted) {
@@ -4644,10 +4066,8 @@
 
             console.log(`🍌 Generating image for: ${itemName}`);
             console.log(`📝 Prompt: ${prompt}`);
-            addSystemLog(`🍌 Generating image for: ${itemName}`, 'api');
             if (customPrompt) {
                 console.log(`🎨 Custom: "${customPrompt}"`);
-                addSystemLog(`🎨 Custom prompt: "${customPrompt}"`, 'info');
             }
 
             // Skip if generation is disabled or quota exhausted
@@ -4693,7 +4113,6 @@
                     : `✅ Generated artwork for ${itemName}! Saved to library.`;
                 addText(successMsg, 'success');
                 console.log(`✅ Item image generated and saved! ID: ${imageId}, Custom: "${customPrompt}"`);
-                addSystemLog(`✅ Item image saved! ID: ${imageId}`, 'success');
 
                 // Refresh gallery
                 renderImageGallery(itemName);
@@ -4826,10 +4245,8 @@
         // ============================================================
         // THEME SWITCHER
         // ============================================================
-        // Single source of truth for all themes
-        // Add new themes here - the key is the data-theme attribute value,
-        // and the value is the display name shown in the dropdown
-        const THEMES = {
+        const THEMES = ['blackwhite', 'ultima', 'cyber', 'goldbox', 'dungeon'];
+        const THEME_NAMES = {
             blackwhite: 'Black & White',
             ultima: 'Ultima Fantasy',
             cyber: 'Cyber Terminal',
@@ -4847,10 +4264,7 @@
         document.body.dataset.theme = savedTheme;
 
         // Add theme dropdown to header (after page loads)
-        window.addEventListener('DOMContentLoaded', async () => {
-            // Initialize Nano Banana Generator
-            await nanoBanana.initialize();
-
+        window.addEventListener('DOMContentLoaded', () => {
             const header = document.querySelector('.header');
 
             // Create container
@@ -4867,12 +4281,12 @@
             dropdown.id = 'theme-dropdown';
             dropdown.className = 'theme-dropdown';
 
-            // Add options from THEMES object
-            Object.entries(THEMES).forEach(([themeKey, themeName]) => {
+            // Add options
+            THEMES.forEach(theme => {
                 const option = document.createElement('option');
-                option.value = themeKey;
-                option.textContent = themeName;
-                if (themeKey === savedTheme) {
+                option.value = theme;
+                option.textContent = THEME_NAMES[theme];
+                if (theme === savedTheme) {
                     option.selected = true;
                 }
                 dropdown.appendChild(option);

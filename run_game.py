@@ -6,9 +6,11 @@ import logging
 import re
 import sys
 import random
+import argparse
 from dnd_game import DnDGame, GameError, Character
 from obsidian_logger import ObsidianLogger
 from game_event_manager import GameEventManager
+from save_state import save_game_to_file, load_game_from_file, list_save_files
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -26,6 +28,26 @@ logger.addHandler(file_handler)
 event_logger = logging.getLogger("game_event_manager")
 event_logger.setLevel(logging.DEBUG)
 event_logger.addHandler(file_handler)
+
+def reconstruct_character(char_data: dict) -> Character:
+    """
+    Reconstruct a Character object from saved dictionary data.
+
+    NOTE: This creates a new Character with saved combat stats but
+    fresh inventory/spells. For short demo games, this is acceptable.
+    For longer campaigns, extend the schema to save inventory.
+    """
+    char = Character(
+        name=char_data["name"],
+        char_class=char_data.get("char_class", "Fighter"),
+        hp=char_data["hp"],
+        max_hp=char_data["max_hp"],
+        attack=char_data["attack"],
+        defense=char_data["defense"]
+    )
+    char.alive = char_data.get("alive", True)
+    char.status_effects = char_data.get("status_effects", [])
+    return char
 
 def extract_run_id():
     """Extract run ID from Current Run.md."""
@@ -201,8 +223,14 @@ def update_dashboard(obsidian, run_data):
 
     logging.info(f"Updated Dashboard.md")
 
-def run_game():
-    """Run the D&D game with Obsidian integration."""
+def run_game(resume_from: str = None, save_file: str = "saves/game_autosave.json"):
+    """
+    Run the D&D game with Obsidian integration.
+
+    Args:
+        resume_from: Path to save file to resume from (None = new game)
+        save_file: Where to save game state (default: saves/game_autosave.json)
+    """
     vault_path = "ai-dnd-test-vault"
 
     # Check if the vault exists
@@ -215,32 +243,67 @@ def run_game():
         logger.error(f"Current Run.md not found. Run reset_game.py first to set up the vault.")
         sys.exit(1)
 
+    # Handle resume logic
+    if resume_from:
+        try:
+            logging.info(f"\n📂 Resuming game from {resume_from}...")
+            saved_state = load_game_from_file(resume_from)
+
+            # Extract saved data
+            run_id = saved_state["run_id"]
+            start_time = saved_state["start_time"]
+            turn_count = saved_state["current_turn"]
+            max_turns = saved_state["turn_limit"]
+            current_location = saved_state["location"]
+
+            logging.info(f"✅ Loaded: Run ID {run_id}, Turn {turn_count}/{max_turns}")
+
+        except (FileNotFoundError, ValueError) as e:
+            logging.error(f"❌ Failed to load save: {e}")
+            sys.exit(1)
+    else:
+        # New game - these will be initialized below
+        saved_state = None
+        turn_count = 0
+        max_turns = 10
+
     # Initialize Obsidian logger
     obsidian = ObsidianLogger(vault_path)
     logging.info("Initialized Obsidian logger for the game.")
 
-    # Extract run ID from Current Run.md
-    run_id = extract_run_id()
-    # Ensure run_id is valid and not a template variable
-    if not run_id or "{{" in run_id:
-        run_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        logging.info(f"Generated new run ID: {run_id}")
-    else:
-        logging.info(f"Using existing run ID: {run_id}")
+    # Setup run_id and start_time based on new game or resume
+    if not saved_state:
+        # New game - generate fresh IDs
+        run_id = extract_run_id()
+        if not run_id or "{{" in run_id:
+            run_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            logging.info(f"Generated new run ID: {run_id}")
+        else:
+            logging.info(f"Using existing run ID: {run_id}")
 
-    start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # else: run_id, start_time already set from saved_state above
 
     # Initialize run data
     run_data = {
         "run_id": run_id,
         "start_time": start_time,
         "status": "active",
-        "turn_count": 0,
+        "turn_count": turn_count,
         "characters": [],
         "events": [],
         "combat": [],
         "locations": []
     }
+
+    # If resuming, restore Obsidian data
+    if saved_state and saved_state.get("obsidian_data"):
+        obs_data = saved_state["obsidian_data"]
+        run_data["characters"] = obs_data.get("characters", [])
+        run_data["events"] = obs_data.get("events", [])
+        run_data["locations"] = obs_data.get("locations", [])
+        if obs_data.get("session"):
+            run_data["session"] = obs_data["session"]
 
     # Initialize the event manager for real-time updates
     event_manager = GameEventManager(obsidian, run_data)
@@ -252,90 +315,114 @@ def run_game():
 
     # Initialize game
     logging.info("\nInitializing D&D Game...")
-    game = DnDGame(model="mistral")
+    if saved_state:
+        # Resume: Create game without auto-creating characters
+        game = DnDGame(auto_create_characters=False, model="mistral")
 
-    # Log initial world locations to Obsidian
-    if hasattr(game, 'current_location'):
-        location_data = {
-            "name": game.current_location,
-            "description": f"The starting location of the adventure.",
-            "connections": {},  # Will be populated as game progresses
-            "type": "Starting Area"
-        }
-        # Use event-aware logging for real-time updates
-        obsidian.log_location_with_event(location_data, event_manager)
-        logging.info(f"Logged starting location: {game.current_location}")
-        run_data["locations"].append(game.current_location)
+        # Reconstruct players
+        game.players = [reconstruct_character(p) for p in saved_state["players"]]
+        for player in game.players:
+            player.team = "players"
 
-    # Log player characters to Obsidian
-    for player in game.players:
-        character_data = {
-            "name": player.name,
-            "char_class": player.char_class,
-            "hp": player.hp,
-            "max_hp": player.max_hp,
-            "attack": player.attack,
-            "defense": player.defense,
-            "alive": player.alive,
+        # Reconstruct enemies
+        game.enemies = [reconstruct_character(e) for e in saved_state["enemies"]]
+        for enemy in game.enemies:
+            enemy.team = "enemies"
+
+        # Restore location
+        game.current_location = saved_state["location"]
+
+        logging.info(f"✅ Resumed with {len(game.players)} players, {len(game.enemies)} enemies")
+        logging.info(f"   Location: {game.current_location}")
+    else:
+        # New game: Auto-create characters
+        game = DnDGame(model="mistral")
+
+    # Log initial setup (skip if resuming - already logged)
+    if not saved_state:
+        # Log initial world locations to Obsidian
+        if hasattr(game, 'current_location'):
+            location_data = {
+                "name": game.current_location,
+                "description": f"The starting location of the adventure.",
+                "connections": {},  # Will be populated as game progresses
+                "type": "Starting Area"
+            }
+            # Use event-aware logging for real-time updates
+            obsidian.log_location_with_event(location_data, event_manager)
+            logging.info(f"Logged starting location: {game.current_location}")
+            run_data["locations"].append(game.current_location)
+
+        # Log player characters to Obsidian
+        for player in game.players:
+            character_data = {
+                "name": player.name,
+                "char_class": player.char_class,
+                "hp": player.hp,
+                "max_hp": player.max_hp,
+                "attack": player.attack,
+                "defense": player.defense,
+                "alive": player.alive,
+                "status": "Active",
+                "status_summary": f"Active - HP: {player.hp}/{player.max_hp}",
+                "bio": f"A brave {player.char_class} on a grand adventure.",
+                "abilities": list(player.abilities.keys()) if hasattr(player, 'abilities') else [],
+                "status_effects": player.status_effects if hasattr(player, 'status_effects') else [],
+                "team": "Player"
+            }
+            # Use event-aware logging for real-time updates
+            obsidian.log_character_with_event(character_data, event_manager)
+            logging.info(f"Logged player character: {player.name}")
+            run_data["characters"].append(player.name)
+
+        # Generate initial quest
+        quest_intro = game.narrative_engine.generate_quest(difficulty="medium", theme="epic battle")
+        logging.info("\nQuest: " + quest_intro)
+
+        # Log the quest to Obsidian
+        quest_data = {
+            "name": "Main Quest",
+            "description": quest_intro,
             "status": "Active",
-            "status_summary": f"Active - HP: {player.hp}/{player.max_hp}",
-            "bio": f"A brave {player.char_class} on a grand adventure.",
-            "abilities": list(player.abilities.keys()) if hasattr(player, 'abilities') else [],
-            "status_effects": player.status_effects if hasattr(player, 'status_effects') else [],
-            "team": "Player"
+            "difficulty": "Medium",
+            "overview": f"A grand adventure awaits: {quest_intro}",
+            "objectives": ["Complete the adventure"],
+            "start_date": start_time
         }
-        # Use event-aware logging for real-time updates
-        obsidian.log_character_with_event(character_data, event_manager)
-        logging.info(f"Logged player character: {player.name}")
-        run_data["characters"].append(player.name)
+        obsidian.log_quest_with_event(quest_data, event_manager)
+        logging.info(f"Quest logged to Obsidian: {quest_data['name']}")
+        run_data["quest"] = "Main Quest"
 
-    # Generate initial quest
-    quest_intro = game.narrative_engine.generate_quest(difficulty="medium", theme="epic battle")
-    logging.info("\nQuest: " + quest_intro)
+        # Create session data
+        session_name = f"Session {time.strftime('%Y%m%d')}"
+        session_data = {
+            "name": session_name,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d"),
+            "run_id": run_id,
+            "summary": f"The party embarks on a new adventure: {quest_intro}",
+            "characters": [player.name for player in game.players],
+            "events": [],
+            "combat": [],
+            "next_steps": "The adventure begins..."
+        }
 
-    # Log the quest to Obsidian
-    quest_data = {
-        "name": "Main Quest",
-        "description": quest_intro,
-        "status": "Active",
-        "difficulty": "Medium",
-        "overview": f"A grand adventure awaits: {quest_intro}",
-        "objectives": ["Complete the adventure"],
-        "start_date": start_time
-    }
-    obsidian.log_quest_with_event(quest_data, event_manager)
-    logging.info(f"Quest logged to Obsidian: {quest_data['name']}")
-    run_data["quest"] = "Main Quest"
+        # Add locations if available
+        if hasattr(game, 'current_location'):
+            session_data["locations"] = [game.current_location]
 
-    # Create session data
-    session_name = f"Session {time.strftime('%Y%m%d')}"
-    session_data = {
-        "name": session_name,
-        "date": datetime.datetime.now().strftime("%Y-%m-%d"),
-        "run_id": run_id,
-        "summary": f"The party embarks on a new adventure: {quest_intro}",
-        "characters": [player.name for player in game.players],
-        "events": [],
-        "combat": [],
-        "next_steps": "The adventure begins..."
-    }
+        # Log the session
+        obsidian.log_session(session_data)
+        run_data["session"] = session_name
 
-    # Add locations if available
-    if hasattr(game, 'current_location'):
-        session_data["locations"] = [game.current_location]
+        # Update Current Run.md with initial state
+        update_current_run(obsidian, run_data)
 
-    # Log the session
-    obsidian.log_session(session_data)
-    run_data["session"] = session_name
+        # Update Dashboard.md
+        update_dashboard(obsidian, run_data)
+    else:
+        logging.info(f"📝 Skipping initial setup (resuming from turn {turn_count})")
 
-    # Update Current Run.md with initial state
-    update_current_run(obsidian, run_data)
-
-    # Update Dashboard.md
-    update_dashboard(obsidian, run_data)
-
-    turn_count = 0
-    max_turns = 10
+    # turn_count and max_turns already set above (from saved_state or defaults)
 
     try:
         while not game.is_game_over() and turn_count < max_turns:
@@ -566,6 +653,28 @@ def run_game():
             update_current_run(obsidian, run_data)
             update_dashboard(obsidian, run_data)
 
+            # AUTOSAVE after each turn
+            try:
+                save_game_to_file(
+                    players=game.players,
+                    enemies=game.enemies,
+                    location=game.current_location,
+                    run_id=run_id,
+                    current_turn=turn_count,
+                    turn_limit=max_turns,
+                    filepath=save_file,
+                    start_time=start_time,
+                    quest_data=run_data.get("quest"),
+                    obsidian_data={
+                        "characters": run_data.get("characters", []),
+                        "events": run_data.get("events", []),
+                        "locations": run_data.get("locations", []),
+                        "session": run_data.get("session")
+                    }
+                )
+            except Exception as e:
+                logging.warning(f"⚠️  Failed to autosave: {e}")
+
             # Add a small delay between turns for readability
             time.sleep(1)
 
@@ -615,6 +724,50 @@ def run_game():
     return True
 
 if __name__ == "__main__":
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(
+        description="Run D&D game with Obsidian integration and save/load support"
+    )
+    parser.add_argument(
+        "--resume",
+        type=str,
+        metavar="SAVE_FILE",
+        help="Resume from a saved game file (e.g., saves/game_autosave.json)"
+    )
+    parser.add_argument(
+        "--save-to",
+        type=str,
+        default="saves/game_autosave.json",
+        metavar="SAVE_FILE",
+        help="Where to save game state (default: saves/game_autosave.json)"
+    )
+    parser.add_argument(
+        "--list-saves",
+        action="store_true",
+        help="List all available save files and exit"
+    )
+
+    args = parser.parse_args()
+
+    # Handle --list-saves
+    if args.list_saves:
+        print("\n📁 Available save files:")
+        saves = list_save_files("saves")
+        if not saves:
+            print("   No save files found in saves/ directory")
+        else:
+            for i, save_path in enumerate(saves, 1):
+                try:
+                    state = load_game_from_file(save_path)
+                    print(f"\n{i}. {save_path}")
+                    print(f"   Run ID: {state['run_id']}")
+                    print(f"   Turn: {state['current_turn']}/{state['turn_limit']}")
+                    print(f"   Location: {state['location']}")
+                    print(f"   Players: {len(state['players'])} alive")
+                except Exception as e:
+                    print(f"\n{i}. {save_path} (corrupted: {e})")
+        sys.exit(0)
+
     # Run the game
-    run_game()
+    run_game(resume_from=args.resume, save_file=args.save_to)
     logger.info("Game completed!")

@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "D&D Game Save State",
+  "description": "Minimal schema for saving/loading game state in Python scripts",
+  "type": "object",
+  "required": ["metadata", "game_state"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Save file metadata and versioning",
+      "required": ["save_version", "game_timestamp", "current_turn", "turn_limit"],
+      "properties": {
+        "save_version": {
+          "type": "string",
+          "description": "Schema version for compatibility",
+          "pattern": "^\\d+\\.\\d+$",
+          "default": "1.0"
+        },
+        "game_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this save was created (ISO-8601)"
+        },
+        "current_turn": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Current turn number (0-based)"
+        },
+        "turn_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum turns allowed before game ends"
+        },
+        "python_seed": {
+          "type": "integer",
+          "description": "Random seed for reproducibility (optional)"
+        }
+      }
+    },
+    "game_state": {
+      "type": "object",
+      "description": "Core game state",
+      "required": ["run_id", "players", "current_location"],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "description": "Obsidian vault run ID for journal continuity"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "completed", "paused"],
+          "default": "active",
+          "description": "Game status"
+        },
+        "start_time": {
+          "type": "string",
+          "description": "When the game started (for Obsidian)"
+        },
+        "players": {
+          "type": "array",
+          "description": "Player characters",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "char_class", "hp", "max_hp", "attack", "defense", "alive"],
+            "properties": {
+              "name": {"type": "string"},
+              "char_class": {"type": "string"},
+              "hp": {"type": "integer", "minimum": 0},
+              "max_hp": {"type": "integer", "minimum": 1},
+              "attack": {"type": "integer", "minimum": 0},
+              "defense": {"type": "integer", "minimum": 0},
+              "alive": {"type": "boolean"},
+              "abilities": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "status_effects": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          }
+        },
+        "enemies": {
+          "type": "array",
+          "description": "Current enemies in combat",
+          "items": {
+            "type": "object",
+            "required": ["name", "hp", "max_hp", "attack", "defense", "alive"],
+            "properties": {
+              "name": {"type": "string"},
+              "hp": {"type": "integer", "minimum": 0},
+              "max_hp": {"type": "integer", "minimum": 1},
+              "attack": {"type": "integer", "minimum": 0},
+              "defense": {"type": "integer", "minimum": 0},
+              "alive": {"type": "boolean"}
+            }
+          }
+        },
+        "current_location": {
+          "type": "string",
+          "description": "Current location name"
+        },
+        "quest": {
+          "type": "object",
+          "description": "Active quest data",
+          "properties": {
+            "name": {"type": "string"},
+            "description": {"type": "string"},
+            "status": {
+              "type": "string",
+              "enum": ["Active", "Completed", "Failed"]
+            },
+            "difficulty": {"type": "string"}
+          }
+        },
+        "obsidian_data": {
+          "type": "object",
+          "description": "References to Obsidian vault entries",
+          "properties": {
+            "characters": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Character names logged in vault"
+            },
+            "events": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Event names logged in vault"
+            },
+            "locations": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Locations discovered"
+            },
+            "session": {
+              "type": "string",
+              "description": "Current session name"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+

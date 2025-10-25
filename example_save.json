@@ -1,0 +1,87 @@
+{
+  "metadata": {
+    "save_version": "1.0",
+    "game_timestamp": "2025-10-25T17:35:42.123456",
+    "current_turn": 3,
+    "turn_limit": 10,
+    "python_seed": 42
+  },
+  "game_state": {
+    "run_id": "20251025173000",
+    "status": "active",
+    "start_time": "2025-10-25 17:30:00",
+    "players": [
+      {
+        "name": "Azaroth the Brave",
+        "char_class": "Warrior",
+        "hp": 45,
+        "max_hp": 50,
+        "attack": 12,
+        "defense": 8,
+        "alive": true,
+        "abilities": {
+          "power_attack": true,
+          "shield_bash": true
+        },
+        "status_effects": []
+      },
+      {
+        "name": "Luna Starweaver",
+        "char_class": "Mage",
+        "hp": 28,
+        "max_hp": 35,
+        "attack": 15,
+        "defense": 4,
+        "alive": true,
+        "abilities": {
+          "fireball": true,
+          "ice_shield": true,
+          "teleport": false
+        },
+        "status_effects": ["haste"]
+      }
+    ],
+    "enemies": [
+      {
+        "name": "Orc Warrior",
+        "char_class": "Enemy",
+        "hp": 18,
+        "max_hp": 25,
+        "attack": 10,
+        "defense": 6,
+        "alive": true,
+        "abilities": {},
+        "status_effects": []
+      }
+    ],
+    "current_location": "Emberpeak Mountain Pass",
+    "quest": {
+      "name": "The Emberpeak Expedition",
+      "description": "Venture through the treacherous mountain pass to reach the ancient temple.",
+      "status": "Active",
+      "difficulty": "Medium"
+    },
+    "obsidian_data": {
+      "characters": [
+        "Azaroth the Brave",
+        "Luna Starweaver",
+        "Orc Warrior"
+      ],
+      "events": [
+        "Scene Turn 1",
+        "Scene Turn 2",
+        "Scene Turn 3",
+        "Encounter Turn 2",
+        "Combat Turn 2"
+      ],
+      "locations": [
+        "Emberpeak Village",
+        "Emberpeak Mountain Pass"
+      ],
+      "session": "Session 20251025"
+    }
+  }
+}
+
+
+
