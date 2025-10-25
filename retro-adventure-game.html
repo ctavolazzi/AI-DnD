@@ -4265,9 +4265,18 @@
             }
 
             // Always available actions
-            addContextAction('👁 EXAMINE', () => document.getElementById('examine').click());
-            addContextAction('💬 TALK', () => document.getElementById('talk-btn').click());
-            addContextAction('⚔️ ATTACK', () => document.getElementById('attack-btn').click());
+            addContextAction('👁 EXAMINE', () => {
+                const btn = document.getElementById('examine');
+                if (btn) btn.click();
+            });
+            addContextAction('💬 TALK', () => {
+                const btn = document.getElementById('talk-btn');
+                if (btn) btn.click();
+            });
+            addContextAction('⚔️ ATTACK', () => {
+                const btn = document.getElementById('attack-btn');
+                if (btn) btn.click();
+            });
         }
 
         function addContextAction(label, callback) {
