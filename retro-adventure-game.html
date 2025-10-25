@@ -767,7 +767,7 @@
             color: var(--quest-complete);
         }
 
-        /* Map panel - inside tabbed panel */
+        /* Map panel */
         .map-panel {
             display: flex;
             flex-direction: column;
@@ -793,6 +793,11 @@
             gap: 2px;  /* 0px → 2px for cell separation */
             padding: var(--space-xs);  /* Add edge padding */
             border: 2px solid #000;
+        }
+
+        /* Center map sizing without affecting modal */
+        .center-map .map-display {
+            height: 220px;
         }
 
         .map-cell {
@@ -1935,6 +1940,9 @@
             .tabbed-panel {
                 max-height: 200px;
             }
+
+            /* Make center map a bit shorter on mobile */
+            .center-map .map-display { height: 180px; }
         }
 
         @media (max-width: 600px) {
@@ -2047,6 +2055,37 @@
                 </div>
             </div>
 
+            <!-- Map Section (Center) -->
+            <div class="center-map panel">
+                <div class="panel-title">MAP</div>
+                <div class="map-panel">
+                    <div class="map-display">
+                        <div class="map-grid" id="map"></div>
+                    </div>
+                    <div class="map-legend">
+                        <div class="map-legend-title">MAP LEGEND</div>
+                        <div class="map-legend-items">
+                            <div class="map-legend-item">
+                                <div class="map-legend-symbol legend-unexplored">?</div>
+                                <span style="color: var(--text-light);">Unexplored (Can Enter)</span>
+                            </div>
+                            <div class="map-legend-item">
+                                <div class="map-legend-symbol legend-visited">🍺</div>
+                                <span style="color: var(--text-light);">Visited</span>
+                            </div>
+                            <div class="map-legend-item">
+                                <div class="map-legend-symbol legend-wall">▲</div>
+                                <span style="color: var(--text-light);">Blocked Direction</span>
+                            </div>
+                            <div class="map-legend-item">
+                                <div class="map-legend-symbol legend-blocked">⛔</div>
+                                <span style="color: var(--text-light);">Fully Blocked</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Actions & Navigation (Side by Side) -->
             <div class="actions-navigation-container">
                 <!-- Actions Panel -->
@@ -2127,14 +2166,10 @@
                         <span class="tab-badge" id="inventory-count">4</span>
                         <span class="tab-hint">Press 1</span>
                     </button>
-                    <button class="tab-button" data-tab="map">
-                        MAP
-                        <span class="tab-hint">Press 2</span>
-                    </button>
                     <button class="tab-button" data-tab="quest">
                         QUEST LOG
                         <span class="tab-badge" id="quest-count">4</span>
-                        <span class="tab-hint">Press 3</span>
+                        <span class="tab-hint">Press 2</span>
                     </button>
                 </div>
 
@@ -2162,35 +2197,7 @@
                     </div>
                 </div>
 
-                <!-- Tab Content: Map -->
-                <div class="tab-content" id="tab-map">
-                    <div class="map-panel">
-                        <div class="map-display">
-                            <div class="map-grid" id="map"></div>
-                        </div>
-                        <div class="map-legend">
-                            <div class="map-legend-title">MAP LEGEND</div>
-                            <div class="map-legend-items">
-                                <div class="map-legend-item">
-                                    <div class="map-legend-symbol legend-unexplored">?</div>
-                                    <span style="color: var(--text-light);">Unexplored (Can Enter)</span>
-                                </div>
-                                <div class="map-legend-item">
-                                    <div class="map-legend-symbol legend-visited">🍺</div>
-                                    <span style="color: var(--text-light);">Visited</span>
-                                </div>
-                                <div class="map-legend-item">
-                                    <div class="map-legend-symbol legend-wall">▲</div>
-                                    <span style="color: var(--text-light);">Blocked Direction</span>
-                                </div>
-                                <div class="map-legend-item">
-                                    <div class="map-legend-symbol legend-blocked">⛔</div>
-                                    <span style="color: var(--text-light);">Fully Blocked</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Map tab removed: map is now always visible in main area -->
 
                 <!-- Tab Content: Quest Log -->
                 <div class="tab-content" id="tab-quest">
@@ -2501,7 +2508,7 @@
                 });
             });
 
-            // Keyboard shortcuts: 1, 2, 3 for tabs (only when not typing)
+            // Keyboard shortcuts: 1, 2 for tabs (only when not typing)
             document.addEventListener('keydown', function(e) {
                 // Don't trigger if user is typing in an input/textarea
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
@@ -2511,8 +2518,7 @@
                 // Tab shortcuts
                 const keyMap = {
                     '1': 'inventory',
-                    '2': 'map',
-                    '3': 'quest'
+                    '2': 'quest'
                 };
 
                 if (keyMap[e.key]) {
@@ -2524,12 +2530,16 @@
 
             // Restore last active tab on load
             const lastTab = localStorage.getItem('lastActiveTab');
-            if (lastTab) {
+            const validTabs = new Set(['inventory', 'quest']);
+            if (lastTab && validTabs.has(lastTab)) {
                 switchTab(lastTab);
                 GameLogger.save('Restored last tab', { tab: lastTab });
+            } else {
+                switchTab('inventory');
+                GameLogger.save('Restored default tab', { tab: 'inventory' });
             }
 
-            GameLogger.ui('Tab switching initialized', { keyboardShortcuts: '1, 2, 3' });
+            GameLogger.ui('Tab switching initialized', { keyboardShortcuts: '1, 2' });
         });
 
         // ============================================
