@@ -2387,12 +2387,16 @@
             save(operation, details = {}) {
                 this.log('save', operation, details);
             },
-
+            
             ui(event, details = {}) {
                 this.log('ui', event, details);
+            },
+            
+            system(event, details = {}) {
+                this.log('system', event, details);
             }
         };
-
+        
         // Log initial page load
         console.log('%c🎮 AI D&D GAME INITIALIZED', 'font-size: 20px; color: #d4af37; font-weight: bold;');
         console.log('%cComprehensive logging enabled. All actions will be tracked.', 'color: #2ecc71; font-weight: bold;');
