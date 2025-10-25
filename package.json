@@ -1,0 +1,54 @@
+{
+  "name": "cursor-coding-protocols",
+  "version": "2.0.0",
+  "description": "Coding protocols and templates for Cursor AI IDE - Self-improving versioning system",
+  "main": "scripts/cursor-protocols-cli.js",
+  "bin": {
+    "cursor-protocols": "./scripts/cursor-protocols-cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "version:init": "node scripts/version-manager.js init",
+    "version:show": "node scripts/version-manager.js show",
+    "postinstall": "node scripts/version-manager.js init production 2>/dev/null || true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ctavolazzi/cursor-coding-protocols.git"
+  },
+  "keywords": [
+    "cursor",
+    "ai",
+    "ide",
+    "coding-protocols",
+    "templates",
+    "mcp",
+    "model-context-protocol",
+    "versioning",
+    "self-improving"
+  ],
+  "author": "ctavolazzi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ctavolazzi/cursor-coding-protocols/issues"
+  },
+  "homepage": "https://github.com/ctavolazzi/cursor-coding-protocols#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "files": [
+    "scripts/",
+    "versions/",
+    "docs/",
+    "AGENTS.md",
+    "README.md",
+    "LICENSE",
+    "install.sh",
+    "quick-install.sh",
+    "setup-verify.sh",
+    "uninstall.sh"
+  ]
+}
+

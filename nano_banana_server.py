@@ -1,0 +1,298 @@
+#!/usr/bin/env python3
+"""
+Nano Banana Image Generation Server
+A Flask microservice that securely handles Gemini API image generation requests.
+"""
+
+import os
+import base64
+from io import BytesIO
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
+from PIL import Image
+import time
+from functools import wraps
+
+# Load environment variables
+load_dotenv()
+
+app = Flask(__name__)
+CORS(app)  # Enable CORS for frontend requests
+
+# Configuration
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+if not GEMINI_API_KEY:
+    print("WARNING: GEMINI_API_KEY not found in environment variables!")
+    print("Please create a .env file with your API key.")
+
+# Initialize Gemini client
+client = None
+if GEMINI_API_KEY:
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+# Simple rate limiting (in-memory, not production-ready)
+request_times = []
+MAX_REQUESTS_PER_MINUTE = 10
+
+def validate_custom_prompt(custom_prompt, item_name, description):
+    """
+    Validate custom prompt for item image generation.
+    Returns error message if invalid, None if valid.
+    """
+    # Length check
+    if len(custom_prompt) > 200:
+        return "Custom prompt exceeds 200 character limit"
+
+    if len(description) > 1000:
+        return "Total prompt exceeds 1000 character limit"
+
+    # Check for dangerous content
+    dangerous_patterns = ['<script', 'javascript:', 'onerror', 'eval(', '<?php', '<iframe']
+    for pattern in dangerous_patterns:
+        if pattern in custom_prompt.lower() or pattern in description.lower():
+            return "Invalid content detected in prompt"
+
+    # Validate item name is in description (if item name provided)
+    if item_name and item_name.lower() not in description.lower():
+        return f"Prompt must contain item name: {item_name}"
+
+    # Log for monitoring
+    print(f"✓ Custom prompt validated: item='{item_name}', custom='{custom_prompt[:50]}...'")
+
+    return None
+
+def rate_limit(f):
+    """Simple rate limiting decorator"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        global request_times
+        now = time.time()
+        # Remove requests older than 1 minute
+        request_times = [t for t in request_times if now - t < 60]
+
+        if len(request_times) >= MAX_REQUESTS_PER_MINUTE:
+            return jsonify({
+                'error': 'Rate limit exceeded. Maximum 10 requests per minute.'
+            }), 429
+
+        request_times.append(now)
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'api_key_configured': bool(GEMINI_API_KEY),
+        'client_initialized': bool(client)
+    })
+
+@app.route('/generate-image', methods=['POST'])
+@rate_limit
+def generate_image():
+    """
+    Generate an image using Gemini 2.5 Flash Image.
+
+    Request body:
+    {
+        "prompt": "Description of the image to generate",
+        "aspect_ratio": "16:9" (optional, default: "1:1"),
+        "response_modalities": ["Text", "Image"] (optional)
+    }
+
+    Response:
+    {
+        "success": true,
+        "image": "base64_encoded_image_data",
+        "text": "optional text response",
+        "generation_time": 2.5
+    }
+    """
+    if not client:
+        return jsonify({
+            'error': 'Gemini API client not initialized. Check GEMINI_API_KEY.'
+        }), 500
+
+    try:
+        # Parse request
+        data = request.get_json()
+        if not data or 'prompt' not in data:
+            return jsonify({'error': 'Missing required field: prompt'}), 400
+
+        prompt = data['prompt']
+        aspect_ratio = data.get('aspect_ratio', '1:1')
+        response_modalities = data.get('response_modalities', ['Text', 'Image'])
+
+        # Validate aspect ratio
+        valid_ratios = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9']
+        if aspect_ratio not in valid_ratios:
+            return jsonify({
+                'error': f'Invalid aspect_ratio. Must be one of: {", ".join(valid_ratios)}'
+            }), 400
+
+        # Start timing
+        start_time = time.time()
+
+        # Generate image
+        response = client.models.generate_content(
+            model='gemini-2.5-flash-image',
+            contents=[prompt],
+            config=types.GenerateContentConfig(
+                response_modalities=response_modalities,
+                image_config=types.ImageConfig(
+                    aspect_ratio=aspect_ratio,
+                )
+            )
+        )
+
+        # Extract results
+        result = {
+            'success': True,
+            'generation_time': round(time.time() - start_time, 2)
+        }
+
+        # Extract image and text from response
+        for part in response.candidates[0].content.parts:
+            if part.text is not None:
+                result['text'] = part.text
+            elif part.inline_data is not None:
+                # Convert image to base64
+                image = Image.open(BytesIO(part.inline_data.data))
+                buffered = BytesIO()
+                image.save(buffered, format='PNG')
+                img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+                result['image'] = img_base64
+
+        if 'image' not in result and 'Image' in response_modalities:
+            return jsonify({
+                'error': 'Image generation failed. No image in response.'
+            }), 500
+
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"Error generating image: {str(e)}")
+        return jsonify({
+            'error': f'Image generation failed: {str(e)}'
+        }), 500
+
+@app.route('/generate-scene', methods=['POST'])
+@rate_limit
+def generate_scene():
+    """
+    Generate a D&D scene image with sensible defaults.
+
+    Request body:
+    {
+        "description": "The entrance to Emberpeak village at dawn",
+        "style": "photorealistic" (optional: photorealistic, fantasy_art, comic, pixel_art),
+        "aspect_ratio": "16:9" (optional),
+        "item_name": "Dagger" (optional: for item generation validation),
+        "custom_prompt": "glowing with blue runes" (optional: user's custom text)
+    }
+    """
+    if not client:
+        return jsonify({
+            'error': 'Gemini API client not initialized. Check GEMINI_API_KEY.'
+        }), 500
+
+    try:
+        data = request.get_json()
+        if not data or 'description' not in data:
+            return jsonify({'error': 'Missing required field: description'}), 400
+
+        description = data['description']
+        style = data.get('style', 'photorealistic')
+        aspect_ratio = data.get('aspect_ratio', '16:9')
+        item_name = data.get('item_name', '')
+        custom_prompt = data.get('custom_prompt', '')
+
+        # Validate custom prompt if provided
+        if custom_prompt:
+            validation_error = validate_custom_prompt(custom_prompt, item_name, description)
+            if validation_error:
+                return jsonify({'error': validation_error}), 400
+
+        # Build enhanced prompt based on style
+        style_prompts = {
+            'photorealistic': 'A photorealistic, high-quality scene of',
+            'fantasy_art': 'A detailed fantasy artwork depicting',
+            'comic': 'A comic book style illustration of',
+            'pixel_art': 'A pixel art scene showing'
+        }
+
+        style_prefix = style_prompts.get(style, style_prompts['photorealistic'])
+
+        # Construct full prompt
+        prompt = f"{style_prefix} {description}. Fantasy RPG setting, cinematic lighting, detailed environment, atmospheric."
+
+        # Generate using the main endpoint logic
+        return generate_image_internal(prompt, aspect_ratio)
+
+    except Exception as e:
+        print(f"Error generating scene: {str(e)}")
+        return jsonify({
+            'error': f'Scene generation failed: {str(e)}'
+        }), 500
+
+def generate_image_internal(prompt, aspect_ratio='1:1'):
+    """Internal helper for image generation"""
+    start_time = time.time()
+
+    response = client.models.generate_content(
+        model='gemini-2.5-flash-image',
+        contents=[prompt],
+        config=types.GenerateContentConfig(
+            response_modalities=['Image'],
+            image_config=types.ImageConfig(
+                aspect_ratio=aspect_ratio,
+            )
+        )
+    )
+
+    # Extract image
+    for part in response.candidates[0].content.parts:
+        if part.inline_data is not None:
+            image = Image.open(BytesIO(part.inline_data.data))
+            buffered = BytesIO()
+            image.save(buffered, format='PNG')
+            img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+            return jsonify({
+                'success': True,
+                'image': img_base64,
+                'generation_time': round(time.time() - start_time, 2),
+                'prompt': prompt
+            })
+
+    raise Exception("No image data in response")
+
+if __name__ == '__main__':
+    if not GEMINI_API_KEY:
+        print("\n" + "="*60)
+        print("ERROR: GEMINI_API_KEY not configured!")
+        print("="*60)
+        print("\nTo configure:")
+        print("1. Create a .env file in this directory")
+        print("2. Add: GEMINI_API_KEY=your_api_key_here")
+        print("3. Get your API key from: https://ai.google.dev/")
+        print("\n" + "="*60 + "\n")
+    else:
+        print("\n" + "="*60)
+        print("🍌 Nano Banana Image Generation Server")
+        print("="*60)
+        print(f"✓ API Key configured")
+        print(f"✓ Running on http://localhost:5000")
+        print(f"✓ Rate limit: {MAX_REQUESTS_PER_MINUTE} requests/minute")
+        print("\nEndpoints:")
+        print("  GET  /health          - Health check")
+        print("  POST /generate-image  - Generate from prompt")
+        print("  POST /generate-scene  - Generate D&D scene")
+        print("="*60 + "\n")
+
+    app.run(debug=True, host='0.0.0.0', port=5000)
+

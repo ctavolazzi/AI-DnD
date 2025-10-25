@@ -13,7 +13,7 @@
         }
 
         @keyframes flicker {
-            0%, 100% { opacity: 0.9; }
+            0%, 100% { opacity: 0.95; }
             50% { opacity: 1; }
         }
 
@@ -66,20 +66,21 @@
 
         .game-container {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            grid-template-rows: auto 1fr auto;
-            gap: 10px;
-            padding: 20px;
+            grid-template-columns: 220px 1fr 280px;
+            grid-template-rows: 70px minmax(0, 1fr) 160px 70px;
+            gap: 8px;
+            padding: 10px;
             height: 100vh;
             background: linear-gradient(to bottom, #001a00 0%, #000a00 100%);
-            animation: flicker 0.15s infinite;
+            animation: flicker 2s ease-in-out infinite;
+            overflow: hidden;
         }
 
         .panel {
             background: rgba(0, 20, 0, 0.8);
-            border: 3px solid #0f0;
-            border-radius: 5px;
-            padding: 15px;
+            border: 2px solid #0f0;
+            border-radius: 3px;
+            padding: 10px;
             box-shadow:
                 inset 0 0 20px rgba(0, 255, 0, 0.1),
                 0 0 20px rgba(0, 255, 0, 0.3);
@@ -101,12 +102,12 @@
 
         .panel-title {
             color: #0ff;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-shadow: 0 0 10px #0ff;
-            border-bottom: 2px solid #0f0;
-            padding-bottom: 5px;
+            border-bottom: 1px solid #0f0;
+            padding-bottom: 3px;
         }
 
         /* Header */
@@ -116,31 +117,121 @@
         }
 
         .game-title {
-            font-size: 32px;
+            font-size: 28px;
             color: #ff0;
             text-shadow:
                 0 0 10px #ff0,
                 0 0 20px #ff0,
                 0 0 30px #ff0;
             letter-spacing: 4px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .subtitle {
             color: #0ff;
-            font-size: 14px;
+            font-size: 12px;
             letter-spacing: 2px;
         }
 
-        /* Main Display Area */
-        .main-display {
+        /* Main viewport - spans middle column */
+        .viewport-container {
+            grid-column: 2;
+            grid-row: 2;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Scene Viewer - inside right sidebar */
+        .scene-viewer-panel {
+            display: flex;
+            flex-direction: column;
+            min-height: 120px;
+            max-height: 180px;
+            overflow: hidden;
+        }
+
+        .scene-viewer-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            border: 1px solid #0a0;
+            border-radius: 3px;
+            padding: 5px;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scene-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border: 1px solid #0f0;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            display: none;
+        }
+
+        .scene-image.loaded {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .scene-loading {
+            color: #0ff;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .scene-loading.active {
+            display: block;
+        }
+
+        .scene-loading::after {
+            content: '';
+            animation: ellipsis 1.5s infinite;
+        }
+
+        @keyframes ellipsis {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+
+        .scene-error {
+            color: #888;
+            font-size: 10px;
+            text-align: center;
+            display: none;
+            font-style: italic;
+            opacity: 0.7;
+        }
+
+        .scene-error.active {
+            display: block;
+        }
+
+        .scene-fallback {
+            color: #0a0;
+            font-size: 10px;
+            line-height: 1.2;
+            white-space: pre;
+            font-family: monospace;
         }
 
         .viewport {
-            height: 250px;
+            flex: 1;
             background: #000;
             border: 2px solid #0a0;
             padding: 10px;
@@ -148,6 +239,7 @@
             line-height: 1.4;
             overflow-y: auto;
             position: relative;
+            min-height: 0;
         }
 
         .viewport::-webkit-scrollbar {
@@ -189,105 +281,24 @@
             animation: blink 1s infinite;
         }
 
-        /* Navigation */
-        .navigation {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 5px;
-            height: 200px;
-        }
-
-        .nav-button {
-            background: linear-gradient(to bottom, #0a4000, #052000);
-            border: 2px solid #0f0;
-            color: #0f0;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.1s;
-            text-shadow: 0 0 5px #0f0;
-            position: relative;
+        /* Right sidebar - contains character + scene viewer */
+        .right-sidebar {
+            grid-column: 3;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
             overflow: hidden;
         }
 
-        .nav-button:hover {
-            background: linear-gradient(to bottom, #0f6000, #083000);
-            box-shadow: 0 0 15px #0f0;
-            transform: scale(1.02);
+        /* Character panel - inside right sidebar */
+        .character-panel {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
         }
 
-        .nav-button:active {
-            background: #0f0;
-            color: #000;
-            box-shadow: inset 0 0 10px #000;
-        }
-
-        .nav-button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        #north { grid-column: 2; grid-row: 1; }
-        #west { grid-column: 1; grid-row: 2; }
-        #examine { grid-column: 2; grid-row: 2; background: linear-gradient(to bottom, #404000, #202000); border-color: #ff0; color: #ff0; }
-        #east { grid-column: 3; grid-row: 2; }
-        #south { grid-column: 2; grid-row: 3; }
-
-        /* Map */
-        .map-display {
-            height: 200px;
-            background: #000;
-            border: 2px solid #0a0;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .map-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 30px);
-            grid-template-rows: repeat(5, 30px);
-            gap: 2px;
-        }
-
-        .map-cell {
-            background: #001a00;
-            border: 1px solid #0a0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            position: relative;
-        }
-
-        .map-cell.visited {
-            background: #003300;
-        }
-
-        .map-cell.current {
-            background: #0f0;
-            color: #000;
-            font-weight: bold;
-            animation: blink 1s infinite;
-        }
-
-        .map-cell.unexplored {
-            background: #000;
-            border-color: #333;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        /* Character Stats */
         .stats-grid {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -336,13 +347,739 @@
             animation: blink 0.5s infinite;
         }
 
-        /* Inventory */
+        /* Quest panel - right bottom */
+        .quest-panel {
+            grid-column: 3;
+            grid-row: 3;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .quest-objectives {
+            font-size: 12px;
+            line-height: 1.6;
+            overflow-y: auto;
+            max-height: 160px;
+        }
+
+        .objective {
+            margin: 5px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .objective::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #ff0;
+        }
+
+        .objective.completed {
+            color: #0a0;
+            text-decoration: line-through;
+        }
+
+        .objective.completed::before {
+            content: "✓";
+            color: #0f0;
+        }
+
+        /* Map panel - bottom left corner */
+        .map-panel {
+            grid-column: 1;
+            grid-row: 3;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .map-display {
+            background: #000;
+            border: 2px solid #0a0;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 160px;
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 30px);
+            grid-template-rows: repeat(5, 30px);
+            gap: 0px;
+            border: 2px solid #0a0;
+        }
+
+        .map-cell {
+            background: #000;
+            border: 1px solid #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        /* Fog of war - unexplored */
+        .map-cell.unexplored {
+            background: #000;
+            border-color: #111;
+        }
+
+        .map-cell.unexplored::after {
+            content: "?";
+            color: #333;
+            font-size: 14px;
+        }
+
+        /* Scouted locations (seen but not visited) */
+        .map-cell.scouted {
+            background: #001100;
+            border-color: #0a0;
+            opacity: 0.6;
+        }
+
+        .map-cell.scouted::before {
+            content: attr(data-icon);
+            position: absolute;
+            font-size: 14px;
+            opacity: 0.5;
+        }
+
+        /* Visited locations */
+        .map-cell.visited {
+            background: #002200;
+            border-color: #0a0;
+        }
+
+        .map-cell.visited::before {
+            content: attr(data-icon);
+            position: absolute;
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        /* Underground locations */
+        .map-cell.underground {
+            background: #000a0a;
+            border-color: #066;
+        }
+
+        .map-cell.underground.visited {
+            background: #001a1a;
+            border-color: #0aa;
+        }
+
+        .map-cell.underground.scouted {
+            background: #000f0f;
+            border-color: #088;
+        }
+
+        .map-cell.underground.current {
+            background: #003366;
+            border-color: #0ff;
+            box-shadow:
+                inset 0 0 10px #0ff,
+                0 0 10px #0ff;
+        }
+
+        /* Current position */
+        .map-cell.current {
+            background: #004400;
+            border-color: #0f0;
+            box-shadow:
+                inset 0 0 10px #0f0,
+                0 0 10px #0f0;
+        }
+
+        .map-cell.current::before {
+            content: "👤";
+            font-size: 18px;
+            opacity: 1;
+            filter: brightness(1.5);
+        }
+
+        /* Walls/Blocked paths */
+        .map-cell.wall-north {
+            border-top: 3px solid #f00;
+        }
+
+        .map-cell.wall-south {
+            border-bottom: 3px solid #f00;
+        }
+
+        .map-cell.wall-east {
+            border-right: 3px solid #f00;
+        }
+
+        .map-cell.wall-west {
+            border-left: 3px solid #f00;
+        }
+
+        /* Hover tooltip */
+        .map-cell:hover .map-tooltip {
+            display: block;
+        }
+
+        .map-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 50, 0, 0.95);
+            border: 2px solid #0f0;
+            padding: 5px 10px;
+            white-space: nowrap;
+            z-index: 1000;
+            font-size: 10px;
+            color: #0f0;
+            margin-bottom: 5px;
+            pointer-events: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .map-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #0f0;
+        }
+
+        /* Item Detail Modal */
+        .item-detail-modal .modal-content {
+            max-width: 500px;
+        }
+
+        .region-indicator {
+            text-align: center;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid #0a0;
+            background: #001100;
+            font-size: 14px;
+        }
+
+        .region-indicator.underground {
+            color: #0ff;
+            border-color: #0aa;
+            background: #001a1a;
+        }
+
+        .item-detail-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #0f0;
+            padding-bottom: 15px;
+        }
+
+        .item-detail-icon {
+            font-size: 48px;
+        }
+
+        .item-detail-title {
+            flex: 1;
+        }
+
+        .item-detail-name {
+            color: #ff0;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .item-detail-type {
+            color: #0ff;
+            font-size: 14px;
+        }
+
+        .item-detail-stats {
+            background: rgba(0, 50, 0, 0.5);
+            border: 1px solid #0a0;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .item-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #0a0;
+        }
+
+        .item-stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-stat-label {
+            color: #0ff;
+        }
+
+        .item-stat-value {
+            color: #ff0;
+            font-weight: bold;
+        }
+
+        .item-description {
+            color: #0f0;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .item-action-btn {
+            flex: 1;
+            background: linear-gradient(to bottom, #0a4000, #052000);
+            border: 2px solid #0f0;
+            color: #0f0;
+            padding: 10px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .item-action-btn:hover {
+            background: linear-gradient(to bottom, #0f6000, #083000);
+            box-shadow: 0 0 15px #0f0;
+        }
+
+        .item-action-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Item Image Section */
+        .item-image-section {
+            background: #000;
+            border: 2px solid #0a0;
+            border-radius: 3px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .item-image-container {
+            background: #001a00;
+            border: 1px solid #0a0;
+            border-radius: 3px;
+            padding: 10px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .item-generated-image {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border: 1px solid #0f0;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            animation: fadeIn 0.5s ease-in;
+            cursor: pointer;
+        }
+
+        /* Image Gallery */
+        .image-gallery {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #0a0;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .gallery-title {
+            color: #0ff;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .gallery-count {
+            color: #0a0;
+            font-size: 11px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .gallery-thumbnail {
+            position: relative;
+            aspect-ratio: 1;
+            border: 2px solid #0a0;
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #000;
+        }
+
+        .gallery-thumbnail:hover {
+            border-color: #0ff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .gallery-thumbnail.featured {
+            border-color: #ff0;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.6);
+        }
+
+        .gallery-thumbnail.featured::after {
+            content: "⭐";
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 12px;
+            text-shadow: 0 0 5px #000;
+        }
+
+        .gallery-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .page-btn {
+            background: #001100;
+            border: 1px solid #0a0;
+            color: #0f0;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 11px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            background: #003300;
+            border-color: #0ff;
+        }
+
+        .page-btn.active {
+            background: #0f0;
+            color: #000;
+            border-color: #0f0;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Custom Prompt Section */
+        .custom-prompt-section {
+            margin-top: 15px;
+            padding: 10px;
+            background: #001a00;
+            border: 1px solid #0a0;
+            border-radius: 3px;
+        }
+
+        .custom-prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: #002200;
+            border-radius: 3px;
+        }
+
+        .custom-prompt-header:hover {
+            background: #003300;
+        }
+
+        .custom-prompt-title {
+            color: #0ff;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .custom-prompt-toggle {
+            color: #0a0;
+            font-size: 14px;
+        }
+
+        .custom-prompt-content {
+            display: none;
+        }
+
+        .custom-prompt-content.expanded {
+            display: block;
+        }
+
+        .custom-prompt-textarea {
+            width: 100%;
+            min-height: 60px;
+            background: #000;
+            border: 1px solid #0a0;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 8px;
+            border-radius: 3px;
+            resize: vertical;
+            margin-bottom: 8px;
+        }
+
+        .custom-prompt-textarea:focus {
+            outline: none;
+            border-color: #0ff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .custom-prompt-helper {
+            color: #0a0;
+            font-size: 10px;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .custom-prompt-counter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 10px;
+        }
+
+        .char-count {
+            color: #0a0;
+        }
+
+        .char-count.warning {
+            color: #ff0;
+        }
+
+        .char-count.error {
+            color: #f00;
+        }
+
+        .prompt-preview-section {
+            background: #000;
+            border: 1px solid #0a0;
+            border-radius: 3px;
+            padding: 8px;
+            margin-bottom: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .prompt-preview-label {
+            color: #0ff;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .prompt-preview-text {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .prompt-preview-base {
+            color: #0a0;
+        }
+
+        .prompt-preview-custom {
+            color: #ff0;
+            font-weight: bold;
+        }
+
+        .prompt-preview-suffix {
+            color: #0a0;
+        }
+
+        .custom-prompt-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .custom-prompt-btn {
+            flex: 1;
+            background: #001100;
+            border: 1px solid #0a0;
+            color: #0f0;
+            padding: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .custom-prompt-btn:hover {
+            background: #003300;
+            border-color: #0ff;
+        }
+
+        .custom-prompt-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .validation-message {
+            font-size: 10px;
+            padding: 5px;
+            border-radius: 3px;
+            margin-bottom: 8px;
+        }
+
+        .validation-warning {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ff0;
+            color: #ff0;
+        }
+
+        .validation-error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #f00;
+            color: #f00;
+        }
+
+        .item-image-loading {
+            color: #0ff;
+            font-size: 14px;
+            text-align: center;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .item-image-placeholder {
+            text-align: center;
+            color: #0a0;
+        }
+
+        .item-image-icon {
+            font-size: 64px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .item-image-text {
+            font-size: 12px;
+            color: #0a0;
+        }
+
+        /* Navigation - center bottom */
+        .navigation-panel {
+            grid-column: 2;
+            grid-row: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .navigation {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            grid-template-rows: repeat(3, 50px);
+            gap: 5px;
+            max-width: 300px;
+        }
+
+        .nav-button {
+            background: linear-gradient(to bottom, #0a4000, #052000);
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-shadow: 0 0 5px #0f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-button:hover {
+            background: linear-gradient(to bottom, #0f6000, #083000);
+            box-shadow: 0 0 15px #0f0;
+            transform: scale(1.02);
+        }
+
+        .nav-button:active {
+            background: #0f0;
+            color: #000;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        #north { grid-column: 2; grid-row: 1; }
+        #west { grid-column: 1; grid-row: 2; }
+        #examine { grid-column: 2; grid-row: 2; background: linear-gradient(to bottom, #404000, #202000); border-color: #ff0; color: #ff0; }
+        #east { grid-column: 3; grid-row: 2; }
+        #south { grid-column: 2; grid-row: 3; }
+
+        /* Left sidebar - inventory and info */
+        .left-sidebar {
+            grid-column: 1;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .inventory-panel {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
         .inventory-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr;
             gap: 5px;
-            max-height: 200px;
             overflow-y: auto;
+            flex: 1;
+            min-height: 0;
         }
 
         .inventory-item {
@@ -370,12 +1107,13 @@
             font-size: 10px;
         }
 
-        /* Action Buttons */
+        /* Action Bar */
         .action-panel {
             grid-column: 1 / -1;
+            grid-row: 4;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
         }
 
         .action-button {
@@ -425,6 +1163,89 @@
             box-shadow: 0 0 15px #f00;
         }
 
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(0, 20, 0, 0.95);
+            border: 3px solid #0f0;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.5);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            color: #f00;
+            cursor: pointer;
+            font-weight: bold;
+            text-shadow: 0 0 10px #f00;
+        }
+
+        .modal-close:hover {
+            color: #ff0;
+            text-shadow: 0 0 20px #ff0;
+        }
+
+        /* Mobile action buttons */
+        .mobile-buttons {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1500;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        .mobile-action-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom, #0a4000, #052000);
+            border: 3px solid #0f0;
+            color: #0f0;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-action-btn:active {
+            background: #0f0;
+            color: #000;
+        }
+
         /* Choice Buttons */
         .choices {
             display: flex;
@@ -457,33 +1278,52 @@
             color: #ff0;
         }
 
-        /* Quest Panel */
-        .quest-objectives {
-            font-size: 12px;
-            line-height: 1.6;
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto auto;
+            }
+
+            .header { grid-column: 1; }
+            .viewport-container { grid-column: 1; grid-row: 2; }
+            .navigation-panel { grid-column: 1; grid-row: 3; }
+            .action-panel { grid-column: 1; grid-row: 4; }
+
+            .left-sidebar,
+            .character-panel,
+            .quest-panel,
+            .map-panel {
+                display: none;
+            }
+
+            .mobile-buttons {
+                display: flex;
+            }
+
+            .navigation {
+                grid-template-columns: repeat(3, 100px);
+                grid-template-rows: repeat(3, 60px);
+            }
         }
 
-        .objective {
-            margin: 5px 0;
-            padding-left: 15px;
-            position: relative;
-        }
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 20px;
+            }
 
-        .objective::before {
-            content: "▸";
-            position: absolute;
-            left: 0;
-            color: #ff0;
-        }
+            .subtitle {
+                font-size: 10px;
+            }
 
-        .objective.completed {
-            color: #0a0;
-            text-decoration: line-through;
-        }
+            .navigation {
+                grid-template-columns: repeat(3, 80px);
+                grid-template-rows: repeat(3, 50px);
+            }
 
-        .objective.completed::before {
-            content: "✓";
-            color: #0f0;
+            .action-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -495,96 +1335,19 @@
             <div class="subtitle">AN AI-POWERED DUNGEON & DRAGONS ADVENTURE</div>
         </div>
 
-        <!-- Main Display Area -->
-        <div class="main-display">
-            <!-- Viewport -->
-            <div class="panel">
-                <div class="panel-title">[ ADVENTURE LOG ]</div>
-                <div class="viewport" id="viewport">
-                    <div class="text-line quest">Welcome, brave adventurer!</div>
-                    <div class="text-line quest">Your quest: Rescue miners trapped beneath Emberpeak and seal the shattered rune.</div>
-                    <div class="text-line">You find yourself in a dimly lit tavern. The air is thick with pipe smoke and hushed conversations.</div>
-                    <div class="text-line">Two seasoned adventurers sit at the bar - a cunning Rogue and a battle-hardened Fighter.</div>
-                    <div class="text-line">They turn to greet you as you approach...</div>
-                    <div class="text-line cursor"></div>
-                </div>
-            </div>
-
-            <!-- Navigation -->
-            <div class="panel">
-                <div class="panel-title">[ NAVIGATION ]</div>
-                <div class="navigation">
-                    <button class="nav-button" id="north">▲<br>NORTH</button>
-                    <button class="nav-button" id="west">◄<br>WEST</button>
-                    <button class="nav-button" id="examine">👁<br>LOOK</button>
-                    <button class="nav-button" id="east">►<br>EAST</button>
-                    <button class="nav-button" id="south">▼<br>SOUTH</button>
-                </div>
-            </div>
-
-            <!-- Map -->
-            <div class="panel">
-                <div class="panel-title">[ MAP ]</div>
-                <div class="map-display">
-                    <div class="map-grid" id="map"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <!-- Character Stats -->
-            <div class="panel">
-                <div class="panel-title">[ CHARACTER ]</div>
-                <div class="stats-grid">
-                    <div class="stat-label">Name:</div>
-                    <div class="stat-value" id="char-name">Hero 1</div>
-
-                    <div class="stat-label">Class:</div>
-                    <div class="stat-value" id="char-class">Rogue</div>
-
-                    <div class="stat-label">Level:</div>
-                    <div class="stat-value">3</div>
-
-                    <div class="hp-bar-container">
-                        <div class="hp-bar" id="hp-bar" style="width: 100%">
-                            <span id="hp-text">50 / 50 HP</span>
-                        </div>
-                    </div>
-
-                    <div class="stat-label">STR:</div>
-                    <div class="stat-value">14 (+2)</div>
-
-                    <div class="stat-label">DEX:</div>
-                    <div class="stat-value">18 (+4)</div>
-
-                    <div class="stat-label">CON:</div>
-                    <div class="stat-value">12 (+1)</div>
-                </div>
-            </div>
-
-            <!-- Quest Info -->
-            <div class="panel">
-                <div class="panel-title">[ QUEST LOG ]</div>
-                <div class="quest-objectives">
-                    <div class="objective" id="obj1">Gather your party</div>
-                    <div class="objective" id="obj2">Reach Emberpeak Mines</div>
-                    <div class="objective" id="obj3">Rescue the trapped miners</div>
-                    <div class="objective" id="obj4">Seal the shattered rune</div>
-                </div>
-            </div>
-
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
             <!-- Inventory -->
-            <div class="panel">
+            <div class="panel inventory-panel">
                 <div class="panel-title">[ INVENTORY ]</div>
                 <div class="inventory-grid" id="inventory">
                     <div class="inventory-item">
                         <div class="item-name">Dagger</div>
-                        <div class="item-desc">1d4 dmg</div>
+                        <div class="item-desc">1d4 damage</div>
                     </div>
                     <div class="inventory-item">
                         <div class="item-name">Lockpicks</div>
-                        <div class="item-desc">+2 lockpick</div>
+                        <div class="item-desc">+2 lockpick bonus</div>
                     </div>
                     <div class="inventory-item">
                         <div class="item-name">Rope (50ft)</div>
@@ -598,6 +1361,96 @@
             </div>
         </div>
 
+        <!-- Main Viewport -->
+        <div class="viewport-container panel">
+            <div class="panel-title">[ ADVENTURE LOG ]</div>
+            <div class="viewport" id="viewport">
+                <div class="text-line quest">Welcome, brave adventurer!</div>
+                <div class="text-line quest">Your quest: Rescue miners trapped beneath Emberpeak and seal the shattered rune.</div>
+                <div class="text-line">You find yourself in a dimly lit tavern. The air is thick with pipe smoke and hushed conversations.</div>
+                <div class="text-line">Two seasoned adventurers sit at the bar - a cunning Rogue and a battle-hardened Fighter.</div>
+                <div class="text-line">They turn to greet you as you approach...</div>
+                <div class="text-line cursor"></div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Character + Scene Viewer -->
+        <div class="right-sidebar">
+        <!-- Scene Viewer - AI Generated Imagery -->
+        <div class="scene-viewer-panel panel">
+            <div class="panel-title">[ SCENE VIEWER 🍌 ]</div>
+            <div class="scene-viewer-content">
+                <img id="scene-image" class="scene-image" alt="Generated scene">
+                <div id="scene-loading" class="scene-loading">
+                    Generating scene with Nano Banana
+                </div>
+                <div id="scene-error" class="scene-error"></div>
+                <div id="scene-fallback" class="scene-fallback"></div>
+            </div>
+        </div>
+
+            <!-- Character Panel -->
+        <div class="character-panel panel">
+            <div class="panel-title">[ CHARACTER ]</div>
+            <div class="stats-grid">
+                <div class="stat-label">Name:</div>
+                <div class="stat-value" id="char-name">Hero 1</div>
+
+                <div class="stat-label">Class:</div>
+                <div class="stat-value" id="char-class">Rogue</div>
+
+                <div class="stat-label">Level:</div>
+                <div class="stat-value">3</div>
+
+                <div class="hp-bar-container">
+                    <div class="hp-bar" id="hp-bar" style="width: 100%">
+                        <span id="hp-text">50 / 50 HP</span>
+                    </div>
+                </div>
+
+                <div class="stat-label">STR:</div>
+                <div class="stat-value">14 (+2)</div>
+
+                <div class="stat-label">DEX:</div>
+                <div class="stat-value">18 (+4)</div>
+
+                <div class="stat-label">CON:</div>
+                <div class="stat-value">12 (+1)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Panel - Bottom Left -->
+        <div class="map-panel panel">
+            <div class="panel-title">[ MAP ]</div>
+            <div class="map-display">
+                <div class="map-grid" id="map"></div>
+            </div>
+        </div>
+
+        <!-- Navigation - Center Bottom -->
+        <div class="navigation-panel panel">
+            <div class="panel-title">[ NAVIGATION ]</div>
+            <div class="navigation">
+                <button class="nav-button" id="north">▲<br>NORTH</button>
+                <button class="nav-button" id="west">◄<br>WEST</button>
+                <button class="nav-button" id="examine">👁<br>LOOK</button>
+                <button class="nav-button" id="east">►<br>EAST</button>
+                <button class="nav-button" id="south">▼<br>SOUTH</button>
+            </div>
+        </div>
+
+        <!-- Quest Panel - Right Bottom -->
+        <div class="quest-panel panel">
+            <div class="panel-title">[ QUEST LOG ]</div>
+            <div class="quest-objectives">
+                <div class="objective" id="obj1">Gather your party</div>
+                <div class="objective" id="obj2">Reach Emberpeak Mines</div>
+                <div class="objective" id="obj3">Rescue the trapped miners</div>
+                <div class="objective" id="obj4">Seal the shattered rune</div>
+            </div>
+        </div>
+
         <!-- Action Bar -->
         <div class="action-panel">
             <button class="action-button primary" id="talk-btn">💬 TALK</button>
@@ -607,22 +1460,925 @@
         </div>
     </div>
 
+    <!-- Mobile Action Buttons -->
+    <div class="mobile-buttons">
+        <button class="mobile-action-btn" id="mobile-map-btn" title="Map">🗺</button>
+        <button class="mobile-action-btn" id="mobile-inv-btn" title="Inventory">🎒</button>
+        <button class="mobile-action-btn" id="mobile-char-btn" title="Character">👤</button>
+    </div>
+
+    <!-- Map Modal -->
+    <div class="modal" id="map-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-map">&times;</span>
+            <div class="panel-title">[ MAP ]</div>
+            <div id="region-indicator" class="region-indicator"></div>
+            <div class="map-display" style="margin-top: 20px;">
+                <div class="map-grid" id="map-modal-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Modal -->
+    <div class="modal" id="inv-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-inv">&times;</span>
+            <div class="panel-title">[ INVENTORY ]</div>
+            <div class="inventory-grid" id="inventory-modal" style="margin-top: 20px; max-height: 400px;">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Modal -->
+    <div class="modal" id="char-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-char">&times;</span>
+            <div class="panel-title">[ CHARACTER ]</div>
+            <div class="stats-grid" style="margin-top: 20px; font-size: 16px;">
+                <div class="stat-label">Name:</div>
+                <div class="stat-value">Hero 1</div>
+
+                <div class="stat-label">Class:</div>
+                <div class="stat-value">Rogue</div>
+
+                <div class="stat-label">Level:</div>
+                <div class="stat-value">3</div>
+
+                <div class="hp-bar-container">
+                    <div class="hp-bar" style="width: 100%">
+                        <span>50 / 50 HP</span>
+                    </div>
+                </div>
+
+                <div class="stat-label">STR:</div>
+                <div class="stat-value">14 (+2)</div>
+
+                <div class="stat-label">DEX:</div>
+                <div class="stat-value">18 (+4)</div>
+
+                <div class="stat-label">CON:</div>
+                <div class="stat-value">12 (+1)</div>
+
+                <div class="stat-label">INT:</div>
+                <div class="stat-value">10 (+0)</div>
+
+                <div class="stat-label">WIS:</div>
+                <div class="stat-value">13 (+1)</div>
+
+                <div class="stat-label">CHA:</div>
+                <div class="stat-value">16 (+3)</div>
+            </div>
+            <div style="margin-top: 20px;">
+                <div class="panel-title">[ QUEST LOG ]</div>
+                <div class="quest-objectives">
+                    <div class="objective">Gather your party</div>
+                    <div class="objective">Reach Emberpeak Mines</div>
+                    <div class="objective">Rescue the trapped miners</div>
+                    <div class="objective">Seal the shattered rune</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Item Detail Modal -->
+    <div class="modal item-detail-modal" id="item-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-item">&times;</span>
+            <div id="item-detail-content"></div>
+        </div>
+    </div>
+
     <script>
+        // Item Database
+        const itemDatabase = {
+            'Dagger': {
+                name: 'Dagger',
+                type: 'Weapon (Simple, Finesse)',
+                icon: '🗡️',
+                damage: '1d4',
+                damageType: 'Piercing',
+                properties: ['Finesse', 'Light', 'Thrown (20/60)'],
+                weight: '1 lb',
+                value: '2 gp',
+                description: 'A small, easily concealed blade. Perfect for sneaking and quick strikes. Can be thrown at range.',
+                special: 'Uses DEX modifier for attack and damage rolls.'
+            },
+            'Lockpicks': {
+                name: 'Lockpicks',
+                type: 'Tool (Thieves\' Tools)',
+                icon: '🔓',
+                bonus: '+2',
+                skill: 'Sleight of Hand',
+                weight: '1 lb',
+                value: '25 gp',
+                description: 'A set of specialized picks, files, and tension wrenches for opening locks.',
+                special: 'Grants advantage on lockpicking checks when used with proficiency.'
+            },
+            'Rope (50ft)': {
+                name: 'Rope (50ft)',
+                type: 'Adventuring Gear',
+                icon: '🪢',
+                durability: '2 hit points',
+                capacity: 'Can hold up to 3,000 lbs',
+                weight: '10 lbs',
+                value: '1 gp',
+                description: 'Hempen rope, sturdy and reliable. Essential for climbing, binding, and creative problem-solving.',
+                special: 'Can be used to climb, tie up enemies, create trip wires, or form makeshift bridges.'
+            },
+            'Torch': {
+                name: 'Torch',
+                type: 'Light Source',
+                icon: '🔦',
+                lightRadius: '20 ft bright light, 20 ft dim',
+                duration: '1 hour',
+                weight: '1 lb',
+                value: '1 cp',
+                description: 'A wooden stick wrapped in oil-soaked rags. Burns brightly for an hour.',
+                special: 'Can be used as an improvised weapon (1 fire damage) or to ignite flammable objects.'
+            },
+            'Miner\'s Note': {
+                name: 'Miner\'s Note',
+                type: 'Quest Item',
+                icon: '📜',
+                weight: '0 lb',
+                value: 'Priceless',
+                description: 'A bloodstained note from the mining camp. It reads: "Tunnel collapsed at west shaft. Seven of us trapped. Running out of air. If anyone finds this... please help. -Foreman Garrett"',
+                special: 'This note reveals the location of the trapped miners. They need rescue urgently!'
+            },
+            'Sealing Stone': {
+                name: 'Sealing Stone',
+                type: 'Quest Item (Magical)',
+                icon: '💠',
+                weight: '2 lbs',
+                value: 'Ancient Artifact',
+                description: 'A perfectly smooth stone that pulses with containment magic. Ancient runes are carved into its surface, glowing with soft blue light.',
+                special: 'Can be used to seal corrupted magical artifacts. The miners say it was found in the deepest chamber, placed there by ancient dwarven mages.'
+            },
+            'Healing Potion': {
+                name: 'Healing Potion',
+                type: 'Consumable (Potion)',
+                icon: '🧪',
+                healing: '2d4+2',
+                weight: '0.5 lb',
+                value: '50 gp',
+                description: 'A small vial filled with red liquid that shimmers with restorative magic. Tastes like cherries and hope.',
+                special: 'Restores 2d4+2 hit points when consumed as an action. Can be the difference between life and death.'
+            }
+        };
+
+        // ============================================================
+        // CUSTOM PROMPT MANAGEMENT
+        // ============================================================
+
+        // Store custom prompts per item (in memory, per session)
+        const customPrompts = {};
+
+        /**
+         * Toggle custom prompt section expand/collapse
+         */
+        function toggleCustomPromptSection(itemName) {
+            const safeItemName = itemName.replace(/\s+/g, '-');
+            const contentEl = document.getElementById(`custom-prompt-content-${safeItemName}`);
+            const toggleEl = document.getElementById(`custom-prompt-toggle-${safeItemName}`);
+
+            if (contentEl && toggleEl) {
+                contentEl.classList.toggle('expanded');
+                toggleEl.textContent = contentEl.classList.contains('expanded') ? '▲' : '▼';
+            }
+        }
+
+        /**
+         * Update custom prompt preview and character count
+         */
+        function updateCustomPromptPreview(itemName) {
+            const safeItemName = itemName.replace(/\s+/g, '-');
+            const inputEl = document.getElementById(`custom-prompt-input-${safeItemName}`);
+            const countEl = document.getElementById(`char-count-${safeItemName}`);
+            const previewEl = document.getElementById(`prompt-preview-${safeItemName}`);
+            const validationEl = document.getElementById(`validation-message-${safeItemName}`);
+
+            if (!inputEl) return;
+
+            const customText = inputEl.value;
+            const charCount = customText.length;
+
+            // Update character count with color coding
+            if (countEl) {
+                countEl.textContent = `${charCount}/200`;
+                countEl.className = 'char-count';
+                if (charCount > 180) {
+                    countEl.classList.add('warning');
+                }
+                if (charCount === 200) {
+                    countEl.classList.add('error');
+                }
+            }
+
+            // Build and show preview
+            const item = itemDatabase[itemName];
+            if (item && previewEl) {
+                const basePrompt = buildBasePrompt(item);
+                const suffix = 'Fantasy RPG item, detailed illustration on neutral background, studio lighting, high quality.';
+
+                let previewHTML = `<span class="prompt-preview-base">${basePrompt}</span>`;
+
+                if (customText.trim()) {
+                    previewHTML += `<span class="prompt-preview-custom">${customText}</span><span class="prompt-preview-base">. </span>`;
+                }
+
+                previewHTML += `<span class="prompt-preview-suffix">${suffix}</span>`;
+
+                previewEl.innerHTML = previewHTML;
+            }
+
+            // Validate and show warnings/errors
+            if (validationEl) {
+                const validation = validateCustomPrompt(customText, itemName);
+                if (validation.errors.length > 0) {
+                    validationEl.innerHTML = validation.errors.map(err =>
+                        `<div class="validation-message validation-error">❌ ${err}</div>`
+                    ).join('');
+                } else if (validation.warnings.length > 0) {
+                    validationEl.innerHTML = validation.warnings.map(warn =>
+                        `<div class="validation-message validation-warning">⚠️ ${warn}</div>`
+                    ).join('');
+                } else {
+                    validationEl.innerHTML = '';
+                }
+            }
+        }
+
+        /**
+         * Build base prompt for an item
+         */
+        function buildBasePrompt(item) {
+            let prompt = `${item.name}, ${item.description}. `;
+
+            // Add type-specific details
+            if (item.damage) {
+                prompt += `Weapon that deals ${item.damage} ${item.damageType || ''} damage. `;
+            }
+            if (item.type.includes('Tool')) {
+                prompt += `Detailed crafting tool. `;
+            }
+            if (item.type.includes('Light')) {
+                prompt += `Glowing light source. `;
+            }
+            if (item.type.includes('Quest')) {
+                prompt += `Magical artifact with mystical properties. `;
+            }
+            if (item.special) {
+                prompt += `Special property: ${item.special}. `;
+            }
+
+            return prompt;
+        }
+
+        /**
+         * Validate custom prompt
+         * Returns {errors: [], warnings: []}
+         */
+        function validateCustomPrompt(customPrompt, itemName) {
+            const errors = [];
+            const warnings = [];
+
+            // Length validation (hard error)
+            if (customPrompt.length > 200) {
+                errors.push("Custom prompt exceeds 200 character limit");
+            }
+
+            // Check for dangerous content (hard error)
+            const dangerous = ['<script', 'javascript:', 'onerror', 'eval(', '<?php', '<iframe'];
+            for (const pattern of dangerous) {
+                if (customPrompt.toLowerCase().includes(pattern)) {
+                    errors.push("Invalid content detected in prompt");
+                    break;
+                }
+            }
+
+            // Check for contradictory item mentions (soft warning)
+            const otherItems = ['sword', 'bow', 'axe', 'staff', 'shield', 'armor', 'helmet'];
+            for (const otherItem of otherItems) {
+                if (customPrompt.toLowerCase().includes(otherItem) &&
+                    !itemName.toLowerCase().includes(otherItem)) {
+                    warnings.push(`Your prompt mentions "${otherItem}" but item is "${itemName}". Image may be confusing.`);
+                }
+            }
+
+            // Check for obvious contradictions (soft warning)
+            const contradictions = ['ignore', 'instead of', 'not a', 'actually a', 'really a'];
+            for (const phrase of contradictions) {
+                if (customPrompt.toLowerCase().includes(phrase)) {
+                    warnings.push(`Phrase "${phrase}" might cause unexpected results`);
+                }
+            }
+
+            return { errors, warnings };
+        }
+
+        /**
+         * Clear custom prompt
+         */
+        function clearCustomPrompt(itemName) {
+            const safeItemName = itemName.replace(/\s+/g, '-');
+            const inputEl = document.getElementById(`custom-prompt-input-${safeItemName}`);
+
+            if (inputEl) {
+                inputEl.value = '';
+                updateCustomPromptPreview(itemName);
+                delete customPrompts[itemName];
+                addText(`🗑️ Cleared custom prompt for ${itemName}`, 'info');
+            }
+        }
+
+        /**
+         * Apply custom prompt for next generation
+         */
+        function applyCustomPrompt(itemName) {
+            const safeItemName = itemName.replace(/\s+/g, '-');
+            const inputEl = document.getElementById(`custom-prompt-input-${safeItemName}`);
+
+            if (inputEl) {
+                const customText = inputEl.value.trim();
+                const validation = validateCustomPrompt(customText, itemName);
+
+                // Block if there are errors
+                if (validation.errors.length > 0) {
+                    addText(`❌ Cannot apply: ${validation.errors[0]}`, 'damage');
+                    return;
+                }
+
+                // Save custom prompt
+                customPrompts[itemName] = customText;
+
+                if (customText) {
+                    addText(`✅ Custom style applied to ${itemName}. Click "Generate New Image" to create!`, 'success');
+                } else {
+                    addText(`ℹ️ Using default style for ${itemName}`, 'info');
+                }
+            }
+        }
+
+        // ============================================================
+        // SCENE CACHE - Prevent Unnecessary Regeneration
+        // ============================================================
+
+        class SceneCache {
+            constructor() {
+                this.storageKey = 'nanoBananaSceneCache';
+                this.loadCache();
+            }
+
+            loadCache() {
+                const stored = localStorage.getItem(this.storageKey);
+                this.cache = stored ? JSON.parse(stored) : {};
+            }
+
+            saveCache() {
+                localStorage.setItem(this.storageKey, JSON.stringify(this.cache));
+            }
+
+            /**
+             * Generate scene key from location and context
+             */
+            getSceneKey(location, timeOfDay = 'day', weather = 'clear') {
+                return `scene_${location}_${timeOfDay}_${weather}`.toLowerCase().replace(/\s+/g, '-');
+            }
+
+            /**
+             * Check if scene exists in cache
+             */
+            has(location, timeOfDay, weather) {
+                const key = this.getSceneKey(location, timeOfDay, weather);
+                return !!this.cache[key];
+            }
+
+            /**
+             * Get cached scene
+             */
+            get(location, timeOfDay, weather) {
+                const key = this.getSceneKey(location, timeOfDay, weather);
+                const cached = this.cache[key];
+
+                if (cached) {
+                    cached.lastUsed = new Date().toISOString();
+                    cached.useCount = (cached.useCount || 0) + 1;
+                    this.saveCache();
+                    console.log(`📦 Using cached scene: ${key} (used ${cached.useCount} times)`);
+                }
+
+                return cached;
+            }
+
+            /**
+             * Store scene in cache
+             */
+            set(location, imageData, timeOfDay = 'day', weather = 'clear', prompt = '') {
+                const key = this.getSceneKey(location, timeOfDay, weather);
+
+                this.cache[key] = {
+                    location,
+                    imageData,
+                    timeOfDay,
+                    weather,
+                    prompt,
+                    timestamp: new Date().toISOString(),
+                    lastUsed: new Date().toISOString(),
+                    useCount: 1
+                };
+
+                this.saveCache();
+                console.log(`💾 Cached scene: ${key}`);
+            }
+
+            /**
+             * Clear old scenes (unused for 7+ days)
+             */
+            cleanup() {
+                const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+                let removed = 0;
+
+                for (const [key, scene] of Object.entries(this.cache)) {
+                    const lastUsed = new Date(scene.lastUsed).getTime();
+                    if (lastUsed < sevenDaysAgo) {
+                        delete this.cache[key];
+                        removed++;
+                    }
+                }
+
+                if (removed > 0) {
+                    this.saveCache();
+                    console.log(`🗑️ Cleaned up ${removed} old scenes`);
+                }
+            }
+
+            /**
+             * Get cache statistics
+             */
+            getStats() {
+                const scenes = Object.values(this.cache);
+                return {
+                    total: scenes.length,
+                    totalUses: scenes.reduce((sum, s) => sum + (s.useCount || 1), 0),
+                    locations: [...new Set(scenes.map(s => s.location))]
+                };
+            }
+
+            /**
+             * Clear all cached scenes
+             */
+            clear() {
+                this.cache = {};
+                this.saveCache();
+                console.log('🗑️ Cleared all cached scenes');
+            }
+        }
+
+        // ============================================================
+        // IMAGE LIBRARY - LocalStorage Management
+        // ============================================================
+
+        class ImageLibrary {
+            constructor() {
+                this.storageKey = 'nanoBananaImageLibrary';
+                this.loadLibrary();
+            }
+
+            loadLibrary() {
+                const stored = localStorage.getItem(this.storageKey);
+                this.library = stored ? JSON.parse(stored) : {};
+            }
+
+            saveLibrary() {
+                localStorage.setItem(this.storageKey, JSON.stringify(this.library));
+            }
+
+            /**
+             * Save an image to the library
+             * @param {string} itemName - Name of the item
+             * @param {string} imageData - Base64 image data
+             * @param {string} customPrompt - Optional custom prompt used
+             * @returns {string} Image ID
+             */
+            saveImage(itemName, imageData, customPrompt = '') {
+                if (!this.library[itemName]) {
+                    this.library[itemName] = {
+                        featured: null,
+                        images: []
+                    };
+                }
+
+                const imageId = `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                const imageEntry = {
+                    id: imageId,
+                    data: imageData,
+                    timestamp: new Date().toISOString(),
+                    customPrompt: customPrompt || ''
+                };
+
+                this.library[itemName].images.push(imageEntry);
+
+                // Set as featured if it's the first image
+                if (!this.library[itemName].featured) {
+                    this.library[itemName].featured = imageId;
+                }
+
+                this.saveLibrary();
+                const promptInfo = customPrompt ? ` with custom prompt: "${customPrompt}"` : '';
+                console.log(`💾 Saved image ${imageId} for ${itemName}${promptInfo}`);
+                return imageId;
+            }
+
+            /**
+             * Get all images for an item
+             * @param {string} itemName - Name of the item
+             * @returns {Array} Array of image objects
+             */
+            getImages(itemName) {
+                return this.library[itemName]?.images || [];
+            }
+
+            /**
+             * Get featured image for an item
+             * @param {string} itemName - Name of the item
+             * @returns {Object|null} Featured image object
+             */
+            getFeaturedImage(itemName) {
+                const itemData = this.library[itemName];
+                if (!itemData) return null;
+
+                return itemData.images.find(img => img.id === itemData.featured) || null;
+            }
+
+            /**
+             * Set featured image for an item
+             * @param {string} itemName - Name of the item
+             * @param {string} imageId - Image ID to set as featured
+             */
+            setFeaturedImage(itemName, imageId) {
+                if (this.library[itemName]) {
+                    this.library[itemName].featured = imageId;
+                    this.saveLibrary();
+                    console.log(`⭐ Set ${imageId} as featured for ${itemName}`);
+                }
+            }
+
+            /**
+             * Delete an image
+             * @param {string} itemName - Name of the item
+             * @param {string} imageId - Image ID to delete
+             */
+            deleteImage(itemName, imageId) {
+                if (!this.library[itemName]) return;
+
+                this.library[itemName].images = this.library[itemName].images.filter(
+                    img => img.id !== imageId
+                );
+
+                // If deleted image was featured, set new featured
+                if (this.library[itemName].featured === imageId) {
+                    const remaining = this.library[itemName].images;
+                    this.library[itemName].featured = remaining.length > 0 ? remaining[0].id : null;
+                }
+
+                this.saveLibrary();
+            }
+
+            /**
+             * Get image count for an item
+             * @param {string} itemName - Name of the item
+             * @returns {number} Number of images
+             */
+            getImageCount(itemName) {
+                return this.library[itemName]?.images.length || 0;
+            }
+        }
+
+        // ============================================================
+        // NANO BANANA IMAGE GENERATOR
+        // ============================================================
+
+        class NanoBananaGenerator {
+            constructor(apiUrl = 'http://localhost:5000') {
+                this.apiUrl = apiUrl;
+                this.imageCache = new Map();
+                this.isGenerating = false;
+                this.quotaExhausted = false;
+                this.disabled = false;
+                this.imageLibrary = new ImageLibrary();
+                this.sceneCache = new SceneCache();
+
+                // Track current scene to avoid regeneration
+                this.currentScene = {
+                    location: 'emberpeak_entrance',
+                    timeOfDay: 'dawn',
+                    weather: 'clear'
+                };
+            }
+
+            /**
+             * Check if the backend server is healthy
+             */
+            async checkHealth() {
+                try {
+                    const response = await fetch(`${this.apiUrl}/health`, {
+                        method: 'GET',
+                        signal: AbortSignal.timeout(5000) // 5 second timeout
+                    });
+                    if (response.ok) {
+                        return true;
+                    }
+                    this.disabled = true;
+                    return false;
+                } catch (error) {
+                    console.warn('Backend server not available:', error.message);
+                    this.disabled = true;
+                    return false;
+                }
+            }
+
+            /**
+             * Generate a scene image from a descriptive prompt
+             * @param {string} prompt - Description of the scene to generate
+             * @param {Object} options - Optional configuration
+             * @returns {Promise<string>} Base64 encoded image data
+             */
+            async generateSceneImage(prompt, options = {}) {
+                const aspectRatio = options.aspectRatio || '16:9';
+                const cacheKey = `scene_${prompt}_${aspectRatio}`;
+
+                // Skip if disabled or quota exhausted
+                if (this.disabled) {
+                    console.warn('🍌 Generation disabled (server offline)');
+                    this.showFallbackArt(prompt);
+                    return null;
+                }
+
+                if (this.quotaExhausted) {
+                    console.warn('🍌 Quota exhausted, using fallback art');
+                    this.showFallbackArt(prompt);
+                    return null;
+                }
+
+                // Check cache first
+                if (this.imageCache.has(cacheKey)) {
+                    console.log('📦 Using cached image for:', prompt);
+                    return this.imageCache.get(cacheKey);
+                }
+
+                try {
+                    this.setLoadingState(true);
+                    console.log('🍌 Generating scene:', prompt);
+
+                    const requestBody = {
+                            description: prompt,
+                            style: options.style || 'photorealistic',
+                            aspect_ratio: aspectRatio
+                    };
+
+                    // Add optional validation parameters
+                    if (options.itemName) {
+                        requestBody.item_name = options.itemName;
+                    }
+                    if (options.customPrompt) {
+                        requestBody.custom_prompt = options.customPrompt;
+                    }
+
+                    const response = await fetch(`${this.apiUrl}/generate-scene`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        const errorMsg = errorData.error || `HTTP ${response.status}`;
+
+                        // Check for quota exhaustion
+                        if (response.status === 500 && errorMsg.includes('429')) {
+                            console.warn('🍌 API quota exhausted');
+                            this.quotaExhausted = true;
+                            this.showError('API quota exceeded. Using fallback art.');
+                            this.showFallbackArt(prompt);
+                            return null;
+                        }
+
+                        // Other errors
+                        console.error('❌ Server error:', errorMsg);
+                        this.showError(errorMsg);
+                        this.showFallbackArt(prompt);
+                        return null;
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success && data.image) {
+                        console.log(`✅ Image generated in ${data.generation_time}s`);
+                        this.imageCache.set(cacheKey, data.image);
+                        this.displayImage(data.image);
+                        return data.image;
+                    } else {
+                        console.warn('⚠️ No image data in response');
+                        this.showFallbackArt(prompt);
+                        return null;
+                    }
+                } catch (error) {
+                    console.error('❌ Image generation failed:', error);
+                    this.showError(error.message);
+                    this.showFallbackArt(prompt);
+                    return null;
+                } finally {
+                    this.setLoadingState(false);
+                }
+            }
+
+            /**
+             * Generate a character portrait
+             * @param {Object} characterData - Character information
+             * @returns {Promise<string>} Base64 encoded image data
+             */
+            async generateCharacterPortrait(characterData) {
+                const prompt = `${characterData.name}, a ${characterData.class}. ${characterData.description || 'Fantasy RPG character portrait'}`;
+                return this.generateSceneImage(prompt, { aspectRatio: '1:1', style: 'fantasy_art' });
+            }
+
+            /**
+             * Generate item artwork
+             * @param {string} itemName - Name/description of the item
+             * @returns {Promise<string>} Base64 encoded image data
+             */
+            async generateItemImage(itemName) {
+                const prompt = `${itemName}, detailed item illustration on white background`;
+                return this.generateSceneImage(prompt, { aspectRatio: '1:1', style: 'fantasy_art' });
+            }
+
+            /**
+             * Display generated image in the scene viewer
+             */
+            displayImage(base64Data) {
+                const img = document.getElementById('scene-image');
+                const fallback = document.getElementById('scene-fallback');
+                const error = document.getElementById('scene-error');
+
+                if (img) {
+                    img.src = `data:image/png;base64,${base64Data}`;
+                    img.classList.add('loaded');
+                    fallback.classList.remove('active');
+                    error.classList.remove('active');
+                }
+            }
+
+            /**
+             * Set loading state UI
+             */
+            setLoadingState(isLoading) {
+                this.isGenerating = isLoading;
+                const loading = document.getElementById('scene-loading');
+                const img = document.getElementById('scene-image');
+
+                if (loading) {
+                    if (isLoading) {
+                        loading.classList.add('active');
+                        img.classList.remove('loaded');
+                    } else {
+                        loading.classList.remove('active');
+                    }
+                }
+            }
+
+            /**
+             * Show error message
+             */
+            showError(message) {
+                const errorEl = document.getElementById('scene-error');
+                if (errorEl) {
+                    errorEl.textContent = `(Image generation unavailable - using fallback art)`;
+                    errorEl.classList.add('active');
+                }
+            }
+
+            /**
+             * Show ASCII fallback art when generation fails
+             */
+            showFallbackArt(prompt) {
+                const fallbackEl = document.getElementById('scene-fallback');
+                if (fallbackEl) {
+                    const art = this.getAsciiArt(prompt);
+                    fallbackEl.textContent = art;
+                    fallbackEl.classList.add('active');
+                }
+            }
+
+            /**
+             * Get ASCII art fallback based on prompt keywords
+             */
+            getAsciiArt(prompt) {
+                const lowerPrompt = prompt.toLowerCase();
+
+                if (lowerPrompt.includes('emberpeak') || lowerPrompt.includes('village') || lowerPrompt.includes('entrance')) {
+                    return `
+    🏔️  EMBERPEAK VILLAGE  🏔️
+    ═══════════════════════════
+         /\\        /\\
+        /  \\      /  \\
+       /    \\    /    \\
+      /      \\  /      \\
+     /________\\/________\\
+     |  🚪  ||  🏠  |
+     |      ||      |
+    ═════════════════════
+         WELCOME
+                    `;
+                } else if (lowerPrompt.includes('mine') || lowerPrompt.includes('cave')) {
+                    return `
+    ⛏️   EMBERPEAK MINES   ⛏️
+    ═══════════════════════════
+         ___________
+        /           \\
+       /   DANGER    \\
+      |   🔥  🔥  🔥 |
+      |              |
+      |_____________/
+         |       |
+         |  ⚠️   |
+    ═══════════════════════
+                    `;
+                } else {
+                    return `
+    ⚔️   D&D ADVENTURE   ⚔️
+    ═══════════════════════════
+         /\\    🏔️    /\\
+        /  \\  /  \\  /  \\
+       /____\\/____\\/____\\
+       |  🗡️  |  🛡️ |
+       |______|______|
+    ═══════════════════════
+      IMAGE UNAVAILABLE
+                    `;
+                }
+            }
+
+            /**
+             * Clear the image cache
+             */
+            clearCache() {
+                this.imageCache.clear();
+                console.log('🗑️ Image cache cleared');
+            }
+
+            /**
+             * Check if server is available
+             */
+            async checkHealth() {
+                try {
+                    const response = await fetch(`${this.apiUrl}/health`);
+                    const data = await response.json();
+                    return data.status === 'healthy' && data.api_key_configured;
+                } catch (error) {
+                    return false;
+                }
+            }
+        }
+
+        // Initialize Nano Banana Generator
+        const nanoBanana = new NanoBananaGenerator();
+
+        // ============================================================
+        // END NANO BANANA IMAGE GENERATOR
+        // ============================================================
+
         // Game State
         const gameState = {
             currentLocation: { x: 3, y: 2 },
             playerHP: 50,
             maxHP: 50,
             turn: 0,
+            inCombat: false,
+            lastEncounterLocation: null,
+            encounterCooldown: 0,
             locations: {
-                '3,2': { name: 'Starting Tavern', visited: true, description: 'A warm tavern filled with adventurers.' },
-                '3,1': { name: 'Town Square', visited: false, description: 'The bustling heart of the village.' },
-                '4,2': { name: 'Market Street', visited: false, description: 'Merchants hawk their wares.' },
-                '2,2': { name: 'Blacksmith', visited: false, description: 'The clang of hammer on anvil rings out.' },
-                '3,3': { name: 'City Gates', visited: false, description: 'The path leads to adventure beyond.' },
-                '3,4': { name: 'Forest Path', visited: false, description: 'Dark woods surround the winding trail.' },
-                '4,4': { name: 'Hidden Grove', visited: false, description: 'A mystical clearing pulses with energy.' },
-                '2,4': { name: 'Bandit Camp', visited: false, description: 'Danger lurks in this makeshift hideout.' },
+                '3,2': { name: 'Starting Tavern', visited: true, scouted: false, description: 'A warm tavern filled with adventurers.', icon: '🍺', walls: [], region: 'surface' },
+                '3,1': { name: 'Town Square', visited: false, scouted: false, description: 'The bustling heart of the village.', icon: '🏛️', walls: ['north', 'east', 'west'], region: 'surface' },
+                '4,2': { name: 'Market Street', visited: false, scouted: false, description: 'Merchants hawk their wares.', icon: '🛒', walls: ['north', 'east', 'south'], region: 'surface' },
+                '2,2': { name: 'Blacksmith', visited: false, scouted: false, description: 'The clang of hammer on anvil rings out.', icon: '⚒️', walls: ['north', 'west', 'south'], region: 'surface' },
+                '3,3': { name: 'City Gates', visited: false, scouted: false, description: 'The path leads to adventure beyond.', icon: '🚪', walls: ['east', 'west'], region: 'surface' },
+                '3,4': { name: 'Forest Path', visited: false, scouted: false, description: 'Dark woods surround the winding trail.', icon: '🌲', walls: [], region: 'surface' },
+                '4,4': { name: 'Hidden Grove', visited: false, scouted: false, description: 'A mystical clearing pulses with energy.', icon: '✨', walls: ['north', 'east', 'south'], region: 'surface' },
+                '2,4': { name: 'Bandit Camp', visited: false, scouted: false, description: 'Danger lurks in this makeshift hideout.', icon: '⚔️', walls: ['west', 'south'], region: 'surface' },
+                '1,4': { name: 'Dark Cave', visited: false, scouted: false, description: 'A forbidding cave entrance.', icon: '🕳️', walls: ['north', 'west', 'south'], region: 'surface' },
+                '4,3': { name: 'Old Bridge', visited: false, scouted: false, description: 'A rickety bridge over a chasm.', icon: '🌉', walls: ['east', 'south'], region: 'surface' },
+                '2,3': { name: 'Cemetery', visited: false, scouted: false, description: 'Ancient tombstones loom in the mist.', icon: '⚰️', walls: ['west', 'south'], region: 'surface' },
+                // UNDERGROUND - Emberpeak Mines (Y: 5-9)
+                '3,5': { name: 'Mine Entrance', visited: false, scouted: false, description: 'Wooden supports frame the descent into darkness. The air grows cold.', icon: '⛏️', walls: ['east', 'west'], region: 'underground' },
+                '3,6': { name: 'Shaft Junction', visited: false, scouted: false, description: 'Three tunnels branch off from this central chamber. Pickaxe marks scar the walls.', icon: '🔦', walls: ['north'], region: 'underground' },
+                '2,6': { name: 'Crystal Cavern', visited: false, scouted: false, description: 'Glowing crystals illuminate this natural cave. Beautiful but eerie.', icon: '💎', walls: ['north', 'west', 'south'], region: 'underground' },
+                '4,6': { name: 'Dark Passage', visited: false, scouted: false, description: 'The tunnel narrows here. Strange scratching sounds echo ahead.', icon: '🌑', walls: ['north', 'east'], region: 'underground' },
+                '3,7': { name: 'Mining Camp', visited: false, scouted: false, description: 'Abandoned tools and bedrolls. The miners left in a hurry.', icon: '⚒️', walls: ['east', 'west'], region: 'underground' },
+                '2,7': { name: 'Collapsed Tunnel', visited: false, scouted: false, description: 'Rubble blocks further progress. Survivors could be trapped beyond.', icon: '🪨', walls: ['west', 'south'], region: 'underground' },
+                '4,7': { name: 'Underground River', visited: false, scouted: false, description: 'Dark water rushes through carved stone. The sound is deafening.', icon: '💧', walls: ['east', 'south'], region: 'underground' },
+                '3,8': { name: 'Deep Chamber', visited: false, scouted: false, description: 'The largest cavern yet. Something ancient dwells here.', icon: '🕳️', walls: ['east', 'west'], region: 'underground' },
+                '3,9': { name: 'Rune Chamber', visited: false, scouted: false, description: 'The shattered rune pulses with dark energy. This is what drew evil here.', icon: '✨', walls: ['north', 'east', 'west', 'south'], region: 'underground' },
             },
             inventory: ['Dagger', 'Lockpicks', 'Rope', 'Torch'],
             objectives: [
@@ -630,27 +2386,92 @@
                 { id: 'obj2', text: 'Reach Emberpeak Mines', completed: false },
                 { id: 'obj3', text: 'Rescue the trapped miners', completed: false },
                 { id: 'obj4', text: 'Seal the shattered rune', completed: false }
-            ]
+            ],
+            questFlags: {
+                foundMinersNote: false,
+                clearedRubble: false,
+                rescuedMiners: false,
+                foundSealingStone: false,
+                sealedRune: false,
+                talkedToSurvivor: false
+            }
         };
 
         // Initialize map
-        function initMap() {
-            const mapContainer = document.getElementById('map');
-            for (let y = 0; y < 5; y++) {
+        function initMap(containerId) {
+            const mapContainer = document.getElementById(containerId);
+            mapContainer.innerHTML = '';
+
+            // Determine which region to show based on player location
+            const currentLocationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
+            const currentLoc = gameState.locations[currentLocationKey];
+            const isUnderground = currentLoc && currentLoc.region === 'underground';
+
+            // Update region indicator if it exists (for modal)
+            const regionIndicator = document.getElementById('region-indicator');
+            if (regionIndicator) {
+                if (isUnderground) {
+                    regionIndicator.textContent = '⛏️ EMBERPEAK MINES - UNDERGROUND';
+                    regionIndicator.classList.add('underground');
+                } else {
+                    regionIndicator.textContent = '🏰 SURFACE - TOWN & FOREST';
+                    regionIndicator.classList.remove('underground');
+                }
+            }
+
+            // Set Y range based on region
+            const yStart = isUnderground ? 5 : 0;
+            const yEnd = isUnderground ? 10 : 5;
+
+            // Display map for current region only
+            for (let y = yStart; y < yEnd; y++) {
                 for (let x = 0; x < 7; x++) {
                     const cell = document.createElement('div');
                     cell.className = 'map-cell unexplored';
-                    cell.id = `map-${x}-${y}`;
+                    cell.id = `${containerId}-${x}-${y}`;
 
                     const locationKey = `${x},${y}`;
-                    if (gameState.locations[locationKey]) {
-                        if (gameState.locations[locationKey].visited) {
+                    const location = gameState.locations[locationKey];
+
+                    if (location) {
+                        // Mark underground locations
+                        if (location.region === 'underground') {
+                            cell.classList.add('underground');
+                        }
+
+                        // Add tooltip
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'map-tooltip';
+
+                        if (location.visited) {
                             cell.classList.add('visited');
                             cell.classList.remove('unexplored');
+                            cell.setAttribute('data-icon', location.icon);
+                            tooltip.textContent = location.name;
+                        } else if (location.scouted) {
+                            cell.classList.add('scouted');
+                            cell.classList.remove('unexplored');
+                            cell.setAttribute('data-icon', location.icon);
+                            tooltip.textContent = `${location.name} (Scouted)`;
+                        } else {
+                            tooltip.textContent = 'Unexplored';
                         }
+
+                        cell.appendChild(tooltip);
+
+                        // Add walls
+                        if (location.walls) {
+                            location.walls.forEach(wall => {
+                                cell.classList.add(`wall-${wall}`);
+                            });
+                        }
+
+                        // Current position
                         if (x === gameState.currentLocation.x && y === gameState.currentLocation.y) {
                             cell.classList.add('current');
-                            cell.textContent = '@';
+                            cell.classList.remove('unexplored');
+                            cell.classList.remove('scouted');
+                            tooltip.textContent = `📍 ${location.name} (You are here)`;
                         }
                     }
 
@@ -661,17 +2482,9 @@
 
         // Update map
         function updateMap() {
-            document.querySelectorAll('.map-cell').forEach(cell => {
-                cell.classList.remove('current');
-            });
-
-            const currentCell = document.getElementById(`map-${gameState.currentLocation.x}-${gameState.currentLocation.y}`);
-            if (currentCell) {
-                currentCell.classList.add('current');
-                currentCell.classList.remove('unexplored');
-                currentCell.classList.add('visited');
-                currentCell.textContent = '@';
-            }
+            // Re-initialize both maps to reflect new state
+            initMap('map');
+            initMap('map-modal-grid');
         }
 
         // Add text to viewport
@@ -684,12 +2497,35 @@
             line.textContent = text;
 
             viewport.insertBefore(line, cursor);
+
+            // Limit message history to 100 lines to prevent memory issues
+            const allLines = viewport.querySelectorAll('.text-line:not(.cursor)');
+            if (allLines.length > 100) {
+                allLines[0].remove();
+            }
+
             viewport.scrollTop = viewport.scrollHeight;
         }
 
         // Navigation
         function move(direction) {
+            // Prevent movement during combat
+            if (gameState.inCombat) {
+                addText("⚠️ You can't move during combat!", 'damage');
+                return;
+            }
+
             const { x, y } = gameState.currentLocation;
+            const currentKey = `${x},${y}`;
+            const currentLocation = gameState.locations[currentKey];
+
+            // Check if there's a wall blocking this direction
+            if (currentLocation && currentLocation.walls.includes(direction)) {
+                addText(`❌ BLOCKED: There's a wall to the ${direction}!`, 'damage');
+                addText(`You see: ${getWallDescription(direction)}`, 'damage');
+                return;
+            }
+
             let newX = x, newY = y;
 
             switch(direction) {
@@ -702,49 +2538,134 @@
             const locationKey = `${newX},${newY}`;
 
             if (gameState.locations[locationKey]) {
+                const previousLocation = gameState.locations[currentKey];
                 gameState.currentLocation = { x: newX, y: newY };
                 const location = gameState.locations[locationKey];
 
+                // Check for region transition
+                if (previousLocation && previousLocation.region !== location.region) {
+                    if (location.region === 'underground') {
+                        addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                        addText('⛏️ You descend into the darkness of Emberpeak Mines...', 'quest');
+                        addText('The air grows cold. The light from above fades.', 'quest');
+                        addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+
+                        // Complete quest objective
+                        if (!gameState.objectives[1].completed) {
+                            completeObjective(1);
+                        }
+                    } else {
+                        addText('━━━━━━━━━━━━━━━━━━━━', 'success');
+                        addText('🌄 You ascend back to the surface...', 'success');
+                        addText('Fresh air fills your lungs. Sunlight returns.', 'success');
+                        addText('━━━━━━━━━━━━━━━━━━━━', 'success');
+                    }
+                }
+
                 if (!location.visited) {
                     location.visited = true;
-                    addText(`You discover: ${location.name}!`, 'success');
+                    addText(`🗺️ You discover: ${location.name}!`, 'success');
                 } else {
-                    addText(`You move to: ${location.name}`);
+                    addText(`➡️ You move to: ${location.name}`);
                 }
 
                 addText(location.description);
                 updateMap();
 
-                // Random encounter chance
-                if (Math.random() < 0.3) {
+                // Decrement cooldown
+                if (gameState.encounterCooldown > 0) {
+                    gameState.encounterCooldown--;
+                }
+
+                // Random encounter chance (15%, with cooldown)
+                if (gameState.encounterCooldown === 0 &&
+                    Math.random() < 0.15 &&
+                    gameState.lastEncounterLocation !== locationKey) {
                     setTimeout(() => {
                         triggerEncounter();
                     }, 1000);
                 }
             } else {
-                addText("You can't go that way.", 'damage');
+                addText("❌ You can't go that way - nothing but wilderness!", 'damage');
             }
+        }
+
+        // Get wall description
+        function getWallDescription(direction) {
+            const descriptions = {
+                north: "Tall stone walls block the northern passage",
+                south: "A thick barrier prevents travel south",
+                east: "Rubble and debris block the eastern path",
+                west: "Ancient walls seal off the western route"
+            };
+            return descriptions[direction] || "An impassable barrier";
         }
 
         // Trigger random encounter
         function triggerEncounter() {
-            const encounters = [
-                { text: "A wild goblin appears!", enemy: "Goblin", hp: 15 },
-                { text: "You spot a skeleton warrior!", enemy: "Skeleton", hp: 20 },
-                { text: "An orc blocks your path!", enemy: "Orc", hp: 25 }
-            ];
+            // Already in combat, skip
+            if (gameState.inCombat) return;
+
+            gameState.inCombat = true;
+            const locationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
+            gameState.lastEncounterLocation = locationKey;
+
+            const currentLocation = gameState.locations[locationKey];
+            let encounters;
+
+            // Different encounters based on region
+            if (currentLocation && currentLocation.region === 'underground') {
+                encounters = [
+                    { text: "🦇 A swarm of cave bats attacks!", enemy: "Giant Bats", hp: 12 },
+                    { text: "👹 A corrupted miner lurches toward you!", enemy: "Corrupted Miner", hp: 18 },
+                    { text: "🕷️ A massive spider drops from the ceiling!", enemy: "Giant Spider", hp: 22 },
+                    { text: "⚫ A shadow creature materializes from the darkness!", enemy: "Shadow Spawn", hp: 20 },
+                    { text: "💀 An undead guardian rises from the stone!", enemy: "Stone Revenant", hp: 28 }
+                ];
+            } else {
+                encounters = [
+                    { text: "⚔️ A wild goblin appears!", enemy: "Goblin", hp: 15 },
+                    { text: "💀 You spot a skeleton warrior!", enemy: "Skeleton", hp: 20 },
+                    { text: "🗡️ An orc blocks your path!", enemy: "Orc", hp: 25 },
+                    { text: "🐺 A dire wolf prowls from the shadows!", enemy: "Dire Wolf", hp: 17 }
+                ];
+            }
 
             const encounter = encounters[Math.floor(Math.random() * encounters.length)];
+            addText('━━━━━━━━━━━━━━━━━━━━', 'combat');
             addText(encounter.text, 'combat');
             addText(`${encounter.enemy} HP: ${encounter.hp}`, 'combat');
 
-            // Show combat choices
             showCombatChoices(encounter);
+        }
+
+        // End combat
+        function endCombat() {
+            gameState.inCombat = false;
+            gameState.encounterCooldown = 3; // 3 moves before next encounter can trigger
+            addText('━━━━━━━━━━━━━━━━━━━━', 'success');
+        }
+
+        // Complete quest objective
+        function completeObjective(index) {
+            if (gameState.objectives[index] && !gameState.objectives[index].completed) {
+                gameState.objectives[index].completed = true;
+                const objectiveElement = document.getElementById(gameState.objectives[index].id);
+                if (objectiveElement) {
+                    objectiveElement.classList.add('completed');
+                }
+                addText(`🎯 Quest Updated: ${gameState.objectives[index].text}`, 'quest');
+            }
         }
 
         // Show combat choices
         function showCombatChoices(encounter) {
             const viewport = document.getElementById('viewport');
+
+            // Remove any existing choice divs (bug fix for duplicates)
+            const existingChoices = viewport.querySelectorAll('.choices');
+            existingChoices.forEach(choice => choice.remove());
+
             const choicesDiv = document.createElement('div');
             choicesDiv.className = 'choices';
 
@@ -753,19 +2674,29 @@
             attackBtn.textContent = 'Attack with your dagger';
             attackBtn.onclick = () => {
                 const damage = Math.floor(Math.random() * 6) + 3;
-                addText(`You strike for ${damage} damage!`, 'combat');
+                addText(`⚔️ You strike for ${damage} damage!`, 'combat');
                 encounter.hp -= damage;
 
                 if (encounter.hp <= 0) {
-                    addText(`${encounter.enemy} defeated!`, 'success');
-                    addText('You gain 50 XP!', 'success');
+                    addText(`✅ ${encounter.enemy} defeated!`, 'success');
+                    addText('💰 You gain 50 XP!', 'success');
+                    choicesDiv.remove();
+                    endCombat();
                 } else {
+                    addText(`${encounter.enemy} HP: ${encounter.hp}`, 'combat');
                     const enemyDamage = Math.floor(Math.random() * 4) + 1;
-                    addText(`${encounter.enemy} attacks back for ${enemyDamage} damage!`, 'damage');
+                    addText(`🗡️ ${encounter.enemy} attacks back for ${enemyDamage} damage!`, 'damage');
                     updateHP(gameState.playerHP - enemyDamage);
-                }
 
-                choicesDiv.remove();
+                    // If still alive, keep showing combat choices
+                    if (gameState.playerHP > 0) {
+                        choicesDiv.remove();
+                        showCombatChoices(encounter);
+                    } else {
+                        choicesDiv.remove();
+                        endCombat();
+                    }
+                }
             };
 
             const skillBtn = document.createElement('button');
@@ -775,18 +2706,27 @@
                 const roll = Math.floor(Math.random() * 20) + 1;
                 const total = roll + 4; // DEX modifier
 
-                addText(`You roll ${roll} + 4 (DEX) = ${total}`, 'success');
+                addText(`🎲 You roll ${roll} + 4 (DEX) = ${total}`, 'success');
 
                 if (total >= 12) {
-                    addText('Success! You slip past unnoticed.', 'success');
+                    addText('✅ Success! You slip past unnoticed.', 'success');
+                    choicesDiv.remove();
+                    endCombat();
                 } else {
-                    addText('Failed! Combat is inevitable!', 'damage');
+                    addText('❌ Failed! Combat is inevitable!', 'damage');
                     const enemyDamage = Math.floor(Math.random() * 4) + 1;
-                    addText(`${encounter.enemy} attacks for ${enemyDamage} damage!`, 'damage');
+                    addText(`🗡️ ${encounter.enemy} attacks for ${enemyDamage} damage!`, 'damage');
                     updateHP(gameState.playerHP - enemyDamage);
-                }
 
-                choicesDiv.remove();
+                    // Failed sneak = forced into combat
+                    if (gameState.playerHP > 0) {
+                        choicesDiv.remove();
+                        showCombatChoices(encounter);
+                    } else {
+                        choicesDiv.remove();
+                        endCombat();
+                    }
+                }
             };
 
             choicesDiv.appendChild(attackBtn);
@@ -814,22 +2754,206 @@
             }
         }
 
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Location-based dialogues
+        const locationDialogues = {
+            '3,2': [ // Starting Tavern
+                "💬 The Fighter nods: 'We should head to the mines soon.'",
+                "💬 The Rogue whispers: 'I heard strange sounds from the east...'",
+                "💬 The innkeeper warns: 'Dangerous times, dangerous roads.'",
+                "💬 A stranger mutters: 'The rune... it calls to me...'"
+            ],
+            '3,1': [ // Town Square
+                "💬 A guard says: 'The market's been busy today.'",
+                "💬 A merchant shouts: 'Fresh supplies! Get them while they last!'",
+                "💬 A child tugs your sleeve: 'Have you seen my cat?'"
+            ],
+            '4,2': [ // Market Street
+                "💬 A vendor smiles: 'Quality goods at fair prices!'",
+                "💬 The weaponsmith grunts: 'Could forge you something special...'",
+                "💬 A trader warns: 'Roads to the east are dangerous lately.'"
+            ],
+            '2,2': [ // Blacksmith
+                "💬 The blacksmith hammers steel: 'Need something sharp?'",
+                "💬 He wipes sweat: 'Been forging weapons day and night...'",
+                "💬 'Strange orders coming in. Dark times ahead.'"
+            ],
+            '3,3': [ // City Gates
+                "💬 The gate guard: 'Be careful out there, adventurer.'",
+                "💬 'Many enter the forest. Few return.'",
+                "💬 'If you see trouble, run back here quickly.'"
+            ],
+            // UNDERGROUND DIALOGUES
+            '3,5': [ // Mine Entrance
+                "💬 Echoes of pickaxes fade into silence...",
+                "💬 You notice fresh bootprints leading deeper.",
+                "💬 A warning sign: 'DANGER - Unstable tunnels ahead'"
+            ],
+            '3,6': [ // Shaft Junction
+                "💬 Distant screams echo from the depths.",
+                "💬 You hear dripping water and... something else.",
+                "💬 Tool marks suggest the miners fled in panic."
+            ],
+            '2,6': [ // Crystal Cavern
+                "💬 The crystals hum with strange energy.",
+                "💬 You feel... watched. The shadows move wrong.",
+                "💬 Beautiful, but unnatural. This wasn't here before."
+            ],
+            '3,7': [ // Mining Camp
+                "💬 A journal lies open: 'Day 12 - The rune... it whispers...'",
+                "💬 Dried blood stains the ground. Not much.",
+                "💬 Supplies remain. They left everything behind."
+            ],
+            '2,7': [ // Collapsed Tunnel
+                "💬 You hear faint tapping from beyond the rubble!",
+                "💬 Survivors? Or something else?",
+                "💬 The collapse looks... deliberate. Something broke through."
+            ],
+            '3,8': [ // Deep Chamber
+                "💬 An ancient presence stirs in the darkness.",
+                "💬 Your torch flickers. Something doesn't want light here.",
+                "💬 The walls are carved with warnings in old languages."
+            ],
+            '3,9': [ // Rune Chamber
+                "💬 The rune pulses like a beating heart.",
+                "💬 Power radiates from the shattered fragments.",
+                "💬 This is the source. Seal it, and the mines are safe."
+            ]
+        };
+
         // Action buttons
         document.getElementById('talk-btn').onclick = () => {
-            const dialogues = [
-                "The Fighter nods: 'We should head to the mines soon.'",
-                "The Rogue whispers: 'I heard strange sounds from the east...'",
-                "The innkeeper warns: 'Dangerous times, dangerous roads.'",
-                "A stranger mutters: 'The rune... it calls to me...'"
-            ];
-            addText(dialogues[Math.floor(Math.random() * dialogues.length)], 'success');
+            if (gameState.inCombat) {
+                addText("⚠️ Not a great time for chatting!", 'damage');
+                return;
+            }
+
+            const locationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
+            handleQuestInteraction(locationKey);
         };
+
+        // Quest interaction handler
+        function handleQuestInteraction(locationKey) {
+            // MINING CAMP (3,7) - Find Miner's Note
+            if (locationKey === '3,7' && !gameState.questFlags.foundMinersNote) {
+                addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                addText('🔍 You search the abandoned camp...', '');
+                addText('Among the scattered belongings, you find a bloodstained note.', '');
+                addText('📜 Item Found: Miner\'s Note', 'success');
+                addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                gameState.inventory.push('Miner\'s Note');
+                gameState.questFlags.foundMinersNote = true;
+                updateInventory();
+                return;
+            }
+
+            // COLLAPSED TUNNEL (2,7) - Rescue Miners
+            if (locationKey === '2,7') {
+                if (!gameState.questFlags.clearedRubble) {
+                    if (gameState.inventory.includes('Rope')) {
+                        addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                        addText('⚒️ You use your rope and tools to create a pulley system...', '');
+                        addText('*CRASH* The rubble shifts! You hear voices!', 'success');
+                        addText('"Help! Is someone there?!"', 'success');
+                        gameState.questFlags.clearedRubble = true;
+                        addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                    } else {
+                        addText('🪨 The rubble is too heavy to move by hand...', 'damage');
+                        addText('You need proper equipment. Maybe rope could help?', '');
+                    }
+                } else if (!gameState.questFlags.rescuedMiners) {
+                    addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                    addText('👷 "Thank the gods! We thought we were done for!"', 'success');
+                    addText('👷 Foreman Garrett: "Seven days trapped... we found something strange down here."', 'success');
+                    addText('👷 "A glowing stone in the deep chamber. The elders said it can seal dark magic."', 'success');
+                    addText('👷 "Take it - seal that cursed rune before more miners die!"', 'success');
+                    addText('💠 Quest Item: Sealing Stone (check Deep Chamber)', 'quest');
+                    addText('🧪 The miners give you a Healing Potion in thanks!', 'success');
+                    addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                    gameState.inventory.push('Healing Potion');
+                    gameState.questFlags.rescuedMiners = true;
+                    gameState.questFlags.talkedToSurvivor = true;
+                    completeObjective(2); // Quest 3: Rescue the trapped miners
+                    updateInventory();
+                } else {
+                    addText('👷 "Get to the Deep Chamber and find that stone! Hurry!"', 'success');
+                }
+                return;
+            }
+
+            // DEEP CHAMBER (3,8) - Find Sealing Stone
+            if (locationKey === '3,8' && gameState.questFlags.rescuedMiners && !gameState.questFlags.foundSealingStone) {
+                addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                addText('🔍 You search the massive cavern...', '');
+                addText('In an alcove, resting on an ancient pedestal, you see it:', '');
+                addText('💠 A stone pulsing with blue containment magic!', 'success');
+                addText('Item Found: Sealing Stone', 'success');
+                addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                gameState.inventory.push('Sealing Stone');
+                gameState.questFlags.foundSealingStone = true;
+                updateInventory();
+                return;
+            }
+
+            // RUNE CHAMBER (3,9) - Seal the Rune (Final Quest)
+            if (locationKey === '3,9') {
+                if (gameState.inventory.includes('Sealing Stone') && !gameState.questFlags.sealedRune) {
+                    addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                    addText('✨ The shattered rune pulses with malevolent energy...', 'damage');
+                    addText('💠 You hold up the Sealing Stone. It begins to glow!', 'success');
+                    addText('Ancient dwarven runes appear in the air around you.', 'success');
+                    addText('The stone\'s magic flows into the corrupted rune...', 'success');
+                    addText('*BOOM* A blinding flash! The dark energy dissipates!', 'success');
+                    addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                    addText('🎉 The rune is sealed! The mines are safe!', 'success');
+                    addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
+                    gameState.questFlags.sealedRune = true;
+                    completeObjective(3); // Quest 4: Seal the shattered rune
+                    // Remove Sealing Stone from inventory (consumed)
+                    const index = gameState.inventory.indexOf('Sealing Stone');
+                    if (index > -1) gameState.inventory.splice(index, 1);
+                    updateInventory();
+                } else if (gameState.questFlags.sealedRune) {
+                    addText('✨ The sealed rune hums peacefully. Your quest is complete.', 'success');
+                } else {
+                    addText('✨ The rune pulses with dark energy. You need the Sealing Stone!', 'damage');
+                }
+                return;
+            }
+
+            // Default: Check for regular dialogues
+            const dialogues = locationDialogues[locationKey];
+            if (dialogues) {
+                const dialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
+                addText(dialogue, 'success');
+
+                // First time talking in tavern = complete first objective
+                if (locationKey === '3,2' && !gameState.objectives[0].completed) {
+                    completeObjective(0);
+                }
+            } else {
+                addText("💬 Nothing of interest here. Try exploring!", '');
+            }
+        }
 
         document.getElementById('attack-btn').onclick = () => {
             addText("There's nothing to attack here. Try moving to find encounters!", 'damage');
         };
 
         document.getElementById('skill-btn').onclick = () => {
+            if (gameState.inCombat) {
+                addText("⚠️ You're too busy fighting!", 'damage');
+                return;
+            }
+
             const roll = Math.floor(Math.random() * 20) + 1;
             const skills = ['Perception', 'Investigation', 'Stealth', 'Sleight of Hand'];
             const skill = skills[Math.floor(Math.random() * skills.length)];
@@ -839,9 +2963,44 @@
             addText(`${skill} Check: d20(${roll}) + ${bonus} = ${total}`, 'success');
 
             if (total >= 15) {
-                addText('Critical Success! You discover a hidden passage!', 'success');
+                // Critical success - reveal adjacent locations
+                const { x, y } = gameState.currentLocation;
+                const adjacent = [
+                    { x: x, y: y - 1, dir: 'north' },
+                    { x: x, y: y + 1, dir: 'south' },
+                    { x: x + 1, y: y, dir: 'east' },
+                    { x: x - 1, y: y, dir: 'west' }
+                ];
+
+                let revealed = false;
+                adjacent.forEach(pos => {
+                    const key = `${pos.x},${pos.y}`;
+                    if (gameState.locations[key] && !gameState.locations[key].visited) {
+                        addText(`🔍 Critical Success! You spot ${gameState.locations[key].name} to the ${pos.dir}!`, 'success');
+                        gameState.locations[key].scouted = true;  // Mark as scouted
+                        revealed = true;
+                    }
+                });
+
+                if (revealed) {
+                    updateMap();  // Refresh map to show scouted locations
+                } else {
+                    addText('🔍 You search carefully but find nothing new nearby.', 'success');
+                }
+
             } else if (total >= 10) {
-                addText('Success! You notice something interesting...', 'success');
+                // Success - get info about current location
+                const locationKey = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
+                const location = gameState.locations[locationKey];
+                const currentLocation = gameState.locations[locationKey];
+
+                if (currentLocation && currentLocation.walls.length > 0) {
+                    const wallDirs = currentLocation.walls.join(', ');
+                    addText(`👁️ You notice walls blocking paths to: ${wallDirs}`, 'success');
+                } else {
+                    addText('👁️ You notice the area seems safe to explore.', 'success');
+                }
+
             } else {
                 addText('You find nothing of note.', '');
             }
@@ -868,9 +3027,531 @@
         document.getElementById('east').onclick = () => move('east');
         document.getElementById('west').onclick = () => move('west');
 
+        // Mobile modal buttons
+        document.getElementById('mobile-map-btn').onclick = () => openModal('map-modal');
+        document.getElementById('mobile-inv-btn').onclick = () => {
+            // Populate inventory modal
+            const invModal = document.getElementById('inventory-modal');
+            invModal.innerHTML = document.getElementById('inventory').innerHTML;
+            openModal('inv-modal');
+        };
+        document.getElementById('mobile-char-btn').onclick = () => openModal('char-modal');
+
+        // Close buttons
+        document.getElementById('close-map').onclick = () => closeModal('map-modal');
+        document.getElementById('close-inv').onclick = () => closeModal('inv-modal');
+        document.getElementById('close-char').onclick = () => closeModal('char-modal');
+        document.getElementById('close-item').onclick = () => closeModal('item-modal');
+
+        // Show item details
+        function showItemDetails(itemName) {
+            const item = itemDatabase[itemName];
+            if (!item) return;
+
+            let statsHTML = '';
+
+            // Build stats based on item type
+            if (item.damage) {
+                statsHTML += `
+                    <div class="item-stat-row">
+                        <span class="item-stat-label">Damage:</span>
+                        <span class="item-stat-value">${item.damage} ${item.damageType}</span>
+                    </div>`;
+            }
+
+            if (item.bonus) {
+                statsHTML += `
+                    <div class="item-stat-row">
+                        <span class="item-stat-label">Bonus:</span>
+                        <span class="item-stat-value">${item.bonus} to ${item.skill}</span>
+                    </div>`;
+            }
+
+            if (item.lightRadius) {
+                statsHTML += `
+                    <div class="item-stat-row">
+                        <span class="item-stat-label">Light:</span>
+                        <span class="item-stat-value">${item.lightRadius}</span>
+                    </div>`;
+            }
+
+            if (item.duration) {
+                statsHTML += `
+                    <div class="item-stat-row">
+                        <span class="item-stat-label">Duration:</span>
+                        <span class="item-stat-value">${item.duration}</span>
+                    </div>`;
+            }
+
+            if (item.capacity) {
+                statsHTML += `
+                    <div class="item-stat-row">
+                        <span class="item-stat-label">Capacity:</span>
+                        <span class="item-stat-value">${item.capacity}</span>
+                    </div>`;
+            }
+
+            statsHTML += `
+                <div class="item-stat-row">
+                    <span class="item-stat-label">Weight:</span>
+                    <span class="item-stat-value">${item.weight}</span>
+                </div>
+                <div class="item-stat-row">
+                    <span class="item-stat-label">Value:</span>
+                    <span class="item-stat-value">${item.value}</span>
+                </div>`;
+
+            if (item.properties) {
+                statsHTML += `
+                    <div class="item-stat-row">
+                        <span class="item-stat-label">Properties:</span>
+                        <span class="item-stat-value">${item.properties.join(', ')}</span>
+                    </div>`;
+            }
+
+            const detailHTML = `
+                <div class="item-detail-header">
+                    <div class="item-detail-icon">${item.icon}</div>
+                    <div class="item-detail-title">
+                        <div class="item-detail-name">${item.name}</div>
+                        <div class="item-detail-type">${item.type}</div>
+                    </div>
+                </div>
+
+                <div class="item-image-section" id="item-image-section-${itemName.replace(/\s+/g, '-')}">
+                    <div class="item-image-container">
+                        <img id="item-generated-image-${itemName.replace(/\s+/g, '-')}" class="item-generated-image" style="display:none;" alt="${item.name}">
+                        <div id="item-image-loading-${itemName.replace(/\s+/g, '-')}" class="item-image-loading" style="display:none;">
+                            🍌 Generating ${item.name} artwork...
+                        </div>
+                        <div id="item-image-placeholder-${itemName.replace(/\s+/g, '-')}" class="item-image-placeholder">
+                            <div class="item-image-icon">${item.icon}</div>
+                            <div class="item-image-text">Click "Generate Image" to create AI artwork</div>
+                        </div>
+                    </div>
+                    <button class="item-action-btn" style="margin-top: 10px; background: linear-gradient(to bottom, #404000, #202000); border-color: #ff0; color: #ff0;"
+                            onclick="generateItemImageForModal('${itemName}')">
+                        🍌 Generate New Image
+                    </button>
+
+                    <!-- Custom Prompt Section -->
+                    <div class="custom-prompt-section" id="custom-prompt-section-${itemName.replace(/\s+/g, '-')}">
+                        <div class="custom-prompt-header" onclick="toggleCustomPromptSection('${itemName}')">
+                            <span class="custom-prompt-title">🎨 Customize Image Style</span>
+                            <span class="custom-prompt-toggle" id="custom-prompt-toggle-${itemName.replace(/\s+/g, '-')}">▼</span>
+                        </div>
+                        <div class="custom-prompt-content" id="custom-prompt-content-${itemName.replace(/\s+/g, '-')}">
+                            <div class="custom-prompt-helper">
+                                Add custom details (e.g., "glowing", "ornate", "covered in runes", "ancient")
+                            </div>
+                            <textarea
+                                class="custom-prompt-textarea"
+                                id="custom-prompt-input-${itemName.replace(/\s+/g, '-')}"
+                                placeholder="Add your custom style details here..."
+                                maxlength="200"
+                                oninput="updateCustomPromptPreview('${itemName}')"></textarea>
+                            <div class="custom-prompt-counter">
+                                <span style="color: #0a0;">Character count:</span>
+                                <span class="char-count" id="char-count-${itemName.replace(/\s+/g, '-')}">0/200</span>
+                            </div>
+                            <div id="validation-message-${itemName.replace(/\s+/g, '-')}"></div>
+                            <div class="prompt-preview-section">
+                                <div class="prompt-preview-label">📝 Preview Final Prompt:</div>
+                                <div class="prompt-preview-text" id="prompt-preview-${itemName.replace(/\s+/g, '-')}">
+                                    <span class="prompt-preview-base">Default prompt will appear here</span>
+                                </div>
+                            </div>
+                            <div class="custom-prompt-buttons">
+                                <button class="custom-prompt-btn" onclick="clearCustomPrompt('${itemName}')">Clear</button>
+                                <button class="custom-prompt-btn" onclick="applyCustomPrompt('${itemName}')">Apply to Next Generation</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Gallery -->
+                    <div class="image-gallery" id="image-gallery-${itemName.replace(/\s+/g, '-')}">
+                        <div class="gallery-header">
+                            <span class="gallery-title">📸 Image Library</span>
+                            <span class="gallery-count" id="gallery-count-${itemName.replace(/\s+/g, '-')}">0 images</span>
+                        </div>
+                        <div class="gallery-grid" id="gallery-grid-${itemName.replace(/\s+/g, '-')}">
+                            <!-- Thumbnails will be injected here -->
+                        </div>
+                        <div class="gallery-pagination" id="gallery-pagination-${itemName.replace(/\s+/g, '-')}">
+                            <!-- Pagination will be injected here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-detail-stats">
+                    ${statsHTML}
+                </div>
+
+                <div class="item-description">${item.description}</div>
+
+                ${item.special ? `<div class="item-description" style="color: #ff0; border-top: 1px solid #0a0; padding-top: 10px;">
+                    <strong>Special:</strong> ${item.special}
+                </div>` : ''}
+
+                <div class="item-actions">
+                    <button class="item-action-btn" onclick="closeModal('item-modal')">Close</button>
+                    <button class="item-action-btn" disabled>Use (Not Implemented)</button>
+                    <button class="item-action-btn" disabled>Drop (Not Implemented)</button>
+                </div>
+            `;
+
+            document.getElementById('item-detail-content').innerHTML = detailHTML;
+            openModal('item-modal');
+
+            // Load existing images in gallery
+            renderImageGallery(itemName);
+
+            // Initialize custom prompt preview
+            updateCustomPromptPreview(itemName);
+        }
+
+        // Update inventory display
+        function updateInventory() {
+            // Update both sidebar and modal inventories
+            ['inventory', 'inventory-modal'].forEach(containerId => {
+                const inventoryContainer = document.getElementById(containerId);
+                if (!inventoryContainer) return;
+
+                inventoryContainer.innerHTML = '';
+
+                gameState.inventory.forEach(itemName => {
+                    const item = itemDatabase[itemName];
+                    if (!item) return;
+
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'inventory-item';
+                    itemDiv.onclick = () => showItemDetails(itemName);
+
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'item-name';
+                    nameDiv.textContent = itemName;
+
+                    const descDiv = document.createElement('div');
+                    descDiv.className = 'item-desc';
+
+                    // Set description based on item type
+                    if (item.damage) {
+                        descDiv.textContent = `${item.damage} damage`;
+                    } else if (item.bonus) {
+                        descDiv.textContent = `${item.bonus} ${item.skill || 'bonus'}`;
+                    } else if (item.healing) {
+                        descDiv.textContent = `Heals ${item.healing} HP`;
+                    } else if (item.lightRadius) {
+                        descDiv.textContent = 'Light source';
+                    } else if (item.type.includes('Quest')) {
+                        descDiv.textContent = '⭐ Quest Item';
+                    } else {
+                        descDiv.textContent = 'Useful tool';
+                    }
+
+                    itemDiv.appendChild(nameDiv);
+                    itemDiv.appendChild(descDiv);
+                    inventoryContainer.appendChild(itemDiv);
+                });
+            });
+        }
+
+        // Initialize inventory display
+        updateInventory();
+
+        // Close modals on background click
+        window.onclick = (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        };
+
         // Initialize
-        initMap();
-        addText('> Type your commands or use the buttons to play!', 'success');
+        initMap('map');
+        initMap('map-modal-grid');
+        addText('━━━━━━━━━━━━━━━━━━━━', 'success');
+        addText('🎮 Use the NAVIGATION buttons to explore!', 'success');
+        addText('💬 Click TALK to speak with NPCs.', 'success');
+        addText('⚔️ Encounters will happen as you explore.', 'success');
+        addText('━━━━━━━━━━━━━━━━━━━━', 'success');
+
+        // ============================================================
+        // INITIALIZE NANO BANANA IMAGE GENERATION
+        // ============================================================
+
+        // Generate the initial Emberpeak entrance scene
+        async function initializeSceneViewer() {
+            console.log('🍌 Initializing Nano Banana Scene Viewer...');
+
+            const location = 'emberpeak_entrance';
+            const timeOfDay = 'dawn';
+            const weather = 'clear';
+
+            // 1. CHECK CACHE FIRST
+            const cachedScene = nanoBanana.sceneCache.get(location, timeOfDay, weather);
+            if (cachedScene) {
+                console.log('📦 Loading scene from cache (no API call needed)');
+                nanoBanana.displayImage(cachedScene.imageData);
+                addText('📦 Loaded cached scene - no generation needed!', 'success');
+                return;
+            }
+
+            // 2. Check if backend server is available
+            const isHealthy = await nanoBanana.checkHealth();
+
+            if (!isHealthy) {
+                console.warn('⚠️ Nano Banana server not available. Using fallback art.');
+                nanoBanana.showFallbackArt('entrance to Emberpeak, a mountain village at dawn');
+                addText('🍌 Image generation offline. Using ASCII art.', 'info');
+                return;
+            }
+
+            // 3. Generate NEW scene (only if not cached)
+            console.log('🍌 No cached scene found - generating new one');
+            const scenePrompt = 'the entrance to Emberpeak, a mountain village at dawn. Stone archway covered in moss, cobblestone path, misty mountain peaks in background, warm torchlight';
+
+            addText('🍌 Generating NEW scene with Nano Banana...', 'info');
+            const result = await nanoBanana.generateSceneImage(scenePrompt, {
+                style: 'photorealistic',
+                aspectRatio: '16:9'
+            });
+
+            if (result) {
+                // 4. CACHE the generated scene
+                nanoBanana.sceneCache.set(location, result, timeOfDay, weather, scenePrompt);
+                addText('✅ Scene generated and cached!', 'success');
+                console.log('✅ Initial scene loaded and cached successfully');
+            } else {
+                // Don't spam error messages - fallback art already shown
+                if (nanoBanana.quotaExhausted) {
+                    addText('⚠️ API quota exceeded. Using ASCII art fallback.', 'info');
+                } else {
+                    addText('⚠️ Scene generation unavailable. Using ASCII art.', 'info');
+                }
+            }
+        }
+
+        // Start scene generation after a short delay to let UI load
+        setTimeout(() => {
+            initializeSceneViewer();
+        }, 1000);
+
+        // ============================================================
+        // END NANO BANANA INITIALIZATION
+        // ============================================================
+
+        // ============================================================
+        // ITEM IMAGE GENERATION
+        // ============================================================
+
+        async function generateItemImageForModal(itemName) {
+            const item = itemDatabase[itemName];
+            if (!item) {
+                console.error(`Item not found: ${itemName}`);
+                return;
+            }
+
+            const safeItemName = itemName.replace(/\s+/g, '-');
+            const imageEl = document.getElementById(`item-generated-image-${safeItemName}`);
+            const loadingEl = document.getElementById(`item-image-loading-${safeItemName}`);
+            const placeholderEl = document.getElementById(`item-image-placeholder-${safeItemName}`);
+
+            // Show loading state
+            if (placeholderEl) placeholderEl.style.display = 'none';
+            if (imageEl) imageEl.style.display = 'none';
+            if (loadingEl) loadingEl.style.display = 'block';
+
+            // Build detailed prompt for the item
+            const basePrompt = buildBasePrompt(item);
+
+            // Check for custom prompt
+            const customPrompt = customPrompts[itemName] || '';
+
+            // Build final prompt
+            let prompt = basePrompt;
+            if (customPrompt.trim()) {
+                prompt += customPrompt + '. ';
+            }
+            prompt += 'Fantasy RPG item, detailed illustration on neutral background, studio lighting, high quality.';
+
+            console.log(`🍌 Generating image for: ${itemName}`);
+            console.log(`📝 Prompt: ${prompt}`);
+            if (customPrompt) {
+                console.log(`🎨 Custom: "${customPrompt}"`);
+            }
+
+            // Skip if generation is disabled or quota exhausted
+            if (nanoBanana.disabled || nanoBanana.quotaExhausted) {
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (placeholderEl) {
+                    placeholderEl.style.display = 'block';
+                    placeholderEl.innerHTML = `
+                        <div class="item-image-icon">⚠️</div>
+                        <div class="item-image-text" style="color: #999;">
+                            ${nanoBanana.quotaExhausted
+                                ? 'API quota exhausted'
+                                : 'Image generation offline'}
+                        </div>
+                    `;
+                }
+                return;
+                }
+
+                // Generate the item image
+                const imageData = await nanoBanana.generateSceneImage(prompt, {
+                    style: 'fantasy_art',
+                aspectRatio: '1:1',  // Square for items
+                itemName: itemName,
+                customPrompt: customPrompt
+            });
+
+            if (loadingEl) loadingEl.style.display = 'none';
+
+            if (imageData) {
+                // Save to library with custom prompt metadata
+                const imageId = nanoBanana.imageLibrary.saveImage(itemName, imageData, customPrompt);
+
+                // Success - display the image
+                if (imageEl) {
+                    imageEl.src = `data:image/png;base64,${imageData}`;
+                    imageEl.style.display = 'block';
+                    imageEl.classList.add('loaded');
+                }
+
+                const successMsg = customPrompt
+                    ? `✅ Generated custom artwork for ${itemName}! Saved to library.`
+                    : `✅ Generated artwork for ${itemName}! Saved to library.`;
+                addText(successMsg, 'success');
+                console.log(`✅ Item image generated and saved! ID: ${imageId}, Custom: "${customPrompt}"`);
+
+                // Refresh gallery
+                renderImageGallery(itemName);
+            } else {
+                // Failed - show placeholder with error
+                if (placeholderEl) {
+                    placeholderEl.style.display = 'block';
+                    placeholderEl.innerHTML = `
+                        <div class="item-image-icon">⚠️</div>
+                        <div class="item-image-text" style="color: #999;">
+                            ${nanoBanana.quotaExhausted
+                                ? 'API quota exhausted'
+                                : 'Generation failed'}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // ============================================================
+        // IMAGE GALLERY RENDERING & INTERACTION
+        // ============================================================
+
+        /**
+         * Render the image gallery for an item
+         * @param {string} itemName - Name of the item
+         * @param {number} page - Current page number (default 0)
+         */
+        function renderImageGallery(itemName, page = 0) {
+            const safeItemName = itemName.replace(/\s+/g, '-');
+            const images = nanoBanana.imageLibrary.getImages(itemName);
+            const featuredImageObj = nanoBanana.imageLibrary.getFeaturedImage(itemName);
+            const featuredId = featuredImageObj?.id;
+
+            // Update count
+            const countEl = document.getElementById(`gallery-count-${safeItemName}`);
+            if (countEl) {
+                countEl.textContent = `${images.length} image${images.length !== 1 ? 's' : ''}`;
+            }
+
+            // Pagination settings
+            const imagesPerPage = 12;
+            const totalPages = Math.ceil(images.length / imagesPerPage);
+            const startIndex = page * imagesPerPage;
+            const endIndex = startIndex + imagesPerPage;
+            const pageImages = images.slice(startIndex, endIndex);
+
+            // Render thumbnails
+            const gridEl = document.getElementById(`gallery-grid-${safeItemName}`);
+            if (gridEl) {
+                if (images.length === 0) {
+                    gridEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #0a0; font-size: 11px; padding: 20px;">No images yet. Click "Generate New Image" to create one!</div>';
+                } else {
+                    gridEl.innerHTML = pageImages.map(img => {
+                        const tooltip = img.customPrompt
+                            ? `${img.id === featuredId ? '⭐ Featured | ' : ''}Custom: "${img.customPrompt}"`
+                            : `${img.id === featuredId ? '⭐ Featured image' : 'Click to set as featured'}`;
+
+                        return `
+                            <div class="gallery-thumbnail ${img.id === featuredId ? 'featured' : ''}"
+                                 onclick="setFeaturedItemImage('${itemName}', '${img.id}')"
+                                 title="${tooltip}">
+                                <img src="data:image/png;base64,${img.data}" alt="${itemName}">
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // Render pagination
+            const paginationEl = document.getElementById(`gallery-pagination-${safeItemName}`);
+            if (paginationEl && totalPages > 1) {
+                let paginationHTML = `
+                    <button class="page-btn" onclick="renderImageGallery('${itemName}', ${page - 1})" ${page === 0 ? 'disabled' : ''}>◀</button>
+                `;
+
+                for (let i = 0; i < totalPages; i++) {
+                    paginationHTML += `
+                        <button class="page-btn ${i === page ? 'active' : ''}"
+                                onclick="renderImageGallery('${itemName}', ${i})">${i + 1}</button>
+                    `;
+                }
+
+                paginationHTML += `
+                    <button class="page-btn" onclick="renderImageGallery('${itemName}', ${page + 1})" ${page === totalPages - 1 ? 'disabled' : ''}>▶</button>
+                `;
+
+                paginationEl.innerHTML = paginationHTML;
+            } else {
+                paginationEl.innerHTML = '';
+            }
+
+            // Load featured image if it exists
+            const imageEl = document.getElementById(`item-generated-image-${safeItemName}`);
+            const placeholderEl = document.getElementById(`item-image-placeholder-${safeItemName}`);
+            if (featuredImageObj && imageEl) {
+                imageEl.src = `data:image/png;base64,${featuredImageObj.data}`;
+                imageEl.style.display = 'block';
+                if (placeholderEl) placeholderEl.style.display = 'none';
+            }
+        }
+
+        /**
+         * Set an image as the featured image for an item
+         * @param {string} itemName - Name of the item
+         * @param {string} imageId - ID of the image to set as featured
+         */
+        function setFeaturedItemImage(itemName, imageId) {
+            nanoBanana.imageLibrary.setFeaturedImage(itemName, imageId);
+
+            // Update the main display
+            const safeItemName = itemName.replace(/\s+/g, '-');
+            const imageEl = document.getElementById(`item-generated-image-${safeItemName}`);
+            const imageObj = nanoBanana.imageLibrary.getImages(itemName).find(img => img.id === imageId);
+
+            if (imageObj && imageEl) {
+                imageEl.src = `data:image/png;base64,${imageObj.data}`;
+                imageEl.style.display = 'block';
+            }
+
+            // Refresh gallery to update featured indicator
+            renderImageGallery(itemName);
+            addText(`⭐ Set as featured image for ${itemName}`, 'success');
+        }
+
+        // ============================================================
+        // END ITEM IMAGE GENERATION
+        // ============================================================
     </script>
 </body>
 </html>
+
