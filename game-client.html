@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI D&D - Interactive Adventures</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 95%;
+            margin: 20px auto;
+        }
+
+        /* Welcome Screen */
+        #welcomeScreen {
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+
+        #welcomeScreen h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #welcomeScreen p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #0b7dda;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Game Screen */
+        #gameScreen {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .game-header {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .game-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+        }
+
+        .main-panel, .side-panel {
+            background: rgba(0,0,0,0.3);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .narrative-box {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 4px;
+            min-height: 200px;
+            margin-bottom: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .event-entry {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .event-entry:last-child {
+            border-bottom: none;
+        }
+
+        .event-turn {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 0.3rem;
+        }
+
+        .event-text {
+            line-height: 1.5;
+        }
+
+        .character-list {
+            list-style: none;
+        }
+
+        .character-card {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .character-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .character-hp {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+        }
+
+        .hp-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);
+            transition: width 0.3s;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-action {
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-action:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .saved-games-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .saved-game-item {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .saved-game-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2a5298;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.2);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen">
+            <h1>⚔️ AI D&D Adventures ⚔️</h1>
+            <p>Embark on an AI-powered journey through fantastical realms</p>
+            <div class="button-group">
+                <button class="btn-primary" onclick="showNewGameModal()">🎮 New Adventure</button>
+                <button class="btn-secondary" onclick="showLoadGameModal()">📂 Load Game</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen">
+            <div class="game-header">
+                <div class="game-title">
+                    <span id="gameName">Adventure Name</span>
+                </div>
+                <div class="game-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Turn</div>
+                        <div class="stat-value" id="turnCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="gameStatus">Active</div>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="saveGame()">💾 Save</button>
+                    <button class="btn-action" onclick="returnToMenu()">🏠 Menu</button>
+                </div>
+            </div>
+
+            <div class="game-content">
+                <div class="main-panel">
+                    <h2>📜 Narrative</h2>
+                    <div class="narrative-box" id="narrativeBox">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading adventure...</p>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-action" onclick="nextTurn()">⏭️ Next Turn</button>
+                        <button class="btn-action" onclick="explorLocation()">🗺️ Explore</button>
+                        <button class="btn-action" onclick="rest()">💤 Rest</button>
+                        <button class="btn-action" onclick="checkInventory()">🎒 Inventory</button>
+                    </div>
+                </div>
+
+                <div class="side-panel">
+                    <h2>👥 Characters</h2>
+                    <ul class="character-list" id="characterList">
+                        <li class="loading">Loading characters...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Game Modal -->
+    <div class="modal" id="newGameModal">
+        <div class="modal-content">
+            <h2>Create New Adventure</h2>
+            <form id="newGameForm" onsubmit="createNewGame(event)">
+                <div class="form-group">
+                    <label for="adventureName">Adventure Name:</label>
+                    <input type="text" id="adventureName" value="Epic Quest" required>
+                </div>
+                <div class="form-group">
+                    <label for="difficulty">Difficulty:</label>
+                    <select id="difficulty">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">Start Adventure</button>
+                    <button type="button" class="btn-secondary" onclick="closeModal('newGameModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Load Game Modal -->
+    <div class="modal" id="loadGameModal">
+        <div class="modal-content">
+            <h2>Load Saved Adventure</h2>
+            <div class="saved-games-list" id="savedGamesList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading saved games...</p>
+                </div>
+            </div>
+            <div class="button-group" style="margin-top: 1rem;">
+                <button class="btn-secondary" onclick="closeModal('loadGameModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:8000/api/v1/game';
+        let currentSession = null;
+
+        // UI Functions
+        function showScreen(screenId) {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById(screenId).style.display = 'block';
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showNewGameModal() {
+            showModal('newGameModal');
+        }
+
+        async function showLoadGameModal() {
+            showModal('loadGameModal');
+            await loadSavedGames();
+        }
+
+        function returnToMenu() {
+            if (confirm('Return to menu? Unsaved progress will be lost.')) {
+                currentSession = null;
+                showScreen('welcomeScreen');
+            }
+        }
+
+        // API Functions
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                alert(`Error: ${error.message}`);
+                throw error;
+            }
+        }
+
+        // Game Functions
+        async function createNewGame(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('adventureName').value;
+            const difficulty = document.getElementById('difficulty').value;
+
+            try {
+                const session = await apiCall('/sessions', 'POST', {
+                    name,
+                    difficulty,
+                    ai_model: 'mistral'
+                });
+
+                currentSession = session;
+                closeModal('newGameModal');
+                await startGame(session.id);
+            } catch (error) {
+                console.error('Failed to create game:', error);
+            }
+        }
+
+        async function loadSavedGames() {
+            const listEl = document.getElementById('savedGamesList');
+
+            try {
+                const response = await apiCall('/sessions');
+                const sessions = response;
+
+                if (sessions.length === 0) {
+                    listEl.innerHTML = '<p>No saved games found. Start a new adventure!</p>';
+                    return;
+                }
+
+                listEl.innerHTML = sessions.map(session => `
+                    <div class="saved-game-item" onclick="loadGame('${session.id}')">
+                        <div><strong>${session.name}</strong></div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">
+                            Turn ${session.turn_count} • ${session.status} • ${new Date(session.updated_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                listEl.innerHTML = '<p>Error loading saved games.</p>';
+            }
+        }
+
+        async function loadGame(sessionId) {
+            closeModal('loadGameModal');
+
+            try {
+                await apiCall(`/sessions/${sessionId}/load`, 'POST');
+                await startGame(sessionId);
+            } catch (error) {
+                console.error('Failed to load game:', error);
+            }
+        }
+
+        async function startGame(sessionId) {
+            showScreen('gameScreen');
+
+            try {
+                // Get session details
+                const session = await apiCall(`/sessions/${sessionId}`);
+                currentSession = session;
+
+                document.getElementById('gameName').textContent = session.name;
+                document.getElementById('turnCount').textContent = session.turn_count;
+                document.getElementById('gameStatus').textContent = session.status;
+
+                // Get game state
+                await refreshGameState();
+            } catch (error) {
+                console.error('Failed to start game:', error);
+            }
+        }
+
+        async function refreshGameState() {
+            if (!currentSession) return;
+
+            try {
+                // Get full state
+                const stateResponse = await apiCall(`/sessions/${currentSession.id}/state`);
+                const state = stateResponse.state;
+
+                // Update narrative
+                updateNarrative(state.events || []);
+
+                // Update characters
+                updateCharacters(state.characters || {});
+
+                // Update turn count
+                document.getElementById('turnCount').textContent = state.turn || 0;
+            } catch (error) {
+                console.error('Failed to refresh state:', error);
+            }
+        }
+
+        function updateNarrative(events) {
+            const narrativeBox = document.getElementById('narrativeBox');
+
+            if (events.length === 0) {
+                narrativeBox.innerHTML = '<p>Your adventure begins...</p>';
+                return;
+            }
+
+            // Show most recent events
+            const recentEvents = events.slice(-10);
+            narrativeBox.innerHTML = recentEvents.map(event => `
+                <div class="event-entry">
+                    <div class="event-turn">Turn ${event.turn_number || '?'}</div>
+                    <div class="event-text">${event.summary || event.description || 'An event occurred...'}</div>
+                </div>
+            `).join('');
+
+            // Scroll to bottom
+            narrativeBox.scrollTop = narrativeBox.scrollHeight;
+        }
+
+        function updateCharacters(characters) {
+            const characterList = document.getElementById('characterList');
+
+            const charArray = Object.values(characters);
+
+            if (charArray.length === 0) {
+                characterList.innerHTML = '<li>No characters yet...</li>';
+                return;
+            }
+
+            characterList.innerHTML = charArray.map(char => {
+                const hpPercent = (char.hp / char.max_hp) * 100;
+                const statusIcon = char.alive ? '✓' : '💀';
+
+                return `
+                    <li class="character-card">
+                        <div class="character-name">${statusIcon} ${char.name}</div>
+                        <div class="character-hp">
+                            <span>HP:</span>
+                            <span>${char.hp}/${char.max_hp}</span>
+                        </div>
+                        <div class="hp-bar">
+                            <div class="hp-fill" style="width: ${hpPercent}%"></div>
+                        </div>
+                        <div style="font-size: 0.9rem; margin-top: 0.5rem;">
+                            <div>${char.char_class}</div>
+                            <div>⚔️ ${char.attack} 🛡️ ${char.defense}</div>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        async function nextTurn() {
+            if (!currentSession) return;
+
+            try {
+                const result = await apiCall(`/sessions/${currentSession.id}/turns/next`, 'POST', {
+                    events: [
+                        {
+                            type: 'turn_start',
+                            summary: 'A new turn begins...'
+                        }
+                    ]
+                });
+
+                document.getElementById('turnCount').textContent = result.turn;
+                await refreshGameState();
+            } catch (error) {
+                console.error('Failed to advance turn:', error);
+            }
+        }
+
+        async function saveGame() {
+            if (!currentSession) return;
+
+            try {
+                await apiCall(`/sessions/${currentSession.id}/save`, 'POST');
+                alert('✅ Game saved successfully!');
+            } catch (error) {
+                console.error('Failed to save game:', error);
+            }
+        }
+
+        function explorLocation() {
+            alert('Exploration feature coming soon!');
+        }
+
+        function rest() {
+            alert('Rest feature coming soon!');
+        }
+
+        function checkInventory() {
+            alert('Inventory feature coming soon!');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            console.log('AI D&D Client loaded');
+        });
+    </script>
+</body>
+</html>
