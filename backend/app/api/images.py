@@ -144,12 +144,15 @@ async def search_images(
     )
 
 
-@router.get("/{image_id}", response_model=ImageResponse)
-async def get_image(image_id: int, db: Session = Depends(get_db)):
+@router.get("/{image_id}")
+async def get_image(image_id: int, include_data: bool = True, db: Session = Depends(get_db)):
     """
-    Get specific image by ID
+    Get specific image by ID with optional base64 data
 
     Increments use_count and updates last_used timestamp.
+
+    Query params:
+    - include_data: If true (default), includes base64 encoded image data
     """
     asset = db.query(ImageAsset).filter(
         ImageAsset.id == image_id,
@@ -170,7 +173,41 @@ async def get_image(image_id: int, db: Session = Depends(get_db)):
     asset.use_count += 1
     db.commit()
 
-    return asset
+    # Convert to dict
+    response_data = {
+        "id": asset.id,
+        "subject_name": asset.subject_name,
+        "subject_type": asset.subject_type,
+        "component": asset.component,
+        "storage_path_full": asset.storage_path_full,
+        "storage_path_thumbnail": asset.storage_path_thumbnail,
+        "file_size_bytes": asset.file_size_bytes,
+        "generation_time_ms": asset.generation_time_ms,
+        "created_at": asset.created_at.isoformat(),
+        "is_featured": asset.is_featured,
+        "use_count": asset.use_count
+    }
+
+    # Include base64 data if requested
+    if include_data:
+        import base64
+        import os
+
+        # storage_path_full already includes "images/full/...", so just use it directly
+        full_path = os.path.join('backend', asset.storage_path_full) if not asset.storage_path_full.startswith('/') else asset.storage_path_full
+
+        # Try backend-relative path first, then absolute
+        if not os.path.exists(full_path):
+            full_path = asset.storage_path_full
+
+        if os.path.exists(full_path):
+            with open(full_path, 'rb') as f:
+                image_bytes = f.read()
+                response_data['base64_data'] = base64.b64encode(image_bytes).decode('utf-8')
+        else:
+            response_data['base64_data'] = None
+
+    return response_data
 
 
 @router.put("/{image_id}/feature")

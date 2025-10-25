@@ -45,6 +45,8 @@ class GeminiClient:
         Args:
             prompt: Text description of image to generate
             aspect_ratio: Image aspect ratio (1:1, 16:9, 4:3, 9:16)
+                         Note: aspect_ratio is accepted but not currently functional
+                         with google-genai 0.2.2
 
         Returns:
             Tuple of (image_bytes, generation_time_ms)
@@ -57,12 +59,11 @@ class GeminiClient:
         start = time.time()
 
         try:
+            # Note: Simplified API call without config
+            # google-genai 0.2.2 doesn't support aspect_ratio via config
             response = self.client.models.generate_content(
-                model='gemini-2.0-flash-exp',
-                contents=[prompt],
-                config=types.GenerateContentConfig(
-                    response_modalities=['Image']
-                )
+                model='gemini-2.5-flash-image',
+                contents=[prompt]
             )
 
             # Extract image
@@ -86,4 +87,3 @@ class GeminiClient:
 
             # Generic error
             raise GeminiError(f"Generation failed: {e}") from e
-

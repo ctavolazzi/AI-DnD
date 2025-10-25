@@ -38,11 +38,12 @@ app.add_middleware(
         "http://localhost:8080",
         "http://127.0.0.1:8080",
         "http://localhost:8000",
-        "http://127.0.0.1:8000"
+        "http://127.0.0.1:8000",
+        "null"  # Allow file:// origins for local development
     ],
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
-    allow_credentials=True
+    allow_credentials=False  # Must be False when allowing "null" origin
 )
 
 # Include API routers

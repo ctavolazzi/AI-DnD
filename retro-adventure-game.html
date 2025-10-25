@@ -5,6 +5,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI D&D - The Emberpeak Expedition</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        /* ============================================
+           THEME DEFINITIONS - All theme colors here
+           ============================================
+
+           To add a new theme:
+           1. Copy any [data-theme="name"] block below
+           2. Change the theme name (e.g., [data-theme="forest"])
+           3. Update all color values to match your theme
+           4. Add the theme to THEMES object in JavaScript:
+              forest: 'Forest Green'
+           5. Done! No other changes needed.
+
+           CSS Variables Reference:
+           - --bg-deep-brown: Main background color
+           - --bg-darker-brown: Darker background for depth
+           - --panel-parchment: Panel/card backgrounds
+           - --panel-parchment-dark: Darker panel variant
+           - --border-wood: Primary border color
+           - --border-bronze: Accent border/frame color
+           - --primary-gold: Primary text highlight color
+           - --accent-amber: Secondary accent color
+           - --text-dark: Dark text (on light backgrounds)
+           - --text-light: Light text (on dark backgrounds)
+           - --text-cream: Medium contrast text
+           - --accent-brown: Brown accent color
+           - --alert-rust: Warning/alert color
+           - --hp-green: HP bar color (high health)
+           - --hp-yellow: HP bar color (medium health)
+           - --hp-red: HP bar color (low health)
+           - --stat-blue: Statistics display color
+           - --quest-complete: Completion indicator color
+           ============================================ */
+
+        /* Default Theme: Retro RPG */
+        :root {
+            --bg-deep-brown: #1a1410;        /* Dark brown background */
+            --bg-darker-brown: #0f0a08;      /* Even darker brown */
+            --panel-parchment: #e8d4b8;      /* Light cream panels */
+            --panel-parchment-dark: #d4c4a8; /* Slightly darker cream */
+            --border-wood: #4a3426;          /* Brown borders */
+            --border-bronze: #b8860b;        /* Gold/bronze accents */
+            --primary-gold: #ffd700;         /* Bright gold text */
+            --accent-amber: #ffb347;         /* Orange highlights */
+            --text-dark: #2a1810;            /* Dark brown text */
+            --text-light: #f4e4c8;           /* Light cream text */
+            --text-cream: #e8d4b8;           /* Medium cream */
+            --accent-brown: #8b4513;         /* Medium brown */
+            --alert-rust: #cd5c5c;           /* Red for alerts */
+            --hp-green: #7cfc00;             /* Bright green (full HP) */
+            --hp-yellow: #ffd700;            /* Gold (mid HP) */
+            --hp-red: #dc143c;               /* Red (low HP) */
+            --stat-blue: #4169e1;            /* Royal blue for stats */
+            --quest-complete: #32cd32;       /* Lime green for completed */
+
+            /* Spacing System */
+            --space-xs: 4px;   /* Tiny gaps */
+            --space-sm: 8px;   /* Small gaps */
+            --space-md: 12px;  /* Medium (default) */
+            --space-lg: 16px;  /* Large gaps */
+            --space-xl: 20px;  /* Extra large */
+        }
+
+        /* Theme: Ultima Fantasy - Warm Brown/Parchment */
+        [data-theme="ultima"] {
+            --bg-deep-brown: #2a1810;
+            --bg-darker-brown: #1a0f08;
+            --panel-parchment: #d4b896;
+            --panel-parchment-dark: #c4a886;
+            --border-wood: #4a3426;
+            --border-bronze: #8b6f47;
+            --primary-gold: #c9941a;
+            --accent-amber: #d4a82a;
+            --text-dark: #2a1810;
+            --text-light: #f4e4c8;
+            --text-cream: #e8d4b8;
+            --accent-brown: #8b4513;
+            --alert-rust: #a0522d;
+            --hp-green: #6b8e23;
+            --hp-yellow: #daa520;
+            --hp-red: #8b2500;
+        }
+
+        /* Theme: Cyber Terminal - Neon Green Cyberpunk */
+        [data-theme="cyber"] {
+            --bg-deep-brown: #000;
+            --bg-darker-brown: #0a0e0a;
+            --panel-parchment: #001a00;
+            --panel-parchment-dark: #001100;
+            --border-wood: #0a0;
+            --border-bronze: #0f0;
+            --primary-gold: #0ff;
+            --accent-amber: #ff0;
+            --text-dark: #0f0;
+            --text-light: #0f0;
+            --text-cream: #0f0;
+            --accent-brown: #0a0;
+            --alert-rust: #f00;
+            --hp-green: #0f0;
+            --hp-yellow: #ff0;
+            --hp-red: #f00;
+        }
+
+        /* Theme: Gold Box - Royal Blue & Gold */
+        [data-theme="goldbox"] {
+            --bg-deep-brown: #001133;
+            --bg-darker-brown: #000822;
+            --panel-parchment: #2a3a5a;
+            --panel-parchment-dark: #1a2a4a;
+            --border-wood: #8b7355;
+            --border-bronze: #d4af37;
+            --primary-gold: #ffd700;
+            --accent-amber: #ffec8b;
+            --text-dark: #1a1a2e;
+            --text-light: #e8e8ff;
+            --text-cream: #d4d4e8;
+            --accent-brown: #8b7355;
+            --alert-rust: #b8860b;
+            --hp-green: #4a7c59;
+            --hp-yellow: #d4af37;
+            --hp-red: #8b2500;
+        }
+
+        /* Theme: Dark Dungeon - Dark Charcoal & Torchlight */
+        [data-theme="dungeon"] {
+            --bg-deep-brown: #0a0a0a;
+            --bg-darker-brown: #050505;
+            --panel-parchment: #1a1a1a;
+            --panel-parchment-dark: #121212;
+            --border-wood: #2a2a2a;
+            --border-bronze: #3a3a3a;
+            --primary-gold: #ff8c00;
+            --accent-amber: #ffaa33;
+            --text-dark: #666;
+            --text-light: #d4a574;
+            --text-cream: #c49564;
+            --accent-brown: #8b4513;
+            --alert-rust: #ff6347;
+            --hp-green: #556b2f;
+            --hp-yellow: #daa520;
+            --hp-red: #8b0000;
+        }
+
+        /* ============================================
+           COMPONENT STYLES - Uses theme variables
+           ============================================ */
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         @keyframes scanline {
@@ -13,7 +161,7 @@
         }
 
         @keyframes flicker {
-            0%, 100% { opacity: 0.95; }
+            0%, 100% { opacity: 1; }
             50% { opacity: 1; }
         }
 
@@ -23,91 +171,59 @@
         }
 
         body {
-            font-family: 'Courier New', 'Courier', monospace;
-            background: #000;
-            color: #0f0;
+            font-family: 'Press Start 2P', 'VT323', 'Courier New', monospace;
+            background: var(--bg-deep-brown);
+            color: var(--text-light);
             overflow: hidden;
             height: 100vh;
             position: relative;
+            font-size: 12px;
+            line-height: 1.6;
         }
 
-        /* CRT Effect */
+        /* No texture needed for pure monochrome */
         body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 0, 0, 0.15),
-                rgba(0, 0, 0, 0.15) 1px,
-                transparent 1px,
-                transparent 2px
-            );
-            pointer-events: none;
-            z-index: 1000;
-        }
-
-        /* Scanline effect */
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: rgba(0, 255, 0, 0.1);
-            z-index: 999;
-            animation: scanline 6s linear infinite;
-            pointer-events: none;
+            display: none;
         }
 
         .game-container {
             display: grid;
-            grid-template-columns: 220px 1fr 280px;
-            grid-template-rows: 70px minmax(0, 1fr) 160px 70px;
-            gap: 8px;
+            grid-template-columns: 70fr 30fr;  /* 70% main area, 30% sidebar */
+            grid-template-rows: 70px 1fr auto;  /* Header, content area, actions */
+            gap: 12px;
             padding: 10px;
             height: 100vh;
-            background: linear-gradient(to bottom, #001a00 0%, #000a00 100%);
-            animation: flicker 2s ease-in-out infinite;
-            overflow: hidden;
+            background: var(--bg-deep-brown);
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 2px,
+                rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
+            overflow: auto;  /* hidden → auto to allow scroll if needed */
         }
 
         .panel {
-            background: rgba(0, 20, 0, 0.8);
-            border: 2px solid #0f0;
-            border-radius: 3px;
-            padding: 10px;
-            box-shadow:
-                inset 0 0 20px rgba(0, 255, 0, 0.1),
-                0 0 20px rgba(0, 255, 0, 0.3);
+            background: var(--panel-parchment);
+            border: 4px double var(--border-bronze);
+            border-radius: 8px;
+            padding: 12px;
             position: relative;
-        }
-
-        .panel::before {
-            content: "";
-            position: absolute;
-            top: -3px;
-            left: -3px;
-            right: -3px;
-            bottom: -3px;
-            background: linear-gradient(45deg, #0f0, #0a0, #0f0);
-            border-radius: 5px;
-            z-index: -1;
-            opacity: 0.3;
+            box-shadow:
+                inset 0 0 0 1px var(--border-wood),
+                0 4px 8px rgba(0, 0, 0, 0.6),
+                inset 0 2px 4px rgba(255, 215, 0, 0.2);
         }
 
         .panel-title {
-            color: #0ff;
-            font-size: 14px;
+            font-size: 11px;
             font-weight: bold;
-            margin-bottom: 8px;
-            text-shadow: 0 0 10px #0ff;
-            border-bottom: 1px solid #0f0;
-            padding-bottom: 3px;
+            text-align: center;
+            margin: -12px -12px 10px -12px;
+            padding: 8px;
+            background: linear-gradient(180deg, var(--border-bronze), var(--accent-brown));
+            color: var(--text-light);
+            border-bottom: 3px solid var(--border-wood);
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+            letter-spacing: 2px;
+            border-radius: 4px 4px 0 0;
         }
 
         /* Header */
@@ -118,25 +234,74 @@
 
         .game-title {
             font-size: 28px;
-            color: #ff0;
-            text-shadow:
-                0 0 10px #ff0,
-                0 0 20px #ff0,
-                0 0 30px #ff0;
+            color: #000;
             letter-spacing: 4px;
             margin-bottom: 5px;
         }
 
         .subtitle {
-            color: #0ff;
+            color: #000;
             font-size: 12px;
             letter-spacing: 2px;
         }
 
-        /* Main viewport - spans middle column */
-        .viewport-container {
-            grid-column: 2;
+        /* Theme Switcher Button */
+        .theme-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--panel-parchment);
+            border: 2px solid var(--border-bronze);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow:
+                inset 0 1px 2px rgba(255, 255, 255, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+        }
+
+        .theme-btn:hover {
+            background: var(--panel-parchment-dark);
+            transform: translateY(-2px);
+            box-shadow:
+                inset 0 1px 2px rgba(255, 255, 255, 0.3),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .theme-btn:active {
+            transform: translateY(0);
+            box-shadow:
+                inset 0 2px 4px rgba(0, 0, 0, 0.3),
+                0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Main area - left side (70%) */
+        .main-area {
+            grid-column: 1;
             grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Main viewport - adventure log */
+        .viewport-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* System Console - spans middle column, row 3 */
+        .system-console-container {
+            grid-column: 2;
+            grid-row: 3;
             display: flex;
             flex-direction: column;
             min-height: 0;
@@ -157,21 +322,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #000;
-            border: 1px solid #0a0;
-            border-radius: 3px;
-            padding: 5px;
+            background: var(--panel-parchment);
+            border: 3px solid var(--border-wood);  /* Hard pixel border, no glow */
+            border-radius: 0;  /* Sharp corners for pixel-art aesthetic */
+            padding: 8px;
             min-height: 0;
             overflow: hidden;
             position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);  /* Subtle depth, no glow */
         }
 
         .scene-image {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            border: 1px solid #0f0;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            border: 3px solid var(--border-wood);  /* Hard pixel border */
             display: none;
         }
 
@@ -186,7 +351,7 @@
         }
 
         .scene-loading {
-            color: #0ff;
+            color: #000;
             font-size: 14px;
             text-align: center;
             display: none;
@@ -210,12 +375,12 @@
         }
 
         .scene-error {
-            color: #888;
+            color: #000;
             font-size: 10px;
             text-align: center;
             display: none;
             font-style: italic;
-            opacity: 0.7;
+            opacity: 1;
         }
 
         .scene-error.active {
@@ -223,7 +388,7 @@
         }
 
         .scene-fallback {
-            color: #0a0;
+            color: #000;
             font-size: 10px;
             line-height: 1.2;
             white-space: pre;
@@ -232,14 +397,34 @@
 
         .viewport {
             flex: 1;
-            background: #000;
-            border: 2px solid #0a0;
-            padding: 10px;
-            font-size: 13px;
+            background: var(--panel-parchment);
+            border: 3px solid var(--border-wood);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', 'Consolas', monospace;  /* More readable font for body text */
+            font-size: 14px;  /* Slightly larger for better readability */
+            line-height: 1.7;  /* More breathing room */
+            overflow-y: auto;
+            position: relative;
+            min-height: 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* System Console - terminal style */
+        .system-console {
+            flex: 1;
+            background: #0a0e0a;  /* Dark terminal background */
+            border: 3px solid var(--border-wood);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
             line-height: 1.4;
             overflow-y: auto;
             position: relative;
             min-height: 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+            color: #0f0;  /* Green terminal text */
         }
 
         .viewport::-webkit-scrollbar {
@@ -247,33 +432,61 @@
         }
 
         .viewport::-webkit-scrollbar-track {
-            background: #001a00;
+            background: var(--panel-parchment-dark);
         }
 
         .viewport::-webkit-scrollbar-thumb {
+            background: var(--border-bronze);
+            border-radius: 4px;
+            border: 1px solid var(--border-wood);
+        }
+
+        .viewport::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-gold);
+        }
+
+        /* System Console Scrollbar */
+        .system-console::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .system-console::-webkit-scrollbar-track {
+            background: #050805;
+        }
+
+        .system-console::-webkit-scrollbar-thumb {
             background: #0f0;
             border-radius: 4px;
         }
 
+        .system-console::-webkit-scrollbar-thumb:hover {
+            background: #0c0;
+        }
+
         .text-line {
             margin-bottom: 8px;
-            color: #0f0;
+            color: var(--text-dark);
+            font-size: 13px;
+            line-height: 1.5;
         }
 
         .text-line.combat {
-            color: #ff0;
+            color: var(--accent-amber);
+            font-weight: bold;
         }
 
         .text-line.damage {
-            color: #f00;
+            color: var(--alert-rust);
+            font-weight: bold;
         }
 
         .text-line.success {
-            color: #0ff;
+            color: var(--quest-complete);
         }
 
         .text-line.quest {
-            color: #f0f;
+            color: var(--stat-blue);
+            font-weight: bold;
         }
 
         .cursor::after {
@@ -281,13 +494,13 @@
             animation: blink 1s infinite;
         }
 
-        /* Right sidebar - contains character + scene viewer */
+        /* Right sidebar - 30% width */
         .right-sidebar {
-            grid-column: 3;
+            grid-column: 2;
             grid-row: 2;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
             min-height: 0;
             overflow: hidden;
         }
@@ -301,26 +514,32 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 8px;
+            grid-template-columns: 80px 1fr;  /* auto → 80px for consistent label width */
+            gap: var(--space-md);  /* 8px → 12px */
             font-size: 13px;
         }
 
         .stat-label {
-            color: #0ff;
+            color: var(--stat-blue);
+            font-weight: bold;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
         }
 
         .stat-value {
-            color: #ff0;
+            color: var(--primary-gold);
             text-align: right;
             font-weight: bold;
+            background: rgba(26, 20, 16, 0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-wood);
         }
 
         .hp-bar-container {
             grid-column: 1 / -1;
-            background: #000;
-            border: 1px solid #0a0;
-            height: 20px;
+            background: var(--panel-parchment-dark);
+            border: 2px solid var(--border-wood);
+            height: 24px;
             margin-top: 5px;
             position: relative;
             overflow: hidden;
@@ -328,31 +547,90 @@
 
         .hp-bar {
             height: 100%;
-            background: linear-gradient(to right, #0f0, #0a0);
-            transition: width 0.5s;
+            background: linear-gradient(90deg,
+                var(--hp-green) 0%,
+                var(--hp-yellow) 50%,
+                var(--hp-red) 100%);
+            border: 2px solid var(--border-wood);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+            transition: width 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 11px;
-            color: #000;
+            color: var(--text-dark);
             font-weight: bold;
+            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
         }
 
         .hp-bar.low {
-            background: linear-gradient(to right, #ff0, #cc0);
+            background: linear-gradient(90deg,
+                var(--hp-yellow) 0%,
+                var(--hp-red) 100%);
         }
 
         .hp-bar.critical {
-            background: linear-gradient(to right, #f00, #a00);
+            background: var(--hp-red);
             animation: blink 0.5s infinite;
         }
 
-        /* Quest panel - right bottom */
-        .quest-panel {
-            grid-column: 3;
-            grid-row: 3;
+        /* Tabbed panel - bottom of sidebar */
+        .tabbed-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             min-height: 0;
             overflow: hidden;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .tab-button {
+            flex: 1;
+            background: linear-gradient(180deg, var(--panel-parchment), var(--panel-parchment-dark));
+            border: 3px solid var(--border-wood);
+            color: var(--text-dark);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            padding: 8px 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .tab-button:hover {
+            background: linear-gradient(180deg, var(--primary-gold), var(--accent-amber));
+            transform: translateY(-2px);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(180deg, var(--border-bronze), var(--accent-brown));
+            color: var(--text-light);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-content {
+            flex: 1;
+            display: none;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Quest panel - inside tabbed panel */
+        .quest-panel {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: visible;
         }
 
         .quest-objectives {
@@ -363,39 +641,50 @@
         }
 
         .objective {
-            margin: 5px 0;
-            padding-left: 15px;
-            position: relative;
+            padding: 10px;  /* 8px → 10px for better breathing room */
+            margin: var(--space-sm) 0;  /* 6px → 8px, use spacing variable */
+            background: var(--panel-parchment-dark);
+            border-left: 4px solid var(--border-bronze);
+            border-radius: 4px;
+            color: var(--text-dark);
+        }
+
+        .objective:last-child {
+            margin-bottom: 0;  /* Remove margin on last item */
         }
 
         .objective::before {
-            content: "▸";
-            position: absolute;
+            content: '☐';
+            color: var(--accent-brown);
+            margin-right: 8px;
+            font-size: 14px;
             left: 0;
-            color: #ff0;
+            color: #000;
         }
 
         .objective.completed {
-            color: #0a0;
+            background: rgba(50, 205, 50, 0.2);
+            border-left-color: var(--quest-complete);
             text-decoration: line-through;
+            opacity: 0.8;
         }
 
         .objective.completed::before {
-            content: "✓";
-            color: #0f0;
+            content: '☑';
+            color: var(--quest-complete);
         }
 
-        /* Map panel - bottom left corner */
+        /* Map panel - inside tabbed panel */
         .map-panel {
-            grid-column: 1;
-            grid-row: 3;
+            display: flex;
+            flex-direction: column;
             min-height: 0;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .map-display {
-            background: #000;
-            border: 2px solid #0a0;
+            background: #fff;
+            border: 2px solid #000;
             padding: 10px;
             display: flex;
             align-items: center;
@@ -406,15 +695,16 @@
 
         .map-grid {
             display: grid;
-            grid-template-columns: repeat(7, 30px);
-            grid-template-rows: repeat(5, 30px);
-            gap: 0px;
-            border: 2px solid #0a0;
+            grid-template-columns: repeat(7, 32px);  /* 30px → 32px */
+            grid-template-rows: repeat(5, 32px);
+            gap: 2px;  /* 0px → 2px for cell separation */
+            padding: var(--space-xs);  /* Add edge padding */
+            border: 2px solid #000;
         }
 
         .map-cell {
-            background: #000;
-            border: 1px solid #111;
+            background: #3a2a1a;
+            border: 1px solid var(--border-wood);  /* Kept at 1px - good size with gaps */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -426,74 +716,72 @@
 
         /* Fog of war - unexplored */
         .map-cell.unexplored {
-            background: #000;
-            border-color: #111;
+            background: #3a2a1a;
+            border-color: var(--border-wood);
         }
 
         .map-cell.unexplored::after {
             content: "?";
-            color: #333;
+            color: var(--accent-brown);
             font-size: 14px;
         }
 
         /* Scouted locations (seen but not visited) */
         .map-cell.scouted {
-            background: #001100;
-            border-color: #0a0;
-            opacity: 0.6;
+            background: #5a4a3a;
+            border-color: var(--accent-brown);
+            opacity: 1;
         }
 
         .map-cell.scouted::before {
             content: attr(data-icon);
             position: absolute;
             font-size: 14px;
-            opacity: 0.5;
+            opacity: 0.7;
         }
 
         /* Visited locations */
         .map-cell.visited {
-            background: #002200;
-            border-color: #0a0;
+            background: linear-gradient(135deg, #8b7355, #a0826d);
+            border-color: var(--border-bronze);
         }
 
         .map-cell.visited::before {
             content: attr(data-icon);
             position: absolute;
             font-size: 16px;
-            opacity: 0.7;
+            opacity: 1;
         }
 
         /* Underground locations */
         .map-cell.underground {
-            background: #000a0a;
-            border-color: #066;
+            background: #2a1a10;
+            border-color: var(--border-wood);
         }
 
         .map-cell.underground.visited {
-            background: #001a1a;
-            border-color: #0aa;
+            background: linear-gradient(135deg, #6b5345, #7a6255);
+            border-color: var(--border-bronze);
         }
 
         .map-cell.underground.scouted {
-            background: #000f0f;
-            border-color: #088;
+            background: #4a3a2a;
+            border-color: var(--accent-brown);
         }
 
         .map-cell.underground.current {
-            background: #003366;
-            border-color: #0ff;
-            box-shadow:
-                inset 0 0 10px #0ff,
-                0 0 10px #0ff;
+            background: var(--primary-gold);
+            color: var(--text-dark);
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 8px var(--primary-gold);
         }
 
         /* Current position */
         .map-cell.current {
-            background: #004400;
-            border-color: #0f0;
-            box-shadow:
-                inset 0 0 10px #0f0,
-                0 0 10px #0f0;
+            background: var(--primary-gold);
+            color: var(--text-dark);
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 8px var(--primary-gold);
         }
 
         .map-cell.current::before {
@@ -505,19 +793,19 @@
 
         /* Walls/Blocked paths */
         .map-cell.wall-north {
-            border-top: 3px solid #f00;
+            border-top: 3px solid #000;
         }
 
         .map-cell.wall-south {
-            border-bottom: 3px solid #f00;
+            border-bottom: 3px solid #000;
         }
 
         .map-cell.wall-east {
-            border-right: 3px solid #f00;
+            border-right: 3px solid #000;
         }
 
         .map-cell.wall-west {
-            border-left: 3px solid #f00;
+            border-left: 3px solid #000;
         }
 
         /* Hover tooltip */
@@ -531,16 +819,15 @@
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 50, 0, 0.95);
-            border: 2px solid #0f0;
+            background: #fff;
+            border: 2px solid #000;
             padding: 5px 10px;
             white-space: nowrap;
             z-index: 1000;
             font-size: 10px;
-            color: #0f0;
+            color: #000;
             margin-bottom: 5px;
             pointer-events: none;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
         }
 
         .map-tooltip::after {
@@ -550,7 +837,7 @@
             left: 50%;
             transform: translateX(-50%);
             border: 5px solid transparent;
-            border-top-color: #0f0;
+            border-top-color: #000;
         }
 
         /* Item Detail Modal */
@@ -560,19 +847,19 @@
 
         .region-indicator {
             text-align: center;
-            color: #0f0;
+            color: #000;
             font-family: 'Courier New', monospace;
             margin-bottom: 10px;
             padding: 5px;
-            border: 1px solid #0a0;
-            background: #001100;
+            border: 2px solid #000;
+            background: #fff;
             font-size: 14px;
         }
 
         .region-indicator.underground {
-            color: #0ff;
-            border-color: #0aa;
-            background: #001a1a;
+            color: #000;
+            border-color: #000;
+            background: #fff;
         }
 
         .item-detail-header {
@@ -580,7 +867,7 @@
             align-items: center;
             gap: 15px;
             margin-bottom: 20px;
-            border-bottom: 2px solid #0f0;
+            border-bottom: 2px solid #000;
             padding-bottom: 15px;
         }
 
@@ -593,29 +880,29 @@
         }
 
         .item-detail-name {
-            color: #ff0;
+            color: #000;
             font-size: 24px;
             margin-bottom: 5px;
         }
 
         .item-detail-type {
-            color: #0ff;
+            color: #000;
             font-size: 14px;
         }
 
         .item-detail-stats {
-            background: rgba(0, 50, 0, 0.5);
-            border: 1px solid #0a0;
+            background: #fff;
+            border: 2px solid #000;
             padding: 15px;
             margin: 15px 0;
-            border-radius: 5px;
+            border-radius: 0;
         }
 
         .item-stat-row {
             display: flex;
             justify-content: space-between;
             padding: 5px 0;
-            border-bottom: 1px solid #0a0;
+            border-bottom: 1px solid #000;
         }
 
         .item-stat-row:last-child {
@@ -623,16 +910,16 @@
         }
 
         .item-stat-label {
-            color: #0ff;
+            color: #000;
         }
 
         .item-stat-value {
-            color: #ff0;
+            color: #000;
             font-weight: bold;
         }
 
         .item-description {
-            color: #0f0;
+            color: #000;
             line-height: 1.6;
             margin: 15px 0;
         }
@@ -645,20 +932,20 @@
 
         .item-action-btn {
             flex: 1;
-            background: linear-gradient(to bottom, #0a4000, #052000);
-            border: 2px solid #0f0;
-            color: #0f0;
+            background: #fff;
+            border: 2px solid #000;
+            color: #000;
             padding: 10px;
             cursor: pointer;
             font-family: 'Courier New', monospace;
             font-size: 14px;
             font-weight: bold;
-            transition: all 0.2s;
+            transition: none;
         }
 
         .item-action-btn:hover {
-            background: linear-gradient(to bottom, #0f6000, #083000);
-            box-shadow: 0 0 15px #0f0;
+            background: #000;
+            color: #fff;
         }
 
         .item-action-btn:disabled {
@@ -668,17 +955,17 @@
 
         /* Item Image Section */
         .item-image-section {
-            background: #000;
-            border: 2px solid #0a0;
-            border-radius: 3px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 0;
             padding: 15px;
             margin: 15px 0;
         }
 
         .item-image-container {
-            background: #001a00;
-            border: 1px solid #0a0;
-            border-radius: 3px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 0;
             padding: 10px;
             min-height: 200px;
             display: flex;
@@ -691,8 +978,7 @@
             max-width: 100%;
             max-height: 300px;
             object-fit: contain;
-            border: 1px solid #0f0;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            border: 2px solid #000;
             animation: fadeIn 0.5s ease-in;
             cursor: pointer;
         }
@@ -701,7 +987,7 @@
         .image-gallery {
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid #0a0;
+            border-top: 1px solid var(--border-wood);
         }
 
         .gallery-header {
@@ -712,13 +998,13 @@
         }
 
         .gallery-title {
-            color: #0ff;
+            color: var(--primary-gold);
             font-size: 12px;
             font-weight: bold;
         }
 
         .gallery-count {
-            color: #0a0;
+            color: var(--text-dark);
             font-size: 11px;
         }
 
@@ -732,23 +1018,23 @@
         .gallery-thumbnail {
             position: relative;
             aspect-ratio: 1;
-            border: 2px solid #0a0;
+            border: 2px solid var(--border-wood);
             border-radius: 3px;
             overflow: hidden;
             cursor: pointer;
             transition: all 0.2s;
-            background: #000;
+            background: var(--bg-darker-brown);
         }
 
         .gallery-thumbnail:hover {
-            border-color: #0ff;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 10px rgba(201, 148, 26, 0.4);
             transform: scale(1.05);
         }
 
         .gallery-thumbnail.featured {
-            border-color: #ff0;
-            box-shadow: 0 0 15px rgba(255, 255, 0, 0.6);
+            border-color: var(--accent-amber);
+            box-shadow: 0 0 15px rgba(212, 168, 42, 0.6);
         }
 
         .gallery-thumbnail.featured::after {
@@ -774,9 +1060,9 @@
         }
 
         .page-btn {
-            background: #001100;
-            border: 1px solid #0a0;
-            color: #0f0;
+            background: var(--bg-deep-brown);
+            border: 1px solid var(--border-wood);
+            color: var(--text-light);
             padding: 4px 8px;
             cursor: pointer;
             font-size: 11px;
@@ -785,14 +1071,15 @@
         }
 
         .page-btn:hover {
-            background: #003300;
-            border-color: #0ff;
+            background: var(--border-wood);
+            border-color: var(--border-bronze);
         }
 
         .page-btn.active {
-            background: #0f0;
-            color: #000;
-            border-color: #0f0;
+            background: var(--primary-gold);
+            color: var(--text-dark);
+            border-color: var(--primary-gold);
+            font-weight: bold;
         }
 
         .page-btn:disabled {
@@ -804,8 +1091,8 @@
         .custom-prompt-section {
             margin-top: 15px;
             padding: 10px;
-            background: #001a00;
-            border: 1px solid #0a0;
+            background: rgba(74, 52, 38, 0.2);
+            border: 1px solid var(--border-wood);
             border-radius: 3px;
         }
 
@@ -816,22 +1103,22 @@
             cursor: pointer;
             margin-bottom: 10px;
             padding: 5px;
-            background: #002200;
+            background: rgba(74, 52, 38, 0.3);
             border-radius: 3px;
         }
 
         .custom-prompt-header:hover {
-            background: #003300;
+            background: rgba(74, 52, 38, 0.5);
         }
 
         .custom-prompt-title {
-            color: #0ff;
+            color: var(--primary-gold);
             font-size: 12px;
             font-weight: bold;
         }
 
         .custom-prompt-toggle {
-            color: #0a0;
+            color: var(--accent-brown);
             font-size: 14px;
         }
 
@@ -846,9 +1133,9 @@
         .custom-prompt-textarea {
             width: 100%;
             min-height: 60px;
-            background: #000;
-            border: 1px solid #0a0;
-            color: #0f0;
+            background: var(--bg-darker-brown);
+            border: 1px solid var(--border-wood);
+            color: var(--text-light);
             font-family: 'Courier New', monospace;
             font-size: 12px;
             padding: 8px;
@@ -859,12 +1146,12 @@
 
         .custom-prompt-textarea:focus {
             outline: none;
-            border-color: #0ff;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 8px rgba(201, 148, 26, 0.3);
         }
 
         .custom-prompt-helper {
-            color: #0a0;
+            color: var(--accent-brown);
             font-size: 10px;
             margin-bottom: 8px;
             font-style: italic;
@@ -879,15 +1166,15 @@
         }
 
         .char-count {
-            color: #0a0;
+            color: var(--accent-brown);
         }
 
         .char-count.warning {
-            color: #ff0;
+            color: var(--hp-yellow);
         }
 
         .char-count.error {
-            color: #f00;
+            color: var(--alert-rust);
         }
 
         .prompt-preview-section {
@@ -999,71 +1286,142 @@
             color: #0a0;
         }
 
-        /* Navigation - center bottom */
+        /* Navigation panel - inside actions-navigation container */
         .navigation-panel {
-            grid-column: 2;
-            grid-row: 3;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             min-height: 0;
-            overflow: hidden;
+        }
+        
+        .navigation-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Contextual Actions - Left Side */
+        .contextual-actions-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;  /* center → flex-start to prevent cutoff */
+            align-items: stretch;
+            border-right: 3px solid var(--border-wood);
+            padding-right: 15px;
+            gap: 8px;
+            height: 100%;  /* Ensure full height */
+        }
+
+        .contextual-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .context-button {
+            background: linear-gradient(180deg, var(--border-bronze), var(--accent-brown));
+            border: 3px solid var(--border-wood);
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 11px;  /* 12px → 11px */
+            font-weight: bold;
+            padding: 12px 14px;  /* 14px 16px → 12px 14px */
+            cursor: pointer;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+            box-shadow:
+                0 4px 0 var(--bg-darker-brown),
+                0 6px 8px rgba(0, 0, 0, 0.5);
+            transition: all 0.15s;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .context-button:hover {
+            background: linear-gradient(180deg, var(--primary-gold), var(--border-bronze));
+            border-color: var(--primary-gold);
+            transform: translateY(2px);
+            box-shadow:
+                0 2px 0 var(--bg-darker-brown),
+                0 4px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .context-button:active {
+            transform: translateY(1px);
+        }
+
+        /* Navigation - Right Side */
+        .navigation-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;  /* center → flex-start */
+            align-items: center;
+            padding-left: 10px;
+            height: 100%;  /* Ensure full height */
         }
 
         .navigation {
             display: grid;
-            grid-template-columns: repeat(3, 80px);
-            grid-template-rows: repeat(3, 50px);
-            gap: 5px;
-            max-width: 300px;
+            grid-template-columns: repeat(3, 85px);  /* 90px → 85px to fit better */
+            grid-template-rows: repeat(3, 42px);  /* 45px → 42px to fit all rows */
+            gap: 6px;  /* 8px → 6px to save space */
+            max-width: 320px;
+            justify-content: center;
         }
 
         .nav-button {
-            background: linear-gradient(to bottom, #0a4000, #052000);
-            border: 2px solid #0f0;
-            color: #0f0;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
+            background: linear-gradient(180deg, var(--panel-parchment), var(--panel-parchment-dark));
+            border: 3px solid var(--border-wood);
+            border-radius: 6px;
+            color: var(--text-dark);
+            font-size: 11px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.1s;
-            text-shadow: 0 0 5px #0f0;
+            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+            box-shadow:
+                inset 0 0 0 1px var(--border-bronze),
+                2px 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.15s;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
         }
 
         .nav-button:hover {
-            background: linear-gradient(to bottom, #0f6000, #083000);
-            box-shadow: 0 0 15px #0f0;
-            transform: scale(1.02);
+            background: linear-gradient(180deg, var(--accent-amber), var(--border-bronze));
+            border-color: var(--primary-gold);
+            transform: scale(1.05);
+            box-shadow:
+                inset 0 0 0 1px var(--primary-gold),
+                4px 4px 8px rgba(0, 0, 0, 0.5);
         }
 
         .nav-button:active {
-            background: #0f0;
-            color: #000;
-            box-shadow: inset 0 0 10px #000;
+            transform: scale(0.95);
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.4);
         }
 
         .nav-button:disabled {
-            opacity: 0.3;
+            opacity: 0.4;
             cursor: not-allowed;
+            filter: grayscale(1);
         }
 
         #north { grid-column: 2; grid-row: 1; }
         #west { grid-column: 1; grid-row: 2; }
-        #examine { grid-column: 2; grid-row: 2; background: linear-gradient(to bottom, #404000, #202000); border-color: #ff0; color: #ff0; }
+        #examine { grid-column: 2; grid-row: 2; }
         #east { grid-column: 3; grid-row: 2; }
         #south { grid-column: 2; grid-row: 3; }
 
-        /* Left sidebar - inventory and info */
-        .left-sidebar {
-            grid-column: 1;
-            grid-row: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-height: 0;
-            overflow: hidden;
+        /* Actions & Navigation container - bottom of main area */
+        .actions-navigation-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            min-height: 150px;
         }
 
         .inventory-panel {
@@ -1083,84 +1441,96 @@
         }
 
         .inventory-item {
-            background: #001a00;
-            border: 1px solid #0a0;
-            padding: 8px;
-            font-size: 11px;
+            background: var(--panel-parchment-dark);
+            border: 3px solid var(--border-wood);
+            border-radius: 4px;
+            padding: var(--space-md);  /* 10px → 12px, use spacing variable */
+            margin-bottom: var(--space-sm);  /* Use spacing variable (8px) */
             cursor: pointer;
+            box-shadow:
+                inset 0 0 0 1px var(--border-bronze),
+                2px 2px 4px rgba(0, 0, 0, 0.3);
             transition: all 0.2s;
         }
 
+        .inventory-item:last-child {
+            margin-bottom: 0;  /* Remove margin on last item */
+        }
+
         .inventory-item:hover {
-            background: #003300;
-            border-color: #0f0;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            background: var(--accent-amber);
+            border-color: var(--primary-gold);
+            transform: translateX(4px);
+            box-shadow:
+                inset 0 0 0 1px var(--primary-gold),
+                4px 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .inventory-item:hover .item-name,
+        .inventory-item:hover .item-desc {
+            color: var(--text-dark);
         }
 
         .item-name {
-            color: #ff0;
+            color: var(--text-dark);
+            font-size: 13px;
             font-weight: bold;
         }
 
         .item-desc {
-            color: #0a0;
-            font-size: 10px;
+            color: var(--accent-brown);
+            font-size: 11px;
+            font-style: italic;
         }
 
-        /* Action Bar */
+        /* Action Bar - HIDDEN (redundant with Actions panel) */
         .action-panel {
-            grid-column: 1 / -1;
-            grid-row: 4;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 8px;
+            display: none;  /* Removed from layout */
         }
 
         .action-button {
-            background: linear-gradient(to bottom, #404000, #202000);
-            border: 2px solid #ff0;
-            color: #ff0;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
+            background: linear-gradient(180deg, var(--border-bronze), var(--accent-brown));
+            color: var(--text-light);
+            border: 3px solid var(--border-wood);
+            border-radius: 6px;
+            padding: 12px 20px;
+            font-size: 11px;
             font-weight: bold;
-            padding: 15px;
             cursor: pointer;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+            box-shadow:
+                0 4px 0 var(--bg-darker-brown),
+                0 6px 8px rgba(0, 0, 0, 0.5);
             transition: all 0.1s;
-            text-shadow: 0 0 5px #ff0;
         }
 
         .action-button:hover {
-            background: linear-gradient(to bottom, #606000, #303000);
-            box-shadow: 0 0 15px #ff0;
-            transform: translateY(-2px);
+            background: linear-gradient(180deg, var(--primary-gold), var(--border-bronze));
+            transform: translateY(2px);
+            box-shadow:
+                0 2px 0 var(--bg-darker-brown),
+                0 4px 6px rgba(0, 0, 0, 0.5);
         }
 
         .action-button:active {
-            background: #ff0;
-            color: #000;
-            transform: translateY(0);
+            transform: translateY(4px);
+            box-shadow: 0 0 0 var(--bg-darker-brown);
         }
 
         .action-button.primary {
-            background: linear-gradient(to bottom, #004040, #002020);
-            border-color: #0ff;
-            color: #0ff;
-            text-shadow: 0 0 5px #0ff;
+            background: linear-gradient(180deg, var(--primary-gold), var(--border-bronze));
         }
 
         .action-button.primary:hover {
-            box-shadow: 0 0 15px #0ff;
+            background: linear-gradient(180deg, var(--accent-amber), var(--primary-gold));
         }
 
         .action-button.danger {
-            background: linear-gradient(to bottom, #400000, #200000);
-            border-color: #f00;
-            color: #f00;
-            text-shadow: 0 0 5px #f00;
+            background: linear-gradient(180deg, var(--alert-rust), var(--accent-brown));
         }
 
         .action-button.danger:hover {
-            box-shadow: 0 0 15px #f00;
+            background: linear-gradient(180deg, #ff6b6b, var(--alert-rust));
         }
 
         /* Modal styles */
@@ -1188,14 +1558,13 @@
         }
 
         .modal-content {
-            background: rgba(0, 20, 0, 0.95);
-            border: 3px solid #0f0;
-            border-radius: 10px;
+            background: #fff;
+            border: 3px solid #000;
+            border-radius: 0;
             padding: 30px;
             max-width: 90%;
             max-height: 90%;
             overflow-y: auto;
-            box-shadow: 0 0 50px rgba(0, 255, 0, 0.5);
             position: relative;
         }
 
@@ -1204,15 +1573,13 @@
             top: 10px;
             right: 15px;
             font-size: 28px;
-            color: #f00;
+            color: #000;
             cursor: pointer;
             font-weight: bold;
-            text-shadow: 0 0 10px #f00;
         }
 
         .modal-close:hover {
-            color: #ff0;
-            text-shadow: 0 0 20px #ff0;
+            color: #000;
         }
 
         /* Mobile action buttons */
@@ -1255,79 +1622,150 @@
         }
 
         .choice-button {
-            background: #001a00;
-            border: 2px solid #0a0;
-            color: #0f0;
-            padding: 10px;
+            background: linear-gradient(180deg, var(--panel-parchment-dark), var(--accent-brown));
+            border: 3px solid var(--border-wood);
+            border-radius: 6px;
+            color: var(--text-light);
+            padding: 12px;
             text-align: left;
             cursor: pointer;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+            box-shadow:
+                inset 0 0 0 1px var(--border-bronze),
+                2px 2px 4px rgba(0, 0, 0, 0.3);
             transition: all 0.2s;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: bold;
         }
 
         .choice-button:hover {
-            background: #003300;
-            border-color: #0f0;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            transform: translateX(5px);
+            background: linear-gradient(180deg, var(--accent-amber), var(--border-bronze));
+            border-color: var(--primary-gold);
+            box-shadow:
+                inset 0 0 0 1px var(--primary-gold),
+                4px 4px 10px rgba(0, 0, 0, 0.6);
+            transform: translateX(8px);
         }
 
         .choice-button::before {
-            content: "> ";
-            color: #ff0;
+            content: "▶ ";
+            color: var(--primary-gold);
+            margin-right: 8px;
         }
 
         /* Responsive Design */
         @media (max-width: 1024px) {
             .game-container {
                 grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr auto auto;
+                grid-template-rows: auto auto auto;
             }
 
-            .header { grid-column: 1; }
-            .viewport-container { grid-column: 1; grid-row: 2; }
-            .navigation-panel { grid-column: 1; grid-row: 3; }
-            .action-panel { grid-column: 1; grid-row: 4; }
-
-            .left-sidebar,
-            .character-panel,
-            .quest-panel,
-            .map-panel {
-                display: none;
+            .header { 
+                grid-column: 1;
+                grid-row: 1;
+            }
+            
+            .main-area { 
+                grid-column: 1;
+                grid-row: 2;
+            }
+            
+            .right-sidebar {
+                grid-column: 1;
+                grid-row: 3;
+                max-height: 400px;
             }
 
             .mobile-buttons {
                 display: flex;
             }
 
+            .actions-navigation-container {
+                grid-template-columns: 1fr;
+            }
+
             .navigation {
                 grid-template-columns: repeat(3, 100px);
                 grid-template-rows: repeat(3, 60px);
+            }
+
+            .tabbed-panel {
+                max-height: 200px;
             }
         }
 
         @media (max-width: 768px) {
             .game-title {
-                font-size: 20px;
+                font-size: 18px;
             }
 
             .subtitle {
-                font-size: 10px;
+                font-size: 9px;
             }
 
             .navigation {
-                grid-template-columns: repeat(3, 80px);
-                grid-template-rows: repeat(3, 50px);
+                grid-template-columns: repeat(3, 70px);
+                grid-template-rows: repeat(3, 45px);
             }
 
-            .action-panel {
-                grid-template-columns: repeat(2, 1fr);
+            .tab-button {
+                font-size: 8px;
+                padding: 6px 2px;
             }
+
+            .viewport {
+                font-size: 13px;
+            }
+        }
+
+        /* Theme Switcher Dropdown */
+        .theme-selector-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .theme-label {
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .theme-dropdown {
+            background: #fff;
+            border: 2px solid #000;
+            color: #000;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 0;
+            cursor: pointer;
+            transition: none;
+            outline: none;
+        }
+
+        .theme-dropdown:hover {
+            background: #fff;
+            border-color: #000;
+        }
+
+        .theme-dropdown:focus {
+            border-color: #000;
+        }
+
+        .theme-dropdown option {
+            background: #fff;
+            color: #000;
+            padding: 5px;
         }
     </style>
 </head>
-<body>
+<body data-theme="blackwhite">
     <div class="game-container">
         <!-- Header -->
         <div class="header panel">
@@ -1335,128 +1773,156 @@
             <div class="subtitle">AN AI-POWERED DUNGEON & DRAGONS ADVENTURE</div>
         </div>
 
-        <!-- Left Sidebar -->
-        <div class="left-sidebar">
-            <!-- Inventory -->
-            <div class="panel inventory-panel">
-                <div class="panel-title">[ INVENTORY ]</div>
-                <div class="inventory-grid" id="inventory">
-                    <div class="inventory-item">
-                        <div class="item-name">Dagger</div>
-                        <div class="item-desc">1d4 damage</div>
+        <!-- Main Gameplay Area (70% - Left Side) -->
+        <div class="main-area">
+            <!-- Adventure Log -->
+            <div class="viewport-container panel">
+                <div class="panel-title">ADVENTURE LOG</div>
+                <div class="viewport" id="viewport">
+                    <div class="text-line quest">Welcome, brave adventurer!</div>
+                    <div class="text-line quest">Your quest: Rescue miners trapped beneath Emberpeak and seal the shattered rune.</div>
+                    <div class="text-line">You find yourself in a dimly lit tavern. The air is thick with pipe smoke and hushed conversations.</div>
+                    <div class="text-line">Two seasoned adventurers sit at the bar - a cunning Rogue and a battle-hardened Fighter.</div>
+                    <div class="text-line">They turn to greet you as you approach...</div>
+                    <div class="text-line cursor"></div>
+                </div>
+            </div>
+
+            <!-- Actions & Navigation (Side by Side) -->
+            <div class="actions-navigation-container">
+                <!-- Actions Panel -->
+                <div class="contextual-actions-panel panel">
+                    <div class="panel-title">ACTIONS</div>
+                    <div class="contextual-actions" id="contextual-actions">
+                        <!-- Dynamically populated based on context -->
                     </div>
-                    <div class="inventory-item">
-                        <div class="item-name">Lockpicks</div>
-                        <div class="item-desc">+2 lockpick bonus</div>
-                    </div>
-                    <div class="inventory-item">
-                        <div class="item-name">Rope (50ft)</div>
-                        <div class="item-desc">Useful tool</div>
-                    </div>
-                    <div class="inventory-item">
-                        <div class="item-name">Torch</div>
-                        <div class="item-desc">Light source</div>
+                </div>
+
+                <!-- Navigation Panel -->
+                <div class="navigation-panel panel">
+                    <div class="panel-title">NAVIGATION</div>
+                    <div class="navigation">
+                        <button class="nav-button" id="north">▲<br>NORTH</button>
+                        <button class="nav-button" id="west">◄<br>WEST</button>
+                        <button class="nav-button" id="examine">👁<br>LOOK</button>
+                        <button class="nav-button" id="east">►<br>EAST</button>
+                        <button class="nav-button" id="south">▼<br>SOUTH</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main Viewport -->
-        <div class="viewport-container panel">
-            <div class="panel-title">[ ADVENTURE LOG ]</div>
-            <div class="viewport" id="viewport">
-                <div class="text-line quest">Welcome, brave adventurer!</div>
-                <div class="text-line quest">Your quest: Rescue miners trapped beneath Emberpeak and seal the shattered rune.</div>
-                <div class="text-line">You find yourself in a dimly lit tavern. The air is thick with pipe smoke and hushed conversations.</div>
-                <div class="text-line">Two seasoned adventurers sit at the bar - a cunning Rogue and a battle-hardened Fighter.</div>
-                <div class="text-line">They turn to greet you as you approach...</div>
-                <div class="text-line cursor"></div>
-            </div>
-        </div>
-
-        <!-- Right Sidebar - Character + Scene Viewer -->
+        <!-- Player Status Sidebar (30% - Right Side) -->
         <div class="right-sidebar">
-        <!-- Scene Viewer - AI Generated Imagery -->
-        <div class="scene-viewer-panel panel">
-            <div class="panel-title">[ SCENE VIEWER 🍌 ]</div>
-            <div class="scene-viewer-content">
-                <img id="scene-image" class="scene-image" alt="Generated scene">
-                <div id="scene-loading" class="scene-loading">
-                    Generating scene with Nano Banana
+            <!-- Character Panel (Top) -->
+            <div class="character-panel panel">
+                <div class="panel-title">CHARACTER</div>
+                <div class="stats-grid">
+                    <div class="stat-label">Name:</div>
+                    <div class="stat-value" id="char-name">Hero 1</div>
+
+                    <div class="stat-label">Class:</div>
+                    <div class="stat-value" id="char-class">Rogue</div>
+
+                    <div class="stat-label">Level:</div>
+                    <div class="stat-value">3</div>
+
+                    <div class="hp-bar-container">
+                        <div class="hp-bar" id="hp-bar" style="width: 100%">
+                            <span id="hp-text">50 / 50 HP</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-label">STR:</div>
+                    <div class="stat-value">14 (+2)</div>
+
+                    <div class="stat-label">DEX:</div>
+                    <div class="stat-value">18 (+4)</div>
+
+                    <div class="stat-label">CON:</div>
+                    <div class="stat-value">12 (+1)</div>
                 </div>
-                <div id="scene-error" class="scene-error"></div>
-                <div id="scene-fallback" class="scene-fallback"></div>
             </div>
-        </div>
 
-            <!-- Character Panel -->
-        <div class="character-panel panel">
-            <div class="panel-title">[ CHARACTER ]</div>
-            <div class="stats-grid">
-                <div class="stat-label">Name:</div>
-                <div class="stat-value" id="char-name">Hero 1</div>
+            <!-- Scene Viewer (Middle) -->
+            <div class="scene-viewer-panel panel">
+                <div class="panel-title">SCENE VIEWER 🍌</div>
+                <div class="scene-viewer-content">
+                    <img id="scene-image" class="scene-image" alt="Generated scene">
+                    <div id="scene-loading" class="scene-loading">
+                        Generating scene with Nano Banana
+                    </div>
+                    <div id="scene-error" class="scene-error"></div>
+                    <div id="scene-fallback" class="scene-fallback"></div>
+                </div>
+            </div>
 
-                <div class="stat-label">Class:</div>
-                <div class="stat-value" id="char-class">Rogue</div>
+            <!-- Tabbed Panel (Bottom) - Inventory/Map/Quest Log -->
+            <div class="tabbed-panel panel">
+                <div class="panel-title">REFERENCE</div>
+                
+                <!-- Tab Buttons -->
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="inventory">INVENTORY</button>
+                    <button class="tab-button" data-tab="map">MAP</button>
+                    <button class="tab-button" data-tab="quest">QUEST LOG</button>
+                </div>
 
-                <div class="stat-label">Level:</div>
-                <div class="stat-value">3</div>
-
-                <div class="hp-bar-container">
-                    <div class="hp-bar" id="hp-bar" style="width: 100%">
-                        <span id="hp-text">50 / 50 HP</span>
+                <!-- Tab Content: Inventory -->
+                <div class="tab-content active" id="tab-inventory">
+                    <div class="inventory-panel">
+                        <div class="inventory-grid" id="inventory">
+                            <div class="inventory-item">
+                                <div class="item-name">Dagger</div>
+                                <div class="item-desc">1d4 damage</div>
+                            </div>
+                            <div class="inventory-item">
+                                <div class="item-name">Lockpicks</div>
+                                <div class="item-desc">+2 lockpick bonus</div>
+                            </div>
+                            <div class="inventory-item">
+                                <div class="item-name">Rope (50ft)</div>
+                                <div class="item-desc">Useful tool</div>
+                            </div>
+                            <div class="inventory-item">
+                                <div class="item-name">Torch</div>
+                                <div class="item-desc">Light source</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="stat-label">STR:</div>
-                <div class="stat-value">14 (+2)</div>
+                <!-- Tab Content: Map -->
+                <div class="tab-content" id="tab-map">
+                    <div class="map-panel">
+                        <div class="map-display">
+                            <div class="map-grid" id="map"></div>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="stat-label">DEX:</div>
-                <div class="stat-value">18 (+4)</div>
-
-                <div class="stat-label">CON:</div>
-                <div class="stat-value">12 (+1)</div>
+                <!-- Tab Content: Quest Log -->
+                <div class="tab-content" id="tab-quest">
+                    <div class="quest-panel">
+                        <div class="quest-objectives">
+                            <div class="objective" id="obj1">Gather your party</div>
+                            <div class="objective" id="obj2">Reach Emberpeak Mines</div>
+                            <div class="objective" id="obj3">Rescue the trapped miners</div>
+                            <div class="objective" id="obj4">Seal the shattered rune</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Map Panel - Bottom Left -->
-        <div class="map-panel panel">
-            <div class="panel-title">[ MAP ]</div>
-            <div class="map-display">
-                <div class="map-grid" id="map"></div>
+        <!-- System Console (Hidden by default - can be toggled) -->
+        <div class="system-console-container panel" style="display: none;">
+            <div class="panel-title">[ SYSTEM CONSOLE ]</div>
+            <div class="system-console" id="system-console">
+                <div class="system-log info">&gt; System initialized...</div>
+                <div class="system-log success">&gt; Backend connection: Ready</div>
+                <div class="system-log info">&gt; Awaiting game events...</div>
             </div>
-        </div>
-
-        <!-- Navigation - Center Bottom -->
-        <div class="navigation-panel panel">
-            <div class="panel-title">[ NAVIGATION ]</div>
-            <div class="navigation">
-                <button class="nav-button" id="north">▲<br>NORTH</button>
-                <button class="nav-button" id="west">◄<br>WEST</button>
-                <button class="nav-button" id="examine">👁<br>LOOK</button>
-                <button class="nav-button" id="east">►<br>EAST</button>
-                <button class="nav-button" id="south">▼<br>SOUTH</button>
-            </div>
-        </div>
-
-        <!-- Quest Panel - Right Bottom -->
-        <div class="quest-panel panel">
-            <div class="panel-title">[ QUEST LOG ]</div>
-            <div class="quest-objectives">
-                <div class="objective" id="obj1">Gather your party</div>
-                <div class="objective" id="obj2">Reach Emberpeak Mines</div>
-                <div class="objective" id="obj3">Rescue the trapped miners</div>
-                <div class="objective" id="obj4">Seal the shattered rune</div>
-            </div>
-        </div>
-
-        <!-- Action Bar -->
-        <div class="action-panel">
-            <button class="action-button primary" id="talk-btn">💬 TALK</button>
-            <button class="action-button" id="attack-btn">⚔ ATTACK</button>
-            <button class="action-button" id="skill-btn">🎯 SKILL CHECK</button>
-            <button class="action-button danger" id="rest-btn">🛌 REST</button>
         </div>
     </div>
 
@@ -1471,7 +1937,7 @@
     <div class="modal" id="map-modal">
         <div class="modal-content">
             <span class="modal-close" id="close-map">&times;</span>
-            <div class="panel-title">[ MAP ]</div>
+            <div class="panel-title">MAP</div>
             <div id="region-indicator" class="region-indicator"></div>
             <div class="map-display" style="margin-top: 20px;">
                 <div class="map-grid" id="map-modal-grid"></div>
@@ -1483,7 +1949,7 @@
     <div class="modal" id="inv-modal">
         <div class="modal-content">
             <span class="modal-close" id="close-inv">&times;</span>
-            <div class="panel-title">[ INVENTORY ]</div>
+            <div class="panel-title">INVENTORY</div>
             <div class="inventory-grid" id="inventory-modal" style="margin-top: 20px; max-height: 400px;">
                 <!-- Will be populated by JS -->
             </div>
@@ -1494,7 +1960,7 @@
     <div class="modal" id="char-modal">
         <div class="modal-content">
             <span class="modal-close" id="close-char">&times;</span>
-            <div class="panel-title">[ CHARACTER ]</div>
+            <div class="panel-title">CHARACTER</div>
             <div class="stats-grid" style="margin-top: 20px; font-size: 16px;">
                 <div class="stat-label">Name:</div>
                 <div class="stat-value">Hero 1</div>
@@ -1530,7 +1996,7 @@
                 <div class="stat-value">16 (+3)</div>
             </div>
             <div style="margin-top: 20px;">
-                <div class="panel-title">[ QUEST LOG ]</div>
+                <div class="panel-title">QUEST LOG</div>
                 <div class="quest-objectives">
                     <div class="objective">Gather your party</div>
                     <div class="objective">Reach Emberpeak Mines</div>
@@ -1550,7 +2016,34 @@
     </div>
 
     <script>
-        // Item Database
+        // ============================================
+        // TAB SWITCHING FUNCTIONALITY
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(`tab-${tabName}`).classList.add('active');
+                });
+            });
+
+            console.log('✅ Tab switching initialized');
+        });
+
+        // ============================================
+        // ITEM DATABASE
+        // ============================================
         const itemDatabase = {
             'Dagger': {
                 name: 'Dagger',
@@ -1866,6 +2359,7 @@
                     cached.useCount = (cached.useCount || 0) + 1;
                     this.saveCache();
                     console.log(`📦 Using cached scene: ${key} (used ${cached.useCount} times)`);
+                    addSystemLog(`📦 Using cached scene: ${key} (used ${cached.useCount} times)`, 'cache');
                 }
 
                 return cached;
@@ -1890,6 +2384,7 @@
 
                 this.saveCache();
                 console.log(`💾 Cached scene: ${key}`);
+                addSystemLog(`💾 Cached scene: ${key}`, 'cache');
             }
 
             /**
@@ -1910,6 +2405,7 @@
                 if (removed > 0) {
                     this.saveCache();
                     console.log(`🗑️ Cleaned up ${removed} old scenes`);
+                    addSystemLog(`🗑️ Cleaned up ${removed} old scenes from cache`, 'cache');
                 }
             }
 
@@ -1932,6 +2428,7 @@
                 this.cache = {};
                 this.saveCache();
                 console.log('🗑️ Cleared all cached scenes');
+                addSystemLog('🗑️ Cleared all cached scenes', 'cache');
             }
         }
 
@@ -1987,6 +2484,7 @@
                 this.saveLibrary();
                 const promptInfo = customPrompt ? ` with custom prompt: "${customPrompt}"` : '';
                 console.log(`💾 Saved image ${imageId} for ${itemName}${promptInfo}`);
+                addSystemLog(`💾 Saved image ${imageId} for ${itemName}${promptInfo}`, 'success');
                 return imageId;
             }
 
@@ -2021,6 +2519,7 @@
                     this.library[itemName].featured = imageId;
                     this.saveLibrary();
                     console.log(`⭐ Set ${imageId} as featured for ${itemName}`);
+                    addSystemLog(`⭐ Set ${imageId} as featured for ${itemName}`, 'success');
                 }
             }
 
@@ -2060,8 +2559,10 @@
         // ============================================================
 
         class NanoBananaGenerator {
-            constructor(apiUrl = 'http://localhost:5000') {
+            constructor(apiUrl = 'http://localhost:8000/api/v1') {
                 this.apiUrl = apiUrl;
+                this.useBackend = true; // Toggle for testing - set to false for placeholder mode
+                this.backendAvailable = false;
                 this.imageCache = new Map();
                 this.isGenerating = false;
                 this.quotaExhausted = false;
@@ -2078,11 +2579,42 @@
             }
 
             /**
+             * Initialize the generator and check backend connection
+             */
+            async initialize() {
+                console.log('🍌 Initializing Nano Banana Generator...');
+                addSystemLog('🍌 Initializing Nano Banana Generator...', 'info');
+
+                if (!this.useBackend) {
+                    console.warn('⚠️ Backend disabled by configuration');
+                    this.disabled = true;
+                    addText('⚠️ Image generation disabled (placeholder mode)', 'system');
+                    return false;
+                }
+
+                this.backendAvailable = await this.checkHealth();
+
+                if (!this.backendAvailable) {
+                    console.warn('⚠️ Backend offline, using placeholder mode');
+                    this.disabled = true;
+                    addText('⚠️ Image generation unavailable (backend offline)', 'system');
+                    return false;
+                }
+
+                console.log('✅ Backend connected and ready');
+                addSystemLog('✅ Backend connected and ready', 'success');
+                addText('✅ Image generation ready', 'system');
+                return true;
+            }
+
+            /**
              * Check if the backend server is healthy
              */
             async checkHealth() {
                 try {
-                    const response = await fetch(`${this.apiUrl}/health`, {
+                    // FastAPI health is at root /health, not /api/v1/health
+                    const healthUrl = 'http://localhost:8000/health';
+                    const response = await fetch(healthUrl, {
                         method: 'GET',
                         signal: AbortSignal.timeout(5000) // 5 second timeout
                     });
@@ -2106,7 +2638,8 @@
              */
             async generateSceneImage(prompt, options = {}) {
                 const aspectRatio = options.aspectRatio || '16:9';
-                const cacheKey = `scene_${prompt}_${aspectRatio}`;
+                const subjectName = options.subjectName || prompt.substring(0, 50);
+                const cacheKey = `scene_${subjectName}_${aspectRatio}`;
 
                 // Skip if disabled or quota exhausted
                 if (this.disabled) {
@@ -2121,31 +2654,58 @@
                     return null;
                 }
 
-                // Check cache first
+                // Check memory cache first
                 if (this.imageCache.has(cacheKey)) {
-                    console.log('📦 Using cached image for:', prompt);
+                    console.log('📦 Using memory cached image for:', subjectName);
                     return this.imageCache.get(cacheKey);
                 }
 
                 try {
                     this.setLoadingState(true);
-                    console.log('🍌 Generating scene:', prompt);
+
+                    // Step 1: Search database for existing image
+                    console.log('🔍 Searching database for:', subjectName);
+                    addSystemLog(`🔍 Searching database for: ${subjectName}`, 'api');
+                    const searchUrl = `${this.apiUrl}/images/search?subject_name=${encodeURIComponent(subjectName)}&subject_type=scene`;
+                    const searchResponse = await fetch(searchUrl);
+
+                    if (searchResponse.ok) {
+                        const searchData = await searchResponse.json();
+                        if (searchData.total > 0) {
+                            console.log('📦 Found in database! Loading from backend...');
+                            addSystemLog(`📦 Found in database! Loading image ${searchData.items[0].id}`, 'cache');
+                            const image = searchData.items[0];
+
+                            // Get the actual image data
+                            const imageResponse = await fetch(`${this.apiUrl}/images/${image.id}`);
+                            if (imageResponse.ok) {
+                                const imageData = await imageResponse.json();
+                                // Backend returns base64 in the response
+                                const base64Image = `data:image/webp;base64,${imageData.base64_data || ''}`;
+                                this.imageCache.set(cacheKey, base64Image);
+                                this.displayImage(base64Image);
+                                return base64Image;
+                            }
+                        }
+                    }
+
+                    // Step 2: Generate new image if not found
+                    console.log('🍌 Generating new scene:', subjectName);
 
                     const requestBody = {
-                            description: prompt,
-                            style: options.style || 'photorealistic',
-                            aspect_ratio: aspectRatio
+                        subject_type: 'scene',
+                        subject_name: subjectName,
+                        prompt: prompt,
+                        aspect_ratio: aspectRatio,
+                        component: 'scene-viewer'
                     };
 
-                    // Add optional validation parameters
-                    if (options.itemName) {
-                        requestBody.item_name = options.itemName;
-                    }
+                    // Add custom prompt if provided
                     if (options.customPrompt) {
                         requestBody.custom_prompt = options.customPrompt;
                     }
 
-                    const response = await fetch(`${this.apiUrl}/generate-scene`, {
+                    const response = await fetch(`${this.apiUrl}/images/generate`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(requestBody)
@@ -2153,10 +2713,10 @@
 
                     if (!response.ok) {
                         const errorData = await response.json();
-                        const errorMsg = errorData.error || `HTTP ${response.status}`;
+                        const errorMsg = errorData.detail?.message || `HTTP ${response.status}`;
 
                         // Check for quota exhaustion
-                        if (response.status === 500 && errorMsg.includes('429')) {
+                        if (response.status === 429) {
                             console.warn('🍌 API quota exhausted');
                             this.quotaExhausted = true;
                             this.showError('API quota exceeded. Using fallback art.');
@@ -2173,11 +2733,20 @@
 
                     const data = await response.json();
 
-                    if (data.success && data.image) {
-                        console.log(`✅ Image generated in ${data.generation_time}s`);
-                        this.imageCache.set(cacheKey, data.image);
-                        this.displayImage(data.image);
-                        return data.image;
+                    // FastAPI backend returns image data directly
+                    if (data.id && data.storage_path_full) {
+                        console.log(`✅ Image generated in ${data.generation_time_ms}ms`);
+                        addSystemLog(`✅ Image generated in ${data.generation_time_ms}ms (ID: ${data.id})`, 'success');
+
+                        // Get the image data
+                        const imageResponse = await fetch(`${this.apiUrl}/images/${data.id}`);
+                        if (imageResponse.ok) {
+                            const imageData = await imageResponse.json();
+                            const base64Image = `data:image/webp;base64,${imageData.base64_data || ''}`;
+                            this.imageCache.set(cacheKey, base64Image);
+                            this.displayImage(base64Image);
+                            return base64Image;
+                        }
                     } else {
                         console.warn('⚠️ No image data in response');
                         this.showFallbackArt(prompt);
@@ -2222,7 +2791,8 @@
                 const error = document.getElementById('scene-error');
 
                 if (img) {
-                    img.src = `data:image/png;base64,${base64Data}`;
+                    // base64Data is already a complete data URI (data:image/webp;base64,...)
+                    img.src = base64Data;
                     img.classList.add('loaded');
                     fallback.classList.remove('active');
                     error.classList.remove('active');
@@ -2325,6 +2895,7 @@
             clearCache() {
                 this.imageCache.clear();
                 console.log('🗑️ Image cache cleared');
+                addSystemLog('🗑️ Image cache cleared', 'cache');
             }
 
             /**
@@ -2332,9 +2903,11 @@
              */
             async checkHealth() {
                 try {
-                    const response = await fetch(`${this.apiUrl}/health`);
+                    // FastAPI health is at root /health
+                    const healthUrl = 'http://localhost:8000/health';
+                    const response = await fetch(healthUrl);
                     const data = await response.json();
-                    return data.status === 'healthy' && data.api_key_configured;
+                    return data.status === 'ok';
                 } catch (error) {
                     return false;
                 }
@@ -2350,6 +2923,20 @@
 
         // Game State
         const gameState = {
+            character: {
+                name: 'Hero',
+                class: 'Rogue',
+                level: 3,
+                xp: 750,
+                stats: {
+                    str: 14,
+                    dex: 18,
+                    con: 12,
+                    int: 10,
+                    wis: 13,
+                    cha: 16
+                }
+            },
             currentLocation: { x: 3, y: 2 },
             playerHP: 50,
             maxHP: 50,
@@ -2380,7 +2967,12 @@
                 '3,8': { name: 'Deep Chamber', visited: false, scouted: false, description: 'The largest cavern yet. Something ancient dwells here.', icon: '🕳️', walls: ['east', 'west'], region: 'underground' },
                 '3,9': { name: 'Rune Chamber', visited: false, scouted: false, description: 'The shattered rune pulses with dark energy. This is what drew evil here.', icon: '✨', walls: ['north', 'east', 'west', 'south'], region: 'underground' },
             },
-            inventory: ['Dagger', 'Lockpicks', 'Rope', 'Torch'],
+            inventory: [
+                { id: 'dagger', name: 'Dagger', type: 'weapon', damage: '1d4', equipped: true },
+                { id: 'lockpicks', name: 'Lockpicks', type: 'tool', uses: 5 },
+                { id: 'rope', name: 'Rope', type: 'tool', uses: 10 },
+                { id: 'torch', name: 'Torch', type: 'light', uses: 8 }
+            ],
             objectives: [
                 { id: 'obj1', text: 'Gather your party', completed: false },
                 { id: 'obj2', text: 'Reach Emberpeak Mines', completed: false },
@@ -2396,6 +2988,263 @@
                 talkedToSurvivor: false
             }
         };
+
+        // ============================================================
+        // DATA-DRIVEN RENDER FUNCTIONS
+        // ============================================================
+
+        /**
+         * Render character stats from gameState
+         */
+        function renderCharacterStats() {
+            const char = gameState.character;
+
+            // Main character panel
+            document.getElementById('char-name').textContent = char.name;
+            document.getElementById('char-class').textContent = char.class;
+
+            // Stats (main panel - only shows STR, DEX, CON)
+            const mainStats = document.querySelectorAll('.stats-grid .stat-value');
+            if (mainStats.length >= 5) {
+                mainStats[0].textContent = char.name;
+                mainStats[1].textContent = char.class;
+                mainStats[2].textContent = char.level;
+
+                // Calculate modifiers
+                const strMod = Math.floor((char.stats.str - 10) / 2);
+                const dexMod = Math.floor((char.stats.dex - 10) / 2);
+                const conMod = Math.floor((char.stats.con - 10) / 2);
+
+                // Update stat displays
+                const statLabels = document.querySelectorAll('.stats-grid .stat-label');
+                statLabels.forEach((label, idx) => {
+                    if (label.textContent === 'STR:') {
+                        mainStats[idx].textContent = `${char.stats.str} (${strMod >= 0 ? '+' : ''}${strMod})`;
+                    } else if (label.textContent === 'DEX:') {
+                        mainStats[idx].textContent = `${char.stats.dex} (${dexMod >= 0 ? '+' : ''}${dexMod})`;
+                    } else if (label.textContent === 'CON:') {
+                        mainStats[idx].textContent = `${char.stats.con} (${conMod >= 0 ? '+' : ''}${conMod})`;
+                    }
+                });
+            }
+        }
+
+        /**
+         * Render inventory from gameState
+         */
+        function renderInventory() {
+            const inventoryPanel = document.querySelector('.left-sidebar .item-list');
+            const inventoryModal = document.getElementById('inventory-modal');
+
+            // Clear existing
+            if (inventoryPanel) {
+                inventoryPanel.innerHTML = '';
+
+                // Render each item
+                gameState.inventory.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'inventory-item';
+                    itemDiv.onclick = () => useItem(item.id);
+                    itemDiv.innerHTML = `
+                        <div class="item-name">${item.name}${item.equipped ? ' ⚔' : ''}</div>
+                        <div class="item-desc">${item.damage || item.type}</div>
+                    `;
+                    inventoryPanel.appendChild(itemDiv);
+                });
+            }
+
+            // Update modal inventory too (for mobile)
+            if (inventoryModal) {
+                inventoryModal.innerHTML = gameState.inventory.map(item => `
+                    <div class="inventory-item" onclick="useItem('${item.id}')">
+                        <div class="item-name">${item.name}${item.equipped ? ' ⚔' : ''}</div>
+                        <div class="item-desc">${item.damage || item.type}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        /**
+         * Render quest objectives from gameState
+         */
+        function renderObjectives() {
+            const questPanel = document.querySelector('.quest-objectives');
+
+            if (questPanel) {
+                questPanel.innerHTML = '';
+
+                gameState.objectives.forEach(obj => {
+                    const objDiv = document.createElement('div');
+                    objDiv.className = `objective ${obj.completed ? 'completed' : ''}`;
+                    objDiv.id = obj.id;
+                    objDiv.innerHTML = `<span class="checkbox">${obj.completed ? '☑' : '☐'}</span> ${obj.text}`;
+                    questPanel.appendChild(objDiv);
+                });
+            }
+        }
+
+        /**
+         * Add item to inventory
+         */
+        function addItem(item) {
+            gameState.inventory.push(item);
+            renderInventory();
+            saveGameState();
+        }
+
+        /**
+         * Remove item from inventory
+         */
+        function removeItem(itemId) {
+            gameState.inventory = gameState.inventory.filter(i => i.id !== itemId);
+            renderInventory();
+            saveGameState();
+        }
+
+        /**
+         * Use an item (placeholder for future item actions)
+         */
+        function useItem(itemId) {
+            const item = gameState.inventory.find(i => i.id === itemId);
+            if (!item) return;
+
+            addText(`📦 You examine the ${item.name}.`, '');
+            // TODO: Add item-specific actions
+        }
+
+        /**
+         * Check if inventory contains item by name (helper for quest logic)
+         */
+        function hasItem(itemName) {
+            return gameState.inventory.some(i => i.name === itemName);
+        }
+
+        /**
+         * Add item by name (helper for quest rewards)
+         */
+        function addItemByName(itemName, type = 'misc') {
+            const item = {
+                id: itemName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                name: itemName,
+                type: type
+            };
+            addItem(item);
+        }
+
+        /**
+         * Remove item by name (helper for quest consumption)
+         */
+        function removeItemByName(itemName) {
+            const item = gameState.inventory.find(i => i.name === itemName);
+            if (item) {
+                removeItem(item.id);
+            }
+        }
+
+        // ============================================================
+        // ACTION DEBOUNCING
+        // ============================================================
+
+        let actionCooldown = false;
+
+        /**
+         * Debounce action to prevent spam clicking
+         */
+        function debounceAction(actionFn, cooldownMs = 300) {
+            if (actionCooldown) {
+                console.log('⏱️ Action on cooldown');
+                addSystemLog('⏱️ Action on cooldown', 'warning');
+                return;
+            }
+
+            actionCooldown = true;
+            actionFn();
+
+            setTimeout(() => {
+                actionCooldown = false;
+            }, cooldownMs);
+        }
+
+        // ============================================================
+        // SAVE/LOAD SYSTEM
+        // ============================================================
+
+        /**
+         * Save game state to localStorage
+         */
+        function saveGameState() {
+            const saveData = {
+                version: '1.0',
+                timestamp: Date.now(),
+                state: {
+                    character: gameState.character,
+                    inventory: gameState.inventory,
+                    objectives: gameState.objectives,
+                    locations: gameState.locations,
+                    currentLocation: gameState.currentLocation,
+                    questFlags: gameState.questFlags,
+                    playerHP: gameState.playerHP,
+                    maxHP: gameState.maxHP,
+                    turn: gameState.turn
+                }
+            };
+            localStorage.setItem('aidnd_savegame', JSON.stringify(saveData));
+            console.log('💾 Game saved');
+            addSystemLog('💾 Game saved to localStorage', 'success');
+        }
+
+        /**
+         * Load game state from localStorage
+         */
+        function loadGameState() {
+            const saved = localStorage.getItem('aidnd_savegame');
+            if (!saved) return false;
+
+            try {
+                const saveData = JSON.parse(saved);
+
+                // Restore state
+                gameState.character = saveData.state.character;
+                gameState.inventory = saveData.state.inventory;
+                gameState.objectives = saveData.state.objectives;
+                gameState.locations = saveData.state.locations;
+                gameState.currentLocation = saveData.state.currentLocation;
+                gameState.questFlags = saveData.state.questFlags;
+                gameState.playerHP = saveData.state.playerHP;
+                gameState.maxHP = saveData.state.maxHP;
+                gameState.turn = saveData.state.turn;
+
+                // Render everything
+                renderCharacterStats();
+                renderInventory();
+                renderObjectives();
+                updateMap();
+                updateHP();
+
+                addText('💾 Game loaded successfully!', 'success');
+                console.log('✅ Game loaded');
+                addSystemLog('✅ Game loaded from localStorage', 'success');
+                return true;
+            } catch (e) {
+                console.error('❌ Load failed:', e);
+                addText('⚠️ Failed to load save game', 'damage');
+                return false;
+            }
+        }
+
+        /**
+         * Reset game state (new game)
+         */
+        function resetGameState() {
+            if (confirm('Start a new game? All progress will be lost.')) {
+                localStorage.removeItem('aidnd_savegame');
+                location.reload();
+            }
+        }
+
+        // ============================================================
+        // END DATA-DRIVEN RENDER FUNCTIONS
+        // ============================================================
 
         // Initialize map
         function initMap(containerId) {
@@ -2487,7 +3336,7 @@
             initMap('map-modal-grid');
         }
 
-        // Add text to viewport
+        // Add text to viewport (Adventure Log)
         function addText(text, className = '') {
             const viewport = document.getElementById('viewport');
             const cursor = document.querySelector('.cursor');
@@ -2505,6 +3354,28 @@
             }
 
             viewport.scrollTop = viewport.scrollHeight;
+        }
+
+        // Add text to system console (Technical Log)
+        function addSystemLog(text, type = 'info') {
+            const console = document.getElementById('system-console');
+            
+            const line = document.createElement('div');
+            line.className = 'system-log ' + type;
+            
+            // Add timestamp
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+            line.textContent = `[${timestamp}] ${text}`;
+
+            console.appendChild(line);
+
+            // Limit message history to 200 lines for system console
+            const allLines = console.querySelectorAll('.system-log');
+            if (allLines.length > 200) {
+                allLines[0].remove();
+            }
+
+            console.scrollTop = console.scrollHeight;
         }
 
         // Navigation
@@ -2571,6 +3442,8 @@
 
                 addText(location.description);
                 updateMap();
+                updateContextualActions(); // Update available actions based on new location
+                saveGameState(); // Auto-save after movement
 
                 // Decrement cooldown
                 if (gameState.encounterCooldown > 0) {
@@ -2637,6 +3510,7 @@
             addText(`${encounter.enemy} HP: ${encounter.hp}`, 'combat');
 
             showCombatChoices(encounter);
+            updateContextualActions(); // Update to show combat actions
         }
 
         // End combat
@@ -2644,17 +3518,16 @@
             gameState.inCombat = false;
             gameState.encounterCooldown = 3; // 3 moves before next encounter can trigger
             addText('━━━━━━━━━━━━━━━━━━━━', 'success');
+            updateContextualActions(); // Update to show non-combat actions
         }
 
         // Complete quest objective
         function completeObjective(index) {
             if (gameState.objectives[index] && !gameState.objectives[index].completed) {
                 gameState.objectives[index].completed = true;
-                const objectiveElement = document.getElementById(gameState.objectives[index].id);
-                if (objectiveElement) {
-                    objectiveElement.classList.add('completed');
-                }
+                renderObjectives();  // Re-render with new completed state
                 addText(`🎯 Quest Updated: ${gameState.objectives[index].text}`, 'quest');
+                saveGameState();  // Auto-save progress
             }
         }
 
@@ -2849,16 +3722,15 @@
                 addText('Among the scattered belongings, you find a bloodstained note.', '');
                 addText('📜 Item Found: Miner\'s Note', 'success');
                 addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
-                gameState.inventory.push('Miner\'s Note');
+                addItemByName('Miner\'s Note', 'quest');
                 gameState.questFlags.foundMinersNote = true;
-                updateInventory();
                 return;
             }
 
             // COLLAPSED TUNNEL (2,7) - Rescue Miners
             if (locationKey === '2,7') {
                 if (!gameState.questFlags.clearedRubble) {
-                    if (gameState.inventory.includes('Rope')) {
+                    if (hasItem('Rope')) {
                         addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
                         addText('⚒️ You use your rope and tools to create a pulley system...', '');
                         addText('*CRASH* The rubble shifts! You hear voices!', 'success');
@@ -2878,11 +3750,10 @@
                     addText('💠 Quest Item: Sealing Stone (check Deep Chamber)', 'quest');
                     addText('🧪 The miners give you a Healing Potion in thanks!', 'success');
                     addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
-                    gameState.inventory.push('Healing Potion');
+                    addItemByName('Healing Potion', 'potion');
                     gameState.questFlags.rescuedMiners = true;
                     gameState.questFlags.talkedToSurvivor = true;
                     completeObjective(2); // Quest 3: Rescue the trapped miners
-                    updateInventory();
                 } else {
                     addText('👷 "Get to the Deep Chamber and find that stone! Hurry!"', 'success');
                 }
@@ -2897,15 +3768,14 @@
                 addText('💠 A stone pulsing with blue containment magic!', 'success');
                 addText('Item Found: Sealing Stone', 'success');
                 addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
-                gameState.inventory.push('Sealing Stone');
+                addItemByName('Sealing Stone', 'quest');
                 gameState.questFlags.foundSealingStone = true;
-                updateInventory();
                 return;
             }
 
             // RUNE CHAMBER (3,9) - Seal the Rune (Final Quest)
             if (locationKey === '3,9') {
-                if (gameState.inventory.includes('Sealing Stone') && !gameState.questFlags.sealedRune) {
+                if (hasItem('Sealing Stone') && !gameState.questFlags.sealedRune) {
                     addText('━━━━━━━━━━━━━━━━━━━━', 'quest');
                     addText('✨ The shattered rune pulses with malevolent energy...', 'damage');
                     addText('💠 You hold up the Sealing Stone. It begins to glow!', 'success');
@@ -2918,9 +3788,7 @@
                     gameState.questFlags.sealedRune = true;
                     completeObjective(3); // Quest 4: Seal the shattered rune
                     // Remove Sealing Stone from inventory (consumed)
-                    const index = gameState.inventory.indexOf('Sealing Stone');
-                    if (index > -1) gameState.inventory.splice(index, 1);
-                    updateInventory();
+                    removeItemByName('Sealing Stone');
                 } else if (gameState.questFlags.sealedRune) {
                     addText('✨ The sealed rune hums peacefully. Your quest is complete.', 'success');
                 } else {
@@ -3026,6 +3894,67 @@
         document.getElementById('south').onclick = () => move('south');
         document.getElementById('east').onclick = () => move('east');
         document.getElementById('west').onclick = () => move('west');
+
+        // ============================================================
+        // CONTEXTUAL ACTIONS
+        // ============================================================
+
+        // Update contextual actions based on current location/state
+        function updateContextualActions() {
+            const container = document.getElementById('contextual-actions');
+            container.innerHTML = '';
+
+            const key = `${gameState.currentLocation.x},${gameState.currentLocation.y}`;
+            const location = gameState.locations[key];
+
+            // Combat-specific actions
+            if (gameState.inCombat) {
+                addContextAction('⚔️ ATTACK', () => document.getElementById('attack-btn').click());
+                addContextAction('🎯 SKILL CHECK', () => document.getElementById('skill-btn').click());
+                addContextAction('🛌 REST', () => document.getElementById('rest-btn').click());
+                return;
+            }
+
+            // Location-specific actions
+            if (location) {
+                if (location.npc) {
+                    addContextAction('💬 TALK', () => document.getElementById('talk-btn').click());
+                }
+
+                if (location.items && location.items.length > 0) {
+                    addContextAction('🔍 SEARCH', () => {
+                        addText(`You search ${location.name}...`);
+                        addText(`You find: ${location.items.join(', ')}`, 'success');
+                    });
+                }
+
+                if (location.locked) {
+                    addContextAction('🔓 PICK LOCK', () => {
+                        addText('You attempt to pick the lock...', '');
+                        const roll = rollDice(20) + 4; // DEX modifier
+                        if (roll >= 15) {
+                            addText(`🎯 Success! (Rolled ${roll})`, 'success');
+                            location.locked = false;
+                        } else {
+                            addText(`❌ Failed! (Rolled ${roll})`, 'damage');
+                        }
+                    });
+                }
+            }
+
+            // Always available actions
+            addContextAction('👁 EXAMINE', () => document.getElementById('examine').click());
+            addContextAction('💬 TALK', () => document.getElementById('talk-btn').click());
+            addContextAction('⚔️ ATTACK', () => document.getElementById('attack-btn').click());
+        }
+
+        function addContextAction(label, callback) {
+            const button = document.createElement('button');
+            button.className = 'context-button';
+            button.textContent = label;
+            button.onclick = callback;
+            document.getElementById('contextual-actions').appendChild(button);
+        }
 
         // Mobile modal buttons
         document.getElementById('mobile-map-btn').onclick = () => openModal('map-modal');
@@ -3256,8 +4185,17 @@
             });
         }
 
-        // Initialize inventory display
-        updateInventory();
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+
+        // Try to load saved game, or start fresh
+        if (!loadGameState()) {
+            // No save found - render initial state
+            renderCharacterStats();
+            renderInventory();
+            renderObjectives();
+        }
 
         // Close modals on background click
         window.onclick = (event) => {
@@ -3269,6 +4207,7 @@
         // Initialize
         initMap('map');
         initMap('map-modal-grid');
+        updateContextualActions(); // Initialize contextual actions
         addText('━━━━━━━━━━━━━━━━━━━━', 'success');
         addText('🎮 Use the NAVIGATION buttons to explore!', 'success');
         addText('💬 Click TALK to speak with NPCs.', 'success');
@@ -3291,6 +4230,7 @@
             const cachedScene = nanoBanana.sceneCache.get(location, timeOfDay, weather);
             if (cachedScene) {
                 console.log('📦 Loading scene from cache (no API call needed)');
+                addSystemLog('📦 Loading scene from cache (no API call needed)', 'cache');
                 nanoBanana.displayImage(cachedScene.imageData);
                 addText('📦 Loaded cached scene - no generation needed!', 'success');
                 return;
@@ -3307,11 +4247,12 @@
             }
 
             // 3. Generate NEW scene (only if not cached)
-            console.log('🍌 No cached scene found - generating new one');
-            const scenePrompt = 'the entrance to Emberpeak, a mountain village at dawn. Stone archway covered in moss, cobblestone path, misty mountain peaks in background, warm torchlight';
+            console.log('🍌 No cached scene found - checking database or generating');
+            const scenePrompt = 'the entrance to Emberpeak, a mountain village at dawn. Stone archway covered in moss, cobblestone path, misty mountain peaks in background, warm torchlight. Fantasy RPG setting, atmospheric lighting.';
 
-            addText('🍌 Generating NEW scene with Nano Banana...', 'info');
+            addText('🍌 Loading scene from backend...', 'info');
             const result = await nanoBanana.generateSceneImage(scenePrompt, {
+                subjectName: 'Emberpeak Entrance',
                 style: 'photorealistic',
                 aspectRatio: '16:9'
             });
@@ -3550,6 +4491,76 @@
 
         // ============================================================
         // END ITEM IMAGE GENERATION
+        // ============================================================
+
+        // ============================================================
+        // THEME SWITCHER
+        // ============================================================
+        // Single source of truth for all themes
+        // Add new themes here - the key is the data-theme attribute value,
+        // and the value is the display name shown in the dropdown
+        const THEMES = {
+            blackwhite: 'Black & White',
+            ultima: 'Ultima Fantasy',
+            cyber: 'Cyber Terminal',
+            goldbox: 'Gold Box',
+            dungeon: 'Dark Dungeon'
+        };
+
+        function switchTheme(themeName) {
+            document.body.dataset.theme = themeName;
+            localStorage.setItem('dnd-theme', themeName);
+        }
+
+        // Load saved theme on page load
+        const savedTheme = localStorage.getItem('dnd-theme') || 'blackwhite';
+        document.body.dataset.theme = savedTheme;
+
+        // Add theme dropdown to header (after page loads)
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Nano Banana Generator
+            await nanoBanana.initialize();
+
+            const header = document.querySelector('.header');
+
+            // Create container
+            const container = document.createElement('div');
+            container.className = 'theme-selector-container';
+
+            // Create label
+            const label = document.createElement('span');
+            label.className = 'theme-label';
+            label.textContent = 'Theme:';
+
+            // Create dropdown
+            const dropdown = document.createElement('select');
+            dropdown.id = 'theme-dropdown';
+            dropdown.className = 'theme-dropdown';
+
+            // Add options from THEMES object
+            Object.entries(THEMES).forEach(([themeKey, themeName]) => {
+                const option = document.createElement('option');
+                option.value = themeKey;
+                option.textContent = themeName;
+                if (themeKey === savedTheme) {
+                    option.selected = true;
+                }
+                dropdown.appendChild(option);
+            });
+
+            // Add change event
+            dropdown.onchange = (e) => {
+                switchTheme(e.target.value);
+            };
+
+            // Assemble and add to header
+            container.appendChild(label);
+            container.appendChild(dropdown);
+            header.style.position = 'relative';
+            header.appendChild(container);
+        });
+        // ============================================================
+        // END THEME SWITCHER
         // ============================================================
     </script>
 </body>
