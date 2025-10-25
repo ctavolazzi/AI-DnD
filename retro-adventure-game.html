@@ -2387,16 +2387,16 @@
             save(operation, details = {}) {
                 this.log('save', operation, details);
             },
-            
+
             ui(event, details = {}) {
                 this.log('ui', event, details);
             },
-            
+
             system(event, details = {}) {
                 this.log('system', event, details);
             }
         };
-        
+
         // Log initial page load
         console.log('%c🎮 AI D&D GAME INITIALIZED', 'font-size: 20px; color: #d4af37; font-weight: bold;');
         console.log('%cComprehensive logging enabled. All actions will be tracked.', 'color: #2ecc71; font-weight: bold;');
@@ -2423,9 +2423,8 @@
             // New Game button
             newGameBtn.addEventListener('click', function() {
                 GameLogger.button('NEW ADVENTURE', { action: 'Starting new game' });
-                localStorage.removeItem('gameState');
                 welcomeModal.classList.remove('active');
-                location.reload();
+                startNewGame();
             });
 
             // Load Game button
@@ -3734,9 +3733,97 @@
          */
         function resetGameState() {
             if (confirm('Start a new game? All progress will be lost.')) {
-                localStorage.removeItem('aidnd_savegame');
-                location.reload();
+                startNewGame();
             }
+        }
+
+        /**
+         * Initialize a completely new game without page reload
+         */
+        function startNewGame() {
+            GameLogger.system('Starting new game', { cleared: 'localStorage and gameState' });
+
+            // Clear saved game
+            localStorage.removeItem('aidnd_savegame');
+            localStorage.removeItem('gameState');
+
+            // Reset game state to initial values
+            gameState.character = {
+                name: 'Hero',
+                class: 'Rogue',
+                level: 3,
+                xp: 750,
+                stats: { str: 14, dex: 18, con: 12, int: 10, wis: 13, cha: 16 }
+            };
+            gameState.currentLocation = { x: 3, y: 2 };
+            gameState.playerHP = 50;
+            gameState.maxHP = 50;
+            gameState.turn = 0;
+            gameState.inCombat = false;
+            gameState.lastEncounterLocation = null;
+            gameState.encounterCooldown = 0;
+
+            // Reset all locations to unvisited
+            Object.keys(gameState.locations).forEach(key => {
+                gameState.locations[key].visited = false;
+                gameState.locations[key].scouted = false;
+            });
+            // Mark starting location as visited
+            gameState.locations['3,2'].visited = true;
+
+            // Reset inventory to starting items
+            gameState.inventory = [
+                { id: 'dagger', name: 'Dagger', type: 'weapon', damage: '1d4', equipped: true },
+                { id: 'lockpicks', name: 'Lockpicks', type: 'tool', uses: 5 },
+                { id: 'rope', name: 'Rope', type: 'tool', uses: 10 },
+                { id: 'torch', name: 'Torch', type: 'light', uses: 8 }
+            ];
+
+            // Reset objectives
+            gameState.objectives = [
+                { id: 'obj1', text: 'Gather your party', completed: false },
+                { id: 'obj2', text: 'Reach Emberpeak Mines', completed: false },
+                { id: 'obj3', text: 'Rescue the trapped miners', completed: false },
+                { id: 'obj4', text: 'Seal the shattered rune', completed: false }
+            ];
+
+            // Reset quest flags
+            gameState.questFlags = {
+                foundMinersNote: false,
+                clearedRubble: false,
+                rescuedMiners: false,
+                foundSealingStone: false,
+                sealedRune: false,
+                talkedToSurvivor: false
+            };
+
+            // Re-render all UI
+            renderCharacterStats();
+            renderInventory();
+            renderObjectives();
+            updateMap();
+            updateHP();
+            updateLocationIndicator();
+            updateContextualActions();
+
+            // Clear adventure log and add welcome message
+            const viewport = document.getElementById('viewport');
+            viewport.innerHTML = '';
+            addText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'quest');
+            addText('⚔️ THE EMBERPEAK EXPEDITION ⚔️', 'quest');
+            addText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'quest');
+            addText('Welcome, brave adventurer!', 'quest');
+            addText('Your quest: Rescue miners trapped beneath Emberpeak and seal the shattered rune.', 'quest');
+            addText('', '');
+            addText('You find yourself in a dimly lit tavern.', '');
+            addText('The air is thick with pipe smoke and hushed conversations.', '');
+            addText('Two seasoned adventurers sit at the bar - a cunning Rogue and a battle-hardened Fighter.', '');
+
+            GameLogger.system('New game initialized', {
+                location: gameState.currentLocation,
+                hp: gameState.playerHP,
+                inventory: gameState.inventory.length
+            });
         }
 
         // ============================================================
