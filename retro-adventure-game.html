@@ -790,14 +790,14 @@
 
         .map-grid {
             display: grid;
-            /* Responsive square cells using auto-fit with min() to cap size */
-            grid-template-columns: repeat(7, minmax(28px, 1fr));
+            /* Fully responsive square grid */
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(5, 1fr);
             gap: 2px;
             padding: var(--space-xs);
             border: 2px solid #000;
             width: 100%;
-            max-width: 560px; /* keep reasonable width in narrow layouts */
-            aspect-ratio: 7 / 5; /* keep 7x5 grid proportion */
+            aspect-ratio: 7 / 5; /* container ratio ensures square cells with 7 cols x 5 rows */
         }
 
         /* Center map sizing without affecting modal */
@@ -915,9 +915,26 @@
 
         .map-cell.current::before {
             content: "👤";
-            font-size: 18px;
+            font-size: 20px;
             opacity: 1;
             filter: brightness(1.5);
+        }
+
+        /* Exit arrows overlay on current tile */
+        .exit-arrow { position: absolute; color: #000; text-shadow: 0 1px 0 #fff; opacity: 0.9; font-size: 14px; line-height: 1; }
+        .arrow-north { top: 2px; left: 50%; transform: translateX(-50%); }
+        .arrow-south { bottom: 2px; left: 50%; transform: translateX(-50%); }
+        .arrow-west  { left: 2px; top: 50%; transform: translateY(-50%); }
+        .arrow-east  { right: 2px; top: 50%; transform: translateY(-50%); }
+
+        /* Map HUD under grid */
+        .map-hud {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--text-dark);
+            background: rgba(255,255,255,0.6);
+            border: 1px solid #000;
+            padding: 4px 6px;
         }
 
         /* Walls/Blocked paths - ENHANCED for visibility */
@@ -2070,6 +2087,7 @@
                     <div class="map-display">
                         <div class="map-grid" id="map"></div>
                     </div>
+                    <div class="map-hud" id="map-hud">Hover a tile to see details…</div>
                     <div class="map-legend">
                         <div class="map-legend-title">MAP LEGEND</div>
                         <div class="map-legend-items">
@@ -2546,6 +2564,19 @@
             if (arrowToDir[e.key]) {
                 e.preventDefault();
                 move(arrowToDir[e.key]);
+                return;
+            }
+
+            // WASD movement
+            const wasdToDir = {
+                'w': 'north', 'W': 'north',
+                's': 'south', 'S': 'south',
+                'a': 'west',  'A': 'west',
+                'd': 'east',  'D': 'east'
+            };
+            if (wasdToDir[e.key]) {
+                e.preventDefault();
+                move(wasdToDir[e.key]);
             }
             });
 
@@ -3944,6 +3975,21 @@
 
                         cell.appendChild(tooltip);
 
+                        // Map HUD hover info (only for center map)
+                        cell.addEventListener('mouseenter', () => {
+                            const hud = document.getElementById('map-hud');
+                            if (!hud) return;
+                            const title = location.name || 'Unknown';
+                            const exits = ['north','south','east','west']
+                                .filter(d => !location.walls || !location.walls.includes(d))
+                                .join(', ');
+                            hud.textContent = `${title} — exits: ${exits || 'none'}`;
+                        });
+                        cell.addEventListener('mouseleave', () => {
+                            const hud = document.getElementById('map-hud');
+                            if (hud) hud.textContent = 'Hover a tile to see details…';
+                        });
+
                         // Add walls
                         if (location.walls) {
                             location.walls.forEach(wall => {
@@ -3957,6 +4003,22 @@
                             cell.classList.remove('unexplored');
                             cell.classList.remove('scouted');
                             tooltip.textContent = `📍 ${location.name} (You are here)`;
+
+                            // Add exit arrows where not blocked
+                            const exits = [
+                                { dir: 'north', cls: 'arrow-north', sym: '▲' },
+                                { dir: 'south', cls: 'arrow-south', sym: '▼' },
+                                { dir: 'west',  cls: 'arrow-west',  sym: '◀' },
+                                { dir: 'east',  cls: 'arrow-east',  sym: '▶' }
+                            ];
+                            exits.forEach(e => {
+                                if (!location.walls || !location.walls.includes(e.dir)) {
+                                    const a = document.createElement('div');
+                                    a.className = `exit-arrow ${e.cls}`;
+                                    a.textContent = e.sym;
+                                    cell.appendChild(a);
+                                }
+                            });
                         }
                     }
 
@@ -3989,6 +4051,9 @@
                 if (!el) return;
                 // Skip if wall blocks this direction
                 if (currentLoc?.walls?.includes(n.dir)) return;
+                // Skip invalid target tiles (outside region or nonexistent)
+                const targetKey = `${nx},${ny}`;
+                if (!gameState.locations[targetKey]) return;
                 el.classList.add('neighbor');
                 el.title = `Move ${n.dir}`;
                 el.onclick = () => move(n.dir);
