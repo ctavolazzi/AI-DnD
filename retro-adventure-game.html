@@ -769,8 +769,10 @@
 
         /* Map panel */
         .map-panel {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr 220px; /* Map + legend */
+            gap: 12px;
+            align-items: start;
             min-height: 0;
             overflow: visible;
         }
@@ -783,22 +785,23 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            height: 160px;
+            height: auto;
         }
 
         .map-grid {
             display: grid;
-            grid-template-columns: repeat(7, 32px);  /* 30px → 32px */
-            grid-template-rows: repeat(5, 32px);
-            gap: 2px;  /* 0px → 2px for cell separation */
-            padding: var(--space-xs);  /* Add edge padding */
+            /* Responsive square cells using auto-fit with min() to cap size */
+            grid-template-columns: repeat(7, minmax(28px, 1fr));
+            gap: 2px;
+            padding: var(--space-xs);
             border: 2px solid #000;
+            width: 100%;
+            max-width: 560px; /* keep reasonable width in narrow layouts */
+            aspect-ratio: 7 / 5; /* keep 7x5 grid proportion */
         }
 
         /* Center map sizing without affecting modal */
-        .center-map .map-display {
-            height: 220px;
-        }
+        .center-map .map-display { min-height: 240px; }
 
         .map-cell {
             background: #3a2a1a;
@@ -811,6 +814,10 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
+        /* Interactive states for neighbors */
+        .map-cell.neighbor { outline: 2px dashed #6a9a6a; outline-offset: -2px; }
+        .map-cell.neighbor:hover { outline-color: #9acc9a; }
 
         /* Fog of war - unexplored (NAVIGABLE - show with green tint) */
         .map-cell.unexplored {
@@ -1942,7 +1949,8 @@
             }
 
             /* Make center map a bit shorter on mobile */
-            .center-map .map-display { height: 180px; }
+            .map-panel { grid-template-columns: 1fr; }
+            .center-map .map-display { min-height: 180px; }
         }
 
         @media (max-width: 600px) {
@@ -2525,7 +2533,20 @@
                     e.preventDefault();
                     GameLogger.button(`Keyboard Shortcut: ${e.key}`, { tab: keyMap[e.key], method: 'keyboard' });
                     switchTab(keyMap[e.key]);
+                return;
                 }
+
+            // Arrow key movement shortcuts (when not in combat)
+            const arrowToDir = {
+                'ArrowUp': 'north',
+                'ArrowDown': 'south',
+                'ArrowLeft': 'west',
+                'ArrowRight': 'east'
+            };
+            if (arrowToDir[e.key]) {
+                e.preventDefault();
+                move(arrowToDir[e.key]);
+            }
             });
 
             // Restore last active tab on load
@@ -3949,6 +3970,29 @@
             // Re-initialize both maps to reflect new state
             initMap('map');
             initMap('map-modal-grid');
+
+            // Highlight neighbors around current position in the center map
+            const { x, y } = gameState.currentLocation;
+            const neighbors = [
+                { dx: 0, dy: -1, dir: 'north' },
+                { dx: 0, dy: 1, dir: 'south' },
+                { dx: 1, dy: 0, dir: 'east' },
+                { dx: -1, dy: 0, dir: 'west' }
+            ];
+
+            const currentKey = `${x},${y}`;
+            const currentLoc = gameState.locations[currentKey];
+            neighbors.forEach(n => {
+                const nx = x + n.dx; const ny = y + n.dy;
+                const id = `map-${nx}-${ny}`;
+                const el = document.getElementById(id);
+                if (!el) return;
+                // Skip if wall blocks this direction
+                if (currentLoc?.walls?.includes(n.dir)) return;
+                el.classList.add('neighbor');
+                el.title = `Move ${n.dir}`;
+                el.onclick = () => move(n.dir);
+            });
         }
 
         // Update location indicator display
