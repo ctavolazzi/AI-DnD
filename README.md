@@ -48,6 +48,55 @@ AI-DnD is designed to integrate seamlessly with **Obsidian**, allowing it to gen
 5. **Navigate the Campaign in Obsidian**  
    - Open the generated Markdown files in Obsidian to explore the AI-generated world, review past events, and track character development over time.  
 
+## PixelLab MCP Integration
+
+AI-DnD now integrates with **PixelLab's Model Context Protocol (MCP)** server, enabling AI-powered pixel art generation directly within the development workflow. This allows Claude Code to generate game assets on-the-fly.
+
+### Available Tools
+
+The PixelLab MCP provides the following capabilities:
+
+- **create_character** - Generate pixel art characters with 4 or 8 directional views
+  ```python
+  create_character(description="fantasy knight", n_directions=8)
+  ```
+
+- **animate_character** - Add animations to existing characters (walk, run, idle, etc.)
+  ```python
+  animate_character(character_id="abc123", animation="walk")
+  ```
+
+- **create_topdown_tileset** - Generate Wang tilesets for seamless terrain transitions
+  ```python
+  create_topdown_tileset(lower="grass", upper="stone path", lower_base_tile_id=0)
+  ```
+
+- **create_sidescroller_tileset** - Generate platform tilesets for 2D platformer games
+  ```python
+  create_sidescroller_tileset(lower="stone brick", transition="moss", base_tile_id=0)
+  ```
+
+- **create_isometric_tile** - Create individual isometric tiles
+  ```python
+  create_isometric_tile(description="medieval tower", size=32)
+  ```
+
+### Configuration
+
+The MCP server is configured in `.mcp.json` at the project root. To use PixelLab tools:
+
+1. Ensure you have Claude Code installed
+2. The `.mcp.json` file is already configured with the PixelLab API key
+3. Restart Claude Code to load the MCP server
+4. Use natural language to request asset generation (e.g., "Create a pixel art wizard character with 8 directions")
+
+### Use Cases
+
+- Generate character sprites for the game
+- Create tile sets for dungeon environments
+- Rapidly prototype visual assets during development
+- Generate animated sprites for NPCs and monsters
+
 ## Usage
 To start AI-DnD:
 
