@@ -9,10 +9,9 @@ from pathlib import Path
 from typing import Optional, Dict, List, Union
 from PIL import Image
 import pixellab
-from pixellab import (
-    ImageSize, Outline, Shading, Detail,
-    CameraView, Direction, SkeletonFrame
-)
+from pixellab.models import ImageSize
+from pixellab.types import Outline, Shading, Detail, CameraView, Direction
+from pixellab.animate_with_skeleton import SkeletonFrame
 
 
 logger = logging.getLogger(__name__)
