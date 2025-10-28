@@ -48,9 +48,33 @@ AI-DnD is designed to integrate seamlessly with **Obsidian**, allowing it to gen
 5. **Navigate the Campaign in Obsidian**  
    - Open the generated Markdown files in Obsidian to explore the AI-generated world, review past events, and track character development over time.  
 
-## PixelLab MCP Integration
+## PixelLab Integration
 
-AI-DnD now integrates with **PixelLab's Model Context Protocol (MCP)** server, enabling AI-powered pixel art generation directly within the development workflow. This allows Claude Code to generate game assets on-the-fly.
+AI-DnD now includes **complete PixelLab integration** with both MCP and direct API access, enabling AI-powered pixel art generation for game development.
+
+### 🚀 Quick Start
+
+```bash
+cd pixellab_integration
+pip install -r requirements.txt
+python examples/01_basic_character_generation.py
+```
+
+See [`pixellab_integration/QUICKSTART.md`](pixellab_integration/QUICKSTART.md) for detailed setup.
+
+### Full-Featured Python Client
+
+The `pixellab_integration/` directory provides a complete Python client with:
+- Character generation with customizable styles
+- Animation creation (walk, run, attack, etc.)
+- Multi-directional sprites (4 and 8 directions)
+- Rotation and view changes
+- Sprite sheet generation
+- Game-ready asset workflows
+
+### MCP Integration for Claude Code
+
+AI-DnD also integrates with **PixelLab's Model Context Protocol (MCP)** server, enabling Claude Code to generate game assets through natural language.
 
 ### Available Tools
 
