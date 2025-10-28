@@ -54,9 +54,14 @@ AI-DnD now includes **complete PixelLab integration** with both MCP and direct A
 
 ### 🚀 Quick Start
 
+1. Get your API key from [pixellab.ai/vibe-coding](https://www.pixellab.ai/vibe-coding)
+2. Update the API key in example files
+3. Install and run:
+
 ```bash
 cd pixellab_integration
 pip install -r requirements.txt
+# Edit examples/01_basic_character_generation.py and add your API key
 python examples/01_basic_character_generation.py
 ```
 
@@ -109,10 +114,11 @@ The PixelLab MCP provides the following capabilities:
 
 The MCP server is configured in `.mcp.json` at the project root. To use PixelLab tools:
 
-1. Ensure you have Claude Code installed
-2. The `.mcp.json` file is already configured with the PixelLab API key
-3. Restart Claude Code to load the MCP server
-4. Use natural language to request asset generation (e.g., "Create a pixel art wizard character with 8 directions")
+1. Get your API key from [pixellab.ai/vibe-coding](https://www.pixellab.ai/vibe-coding)
+2. Update the API key in `.mcp.json`
+3. Ensure you have Claude Code installed
+4. Restart Claude Code to load the MCP server
+5. Use natural language to request asset generation (e.g., "Create a pixel art wizard character with 8 directions")
 
 ### Use Cases
 
