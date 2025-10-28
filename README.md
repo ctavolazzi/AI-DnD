@@ -67,6 +67,25 @@ python examples/01_basic_character_generation.py
 
 See [`pixellab_integration/QUICKSTART.md`](pixellab_integration/QUICKSTART.md) for detailed setup.
 
+### 🗺️ Map Generation
+
+NEW! Comprehensive map and tileset generation test suite:
+
+```bash
+cd tests/pixellab_map_test
+python test_map_generation.py
+```
+
+**Features:**
+- Top-down terrain tilesets (grass, water, stone, etc.)
+- Isometric tiles for strategy games
+- 2D platformer tiles and levels
+- Complete map composition (8x8 to 16x10 tiles)
+- Dungeon generation (walls, doors, treasures)
+- Example map builder with RPG overworld, dungeons, platformer levels
+
+See [`tests/pixellab_map_test/README.md`](tests/pixellab_map_test/README.md) for complete documentation.
+
 ### Full-Featured Python Client
 
 The `pixellab_integration/` directory provides a complete Python client with:
