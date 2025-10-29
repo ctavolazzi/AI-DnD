@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIPHY SDK Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .api-key-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .api-key-section h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .api-key-section p {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .search-section {
+            margin-bottom: 30px;
+        }
+
+        .search-section input {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        #gif-container {
+            min-height: 400px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 8px;
+            padding: 15px;
+            color: #c33;
+            margin-bottom: 20px;
+        }
+
+        .info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            color: #004085;
+            margin-bottom: 20px;
+        }
+
+        .code {
+            font-family: 'Courier New', monospace;
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 GIPHY SDK Test Page</h1>
+        <p class="subtitle">Test the GIPHY JavaScript SDK with trending GIFs, search, and more!</p>
+
+        <div class="api-key-section">
+            <h3>⚙️ API Key Configuration</h3>
+            <p>
+                Enter your GIPHY API key to get started.
+                Don't have one? <a href="https://developers.giphy.com/dashboard/" target="_blank">Create an API key here</a>
+            </p>
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="api-key-input"
+                    placeholder="Enter your GIPHY API key here..."
+                    value="">
+                <button onclick="setApiKey()">Set API Key</button>
+            </div>
+            <p style="margin-top: 10px; font-size: 12px;">
+                <strong>Note:</strong> For production use, add your API key to <span class="code">.env</span> file as <span class="code">GIPHY_API_KEY</span>
+            </p>
+        </div>
+
+        <div id="status-message"></div>
+
+        <div class="search-section">
+            <input
+                type="text"
+                id="search-input"
+                placeholder="Search for GIFs..."
+                disabled>
+            <button onclick="searchGifs()" id="search-btn" disabled>Search</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('trending')" id="tab-trending">🔥 Trending</button>
+            <button class="tab" onclick="showTab('search')" id="tab-search" disabled>🔍 Search</button>
+            <button class="tab" onclick="showTab('random')" id="tab-random" disabled>🎲 Random</button>
+        </div>
+
+        <div id="gif-container">
+            <div class="loading">
+                <p>👆 Please enter your GIPHY API key above to get started</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Grid } from 'https://cdn.jsdelivr.net/npm/@giphy/js-components@5.9.0/dist/index.mjs';
+        import { GiphyFetch } from 'https://cdn.jsdelivr.net/npm/@giphy/js-fetch-api@5.9.0/dist/index.mjs';
+
+        let gf = null;
+        let currentGrid = null;
+        let currentMode = 'trending';
+
+        window.setApiKey = function() {
+            const apiKey = document.getElementById('api-key-input').value.trim();
+
+            if (!apiKey) {
+                showMessage('Please enter an API key', 'error');
+                return;
+            }
+
+            try {
+                gf = new GiphyFetch(apiKey);
+                showMessage('✅ API key set successfully!', 'info');
+
+                // Enable search and tabs
+                document.getElementById('search-input').disabled = false;
+                document.getElementById('search-btn').disabled = false;
+                document.getElementById('tab-search').disabled = false;
+                document.getElementById('tab-random').disabled = false;
+
+                // Load trending GIFs
+                loadTrending();
+            } catch (error) {
+                showMessage('Failed to initialize GIPHY SDK: ' + error.message, 'error');
+            }
+        };
+
+        window.showTab = function(tab) {
+            if (!gf) {
+                showMessage('Please set your API key first', 'error');
+                return;
+            }
+
+            currentMode = tab;
+
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+
+            // Clear container
+            clearContainer();
+
+            // Load appropriate content
+            if (tab === 'trending') {
+                loadTrending();
+            } else if (tab === 'search') {
+                const query = document.getElementById('search-input').value.trim();
+                if (query) {
+                    loadSearch(query);
+                } else {
+                    showMessage('Enter a search term and click Search', 'info');
+                }
+            } else if (tab === 'random') {
+                loadRandom();
+            }
+        };
+
+        window.searchGifs = function() {
+            const query = document.getElementById('search-input').value.trim();
+
+            if (!query) {
+                showMessage('Please enter a search term', 'error');
+                return;
+            }
+
+            if (!gf) {
+                showMessage('Please set your API key first', 'error');
+                return;
+            }
+
+            currentMode = 'search';
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-search').classList.add('active');
+
+            loadSearch(query);
+        };
+
+        function loadTrending() {
+            clearContainer();
+            showMessage('Loading trending GIFs...', 'info');
+
+            const fetchGifs = (offset) => gf.trending({ offset, limit: 20 });
+
+            try {
+                const container = document.getElementById('gif-container');
+                currentGrid = Grid(container, {
+                    width: container.offsetWidth,
+                    columns: 3,
+                    gutter: 6,
+                    fetchGifs
+                });
+
+                clearMessage();
+            } catch (error) {
+                showMessage('Error loading trending GIFs: ' + error.message, 'error');
+            }
+        }
+
+        function loadSearch(query) {
+            clearContainer();
+            showMessage(`Searching for "${query}"...`, 'info');
+
+            const fetchGifs = (offset) => gf.search(query, { offset, limit: 20 });
+
+            try {
+                const container = document.getElementById('gif-container');
+                currentGrid = Grid(container, {
+                    width: container.offsetWidth,
+                    columns: 3,
+                    gutter: 6,
+                    fetchGifs
+                });
+
+                clearMessage();
+            } catch (error) {
+                showMessage('Error searching GIFs: ' + error.message, 'error');
+            }
+        }
+
+        function loadRandom() {
+            clearContainer();
+            showMessage('Loading random GIFs...', 'info');
+
+            gf.random({ tag: 'funny' })
+                .then(result => {
+                    const container = document.getElementById('gif-container');
+                    const img = document.createElement('img');
+                    img.src = result.data.images.original.url;
+                    img.style.width = '100%';
+                    img.style.borderRadius = '8px';
+                    container.appendChild(img);
+
+                    const btn = document.createElement('button');
+                    btn.textContent = 'Get Another Random GIF';
+                    btn.onclick = loadRandom;
+                    btn.style.marginTop = '20px';
+                    container.appendChild(btn);
+
+                    clearMessage();
+                })
+                .catch(error => {
+                    showMessage('Error loading random GIF: ' + error.message, 'error');
+                });
+        }
+
+        function clearContainer() {
+            const container = document.getElementById('gif-container');
+            container.innerHTML = '';
+        }
+
+        function showMessage(message, type) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        function clearMessage() {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.innerHTML = '';
+        }
+
+        // Allow Enter key to search
+        document.getElementById('search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                window.searchGifs();
+            }
+        });
+
+        // Allow Enter key to set API key
+        document.getElementById('api-key-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                window.setApiKey();
+            }
+        });
+    </script>
+</body>
+</html>
