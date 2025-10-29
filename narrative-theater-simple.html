@@ -255,20 +255,21 @@
         function displayStory(data) {
             const storyDiv = document.getElementById('story-display');
             let html = '<h3>🗺️ Your Quest</h3>';
-            html += `<p><strong>${data.quest_description}</strong></p>`;
+            html += `<p><strong>${data.quest || data.quest_description || 'No quest available'}</strong></p>`;
             html += '<hr style="margin: 20px 0;">';
             html += '<h3>👥 Your Party</h3>';
 
             if (data.characters && data.characters.length > 0) {
                 data.characters.forEach(char => {
-                    html += `<p>⚔️ <strong>${char.name}</strong> - ${char.char_class} (HP: ${char.hp}/${char.max_hp})</p>`;
+                    html += `<p>⚔️ <strong>${char.name}</strong> - ${char.class || char.char_class || 'Adventurer'} (HP: ${char.hp}/${char.max_hp})</p>`;
                 });
             }
 
-            if (data.current_scene) {
+            if (data.first_scene || data.current_scene) {
                 html += '<hr style="margin: 20px 0;">';
                 html += '<h3>📖 Current Scene</h3>';
-                html += `<p>${data.current_scene.narrative}</p>`;
+                const scene = data.first_scene || data.current_scene;
+                html += `<p>${scene.narrative}</p>`;
             }
 
             storyDiv.innerHTML = html;

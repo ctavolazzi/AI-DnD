@@ -381,6 +381,122 @@ class GeminiNarrativeEngine:
             "timestamp": datetime.now().isoformat()
         }
 
+    # =========================================================================
+    # LEGACY COMPATIBILITY METHODS (for narrative_engine.py interface)
+    # =========================================================================
+
+    def generate_quest(self, difficulty="medium", theme=None):
+        """Generate a quest using Gemini or fallback"""
+        if not self.is_available():
+            return f"A {difficulty} quest in a fantasy world" + (f" with theme: {theme}" if theme else "")
+
+        try:
+            prompt = f"Generate a {difficulty} difficulty D&D quest"
+            if theme:
+                prompt += f" with the theme: {theme}"
+            prompt += ". Provide a concise quest description with objectives."
+
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=300,
+                    temperature=0.8
+                )
+            )
+            return response.text.strip()
+        except Exception as e:
+            logger.error(f"Error generating quest: {e}")
+            return f"Embark on a {difficulty} quest" + (f" themed around {theme}" if theme else "")
+
+    def generate_random_encounter(self, party_level, environment):
+        """Generate a random encounter"""
+        if not self.is_available():
+            return f"You encounter enemies in the {environment}"
+
+        try:
+            prompt = f"Generate a brief D&D encounter for a level {party_level} party in a {environment}. Just describe what they encounter in 2-3 sentences."
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=200,
+                    temperature=0.8
+                )
+            )
+            return response.text.strip()
+        except Exception as e:
+            logger.error(f"Error generating encounter: {e}")
+            return f"You encounter hostile creatures in the {environment}!"
+
+    def describe_scene(self, location, characters):
+        """Describe a scene"""
+        if not self.is_available():
+            return f"{', '.join(characters)} stand in {location}"
+
+        try:
+            chars = ', '.join(characters)
+            prompt = f"Describe in 2-3 vivid sentences: {chars} arrive at {location}. Make it atmospheric and engaging."
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=200,
+                    temperature=0.8
+                )
+            )
+            return response.text.strip()
+        except Exception as e:
+            logger.error(f"Error describing scene: {e}")
+            return f"{chars} arrive at {location}, ready for adventure."
+
+    def handle_player_action(self, player_name, action, context=None):
+        """Handle and narrate a player action"""
+        if not self.is_available():
+            return f"{player_name} {action}."
+
+        try:
+            prompt = f"Narrate in 1-2 sentences: {player_name} {action}. Make it engaging."
+            if context:
+                prompt += f" Context: {context}"
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=150,
+                    temperature=0.8
+                )
+            )
+            return response.text.strip()
+        except Exception as e:
+            logger.error(f"Error handling player action: {e}")
+            return f"{player_name} {action}."
+
+    def describe_combat(self, attacker, target, damage=0, success=True):
+        """Describe a combat action"""
+        if not self.is_available():
+            if success:
+                return f"{attacker} hits {target} for {damage} damage!"
+            else:
+                return f"{attacker} misses {target}!"
+
+        try:
+            if success:
+                prompt = f"In 1 sentence, describe: {attacker} successfully hits {target} dealing {damage} damage. Make it cinematic."
+            else:
+                prompt = f"In 1 sentence, describe: {attacker} attacks {target} but misses. Make it dramatic."
+
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=100,
+                    temperature=0.8
+                )
+            )
+            return response.text.strip()
+        except Exception as e:
+            logger.error(f"Error describing combat: {e}")
+            if success:
+                return f"{attacker} strikes {target} for {damage} damage!"
+            else:
+                return f"{attacker} swings but {target} dodges!"
+
 # Global engine instance
 narrative_engine = GeminiNarrativeEngine()
 

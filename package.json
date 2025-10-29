@@ -36,8 +36,9 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  },
   "files": [
     "scripts/",
     "versions/",
@@ -51,4 +52,3 @@
     "uninstall.sh"
   ]
 }
-
