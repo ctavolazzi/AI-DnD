@@ -1,0 +1,198 @@
+{
+  "start": {
+    "text": "You push open the heavy oak door of the Dragon's Rest Tavern. The warm glow of firelight and the sound of laughter greet you.\n\nA mysterious hooded figure in the corner catches your eye.",
+    "choices": [
+      { "text": "Approach the figure", "goto": "approach" },
+      { "text": "Order a drink first", "goto": "order" },
+      { "text": "Sit by the fire", "goto": "fire" }
+    ]
+  },
+
+  "order": {
+    "text": "Bartender: 'What'll it be, stranger?'\n\nYou order a mug of ale and take a sip. It's surprisingly good.",
+    "action": "hasDrink=true",
+    "choices": [
+      { "text": "Ask about the hooded figure", "goto": "ask_bartender" },
+      { "text": "Approach the figure", "goto": "approach" },
+      { "text": "Sit by the fire", "goto": "fire" }
+    ]
+  },
+
+  "ask_bartender": {
+    "text": "Bartender leans in and whispers: 'That's the Shadow Broker. Dangerous folks. They trade in secrets and... other things. Approach with caution, friend.'",
+    "action": "knowsIdentity=true",
+    "choices": [
+      { "text": "Approach the figure", "goto": "approach" },
+      { "text": "Sit by the fire instead", "goto": "fire" }
+    ]
+  },
+
+  "fire": {
+    "text": "You settle into a comfortable chair by the fireplace. The warmth is soothing after your long journey. After a moment, the hooded figure approaches YOU.",
+    "choices": [
+      { "text": "Greet them", "goto": "figure_approaches" }
+    ]
+  },
+
+  "figure_approaches": {
+    "text": "The figure sits across from you without invitation.\n\nShadow Broker: 'You're the one asking questions about the Crimson Vault, aren't you? I have information... for a price.'",
+    "choices": [
+      { "text": "How much?", "goto": "negotiate" },
+      { "text": "Tell me more first", "goto": "more_info" },
+      { "text": "I'm not interested", "goto": "refuse" }
+    ]
+  },
+
+  "approach": {
+    "text": "You walk over to the corner table. The figure doesn't look up as you approach.",
+    "condition": "knowsIdentity==true",
+    "else_goto": "approach_unknown",
+    "choices": [
+      { "text": "Introduce yourself", "goto": "introduce" },
+      { "text": "Ask about secrets", "goto": "ask_secrets" }
+    ]
+  },
+
+  "approach_unknown": {
+    "text": "You walk over to the corner table. The figure finally looks up, revealing sharp eyes beneath the hood.",
+    "choices": [
+      { "text": "Introduce yourself", "goto": "introduce" },
+      { "text": "Ask who they are", "goto": "ask_identity" }
+    ]
+  },
+
+  "introduce": {
+    "text": "You introduce yourself. The figure studies you for a moment.\n\nShadow Broker: 'I know who you are. The question is... what do you want from me?'",
+    "choices": [
+      { "text": "Information about the Crimson Vault", "goto": "ask_vault" },
+      { "text": "I'm just passing through", "goto": "passing" }
+    ]
+  },
+
+  "ask_identity": {
+    "text": "Shadow Broker: 'Names are dangerous things to share freely. But you may call me the Shadow Broker. I deal in information.'",
+    "action": "knowsIdentity=true",
+    "choices": [
+      { "text": "What kind of information?", "goto": "what_info" }
+    ]
+  },
+
+  "what_info": {
+    "text": "Shadow Broker: 'Anything and everything. Lost treasures, hidden passages, dark secrets... if you can pay the price.'",
+    "choices": [
+      { "text": "Tell me about the Crimson Vault", "goto": "ask_vault" },
+      { "text": "Maybe another time", "goto": "leave" }
+    ]
+  },
+
+  "ask_vault": {
+    "text": "The Broker's eyes gleam with interest.\n\nShadow Broker: 'Ah, the Crimson Vault. Dangerous knowledge that. Many have sought it. Few have returned. I can tell you its location... for 500 gold.'",
+    "choices": [
+      { "text": "Pay 500 gold", "goto": "pay_vault", "condition": "gold>=500" },
+      { "text": "That's too expensive", "goto": "negotiate" },
+      { "text": "I don't have that much", "goto": "no_money", "condition": "gold<500" }
+    ]
+  },
+
+  "pay_vault": {
+    "text": "You slide the gold across the table. The Broker nods approvingly and leans in close.\n\nShadow Broker: 'The Vault lies beneath the Old Cathedral in the city of Mordren. Enter through the crypt at midnight. Speak the words 'Crimson Dawn' to the guardian.'\n\nThey stand to leave.\n\n'And friend... don't trust anyone who claims to know more than I do.'",
+    "action": { "increment": { "gold": -500 }, "set": { "knowsVaultLocation": true } },
+    "choices": [
+      { "text": "Thank them", "goto": "end_good" }
+    ]
+  },
+
+  "negotiate": {
+    "text": "Shadow Broker: 'The price is firm. Information this valuable doesn't come cheap. However... I might accept a trade. Do you have anything of interest?'",
+    "choices": [
+      { "text": "Offer the Ancient Medallion", "goto": "trade_medallion", "condition": "hasMedallion==true" },
+      { "text": "Offer to do a job", "goto": "offer_job" },
+      { "text": "I'll come back with gold", "goto": "leave" }
+    ]
+  },
+
+  "trade_medallion": {
+    "text": "The Broker's eyes widen slightly at the sight of the medallion.\n\nShadow Broker: 'Interesting... Very well. We have a deal.'\n\nThey tell you the location of the Crimson Vault and quickly pocket the medallion before disappearing into the shadows.",
+    "action": { "set": { "hasMedallion": false, "knowsVaultLocation": true } },
+    "choices": [
+      { "text": "Leave the tavern", "goto": "end_good" }
+    ]
+  },
+
+  "offer_job": {
+    "text": "Shadow Broker: 'Hmm... I do need someone to retrieve a package from the docks. Do this, and the information about the Vault is yours. Deal?'",
+    "choices": [
+      { "text": "Accept the job", "goto": "accept_job" },
+      { "text": "Decline", "goto": "leave" }
+    ]
+  },
+
+  "accept_job": {
+    "text": "Shadow Broker: 'Excellent. Find Captain Redmoor at the docks before sunrise. Tell him I sent you. Bring me what he gives you, and you'll have your information.'\n\nThey hand you a small token.\n\n'Don't lose that. You'll need it.'",
+    "action": "hasToken=true",
+    "choices": [
+      { "text": "Leave to find the docks", "goto": "end_job" }
+    ]
+  },
+
+  "no_money": {
+    "text": "Shadow Broker: 'A pity. Come back when you can afford my services.'",
+    "choices": [
+      { "text": "Leave", "goto": "leave" }
+    ]
+  },
+
+  "more_info": {
+    "text": "Shadow Broker: 'The Vault contains artifacts from the First Age. Powers that could reshape kingdoms... or destroy them. That's all you get for free.'",
+    "choices": [
+      { "text": "How much for the location?", "goto": "ask_vault" },
+      { "text": "I'll think about it", "goto": "leave" }
+    ]
+  },
+
+  "refuse": {
+    "text": "Shadow Broker shrugs: 'Your loss. The Vault's secrets will remain hidden to you then.'\n\nThey melt back into the shadows.",
+    "choices": [
+      { "text": "Leave the tavern", "goto": "end_refused" }
+    ]
+  },
+
+  "passing": {
+    "text": "Shadow Broker: 'Then I suggest you keep passing. I don't do small talk.'\n\nThey turn away dismissively.",
+    "choices": [
+      { "text": "Leave", "goto": "leave" }
+    ]
+  },
+
+  "ask_secrets": {
+    "text": "Shadow Broker: 'Secrets are my currency. What are you willing to trade?'",
+    "choices": [
+      { "text": "Gold", "goto": "ask_vault" },
+      { "text": "A favor", "goto": "offer_job" }
+    ]
+  },
+
+  "leave": {
+    "text": "You decide to leave the conversation for now. Perhaps you'll return when you're better prepared.",
+    "end": true,
+    "choices": []
+  },
+
+  "end_good": {
+    "text": "You leave the tavern with valuable information. Your quest to find the Crimson Vault can now truly begin.",
+    "end": true,
+    "choices": []
+  },
+
+  "end_job": {
+    "text": "You leave the tavern with a new mission. The docks await...",
+    "end": true,
+    "choices": []
+  },
+
+  "end_refused": {
+    "text": "You leave the tavern empty-handed. The Crimson Vault will remain a mystery... for now.",
+    "end": true,
+    "choices": []
+  }
+}

@@ -91,6 +91,45 @@
         </div>
 
         <div class="demo-section">
+          <h2>Story Patterns</h2>
+          <p>Pre-built patterns for common scenarios:</p>
+          <div class="demo-buttons">
+            <button class="glyph-button" onclick="demoPatternDialogue()">
+              Dialogue
+            </button>
+            <button class="glyph-button" onclick="demoPatternYesNo()">
+              Yes/No Choice
+            </button>
+            <button class="glyph-button" onclick="demoPatternEncounter()">
+              Combat Encounter
+            </button>
+            <button class="glyph-button" onclick="demoPatternShop()">
+              Shop
+            </button>
+            <button class="glyph-button" onclick="demoPatternQuest()">
+              Quest Offer
+            </button>
+          </div>
+        </div>
+
+        <div class="demo-section">
+          <h2>Story Loader (JSON)</h2>
+          <p>Load branching narratives from JSON files:</p>
+          <div class="demo-buttons">
+            <button class="glyph-button" onclick="demoSimpleQuest()">
+              Simple Quest
+            </button>
+            <button class="glyph-button" onclick="demoTavernMeeting()">
+              Tavern Meeting
+            </button>
+          </div>
+          <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+            These demos load from <code>stories/*.json</code> files.
+            Check the files to see the story structure!
+          </p>
+        </div>
+
+        <div class="demo-section">
           <h2>API Usage</h2>
           <p><strong>Show a story window:</strong></p>
           <pre><code>window.StoryWindow.show({
@@ -157,6 +196,8 @@
     </template>
 
     <script src="app.js" type="module"></script>
+    <script src="story-patterns.js"></script>
+    <script src="story-loader.js"></script>
     <script>
       // Demo functions
       function demoBasic() {
@@ -228,6 +269,138 @@
         }
 
         showRound(0);
+      }
+
+      // Story Pattern Demos
+      function demoPatternDialogue() {
+        const wizard = {
+          name: 'Gandalf the Grey',
+          portrait: 'https://picsum.photos/800/400?random=10'
+        };
+
+        StoryPatterns.dialogue(wizard, 'You cannot pass! I am a servant of the Secret Fire, wielder of the flame of Anor!', () => {
+          StoryPatterns.dialogue(wizard, 'The dark fire will not avail you, flame of Udûn!', () => {
+            StoryPatterns.narrate('The wizard slams his staff on the bridge...', () => {
+              window.StoryWindow.close();
+            });
+          });
+        });
+      }
+
+      function demoPatternYesNo() {
+        StoryPatterns.yesNo(
+          'You find a mysterious glowing chest. Do you want to open it?',
+          () => {
+            StoryPatterns.info('You found 100 gold and a magic sword!', 'https://picsum.photos/800/400?random=11');
+          },
+          () => {
+            StoryPatterns.info('Perhaps it\'s best to leave it alone. You continue on your journey.');
+          },
+          'https://picsum.photos/800/400?random=12'
+        );
+      }
+
+      function demoPatternEncounter() {
+        let enemyHp = 45;
+        const enemy = {
+          name: 'Goblin Berserker',
+          image: 'https://picsum.photos/800/400?random=13',
+          hp: enemyHp,
+          maxHp: 45
+        };
+
+        function showCombat() {
+          StoryPatterns.encounter(enemy, (action) => {
+            if (action === 0) { // Attack
+              const damage = Math.floor(Math.random() * 15) + 10;
+              enemy.hp = Math.max(0, enemy.hp - damage);
+              if (enemy.hp <= 0) {
+                StoryPatterns.info('Victory! The goblin falls defeated.');
+              } else {
+                StoryPatterns.narrate(`You deal ${damage} damage!`, showCombat);
+              }
+            } else if (action === 1) { // Defend
+              StoryPatterns.narrate('You raise your shield defensively.', showCombat);
+            } else if (action === 2) { // Item
+              StoryPatterns.info('You drink a health potion and feel refreshed!');
+            } else { // Flee
+              StoryPatterns.info('You successfully escape the battle!');
+            }
+          });
+        }
+
+        showCombat();
+      }
+
+      function demoPatternShop() {
+        const merchant = {
+          name: 'Ye Olde Merchant',
+          image: 'https://picsum.photos/800/400?random=14'
+        };
+
+        const items = [
+          { name: 'Iron Sword', price: 50 },
+          { name: 'Health Potion', price: 20 },
+          { name: 'Magic Scroll', price: 75 }
+        ];
+
+        StoryPatterns.shop(
+          merchant,
+          items,
+          (itemIndex) => {
+            StoryPatterns.info(`You purchased ${items[itemIndex].name} for ${items[itemIndex].price} gold!`);
+          },
+          () => {
+            StoryPatterns.info('You leave the shop.');
+          }
+        );
+      }
+
+      function demoPatternQuest() {
+        const quest = {
+          title: 'The Lost Artifact',
+          description: 'A ancient artifact has been stolen from the kingdom. Retrieve it from the bandits\' hideout in the Darkwood Forest.',
+          reward: '500 gold + Magic Ring',
+          details: 'The bandits are dangerous and well-armed. You may want to gather a party before attempting this quest. The hideout is located 3 days north of here.',
+          giver: { portrait: 'https://picsum.photos/800/400?random=15' }
+        };
+
+        StoryPatterns.questOffer(
+          quest,
+          () => {
+            StoryPatterns.info('Quest accepted! Check your journal for details.');
+          },
+          () => {
+            StoryPatterns.info('Perhaps another time then.');
+          }
+        );
+      }
+
+      // Story Loader Demos
+      function demoSimpleQuest() {
+        storyLoader.loadFromFile('stories/simple-quest.json')
+          .then(() => {
+            // Set initial variables
+            storyLoader.setVariable('gold', 100);
+            storyLoader.setVariable('playerName', 'Adventurer');
+            storyLoader.play('start');
+          })
+          .catch(err => {
+            alert('Error loading story: ' + err.message + '\n\nMake sure stories/simple-quest.json exists!');
+          });
+      }
+
+      function demoTavernMeeting() {
+        storyLoader.loadFromFile('stories/tavern-meeting.json')
+          .then(() => {
+            // Set initial variables
+            storyLoader.setVariable('gold', 600);
+            storyLoader.setVariable('hasMedallion', true);
+            storyLoader.play('start');
+          })
+          .catch(err => {
+            alert('Error loading story: ' + err.message + '\n\nMake sure stories/tavern-meeting.json exists!');
+          });
       }
     </script>
   </body>

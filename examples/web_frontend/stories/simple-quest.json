@@ -1,0 +1,176 @@
+{
+  "start": {
+    "text": "You wake up in a small village. The sun is rising over the eastern hills, and you hear the sound of a rooster crowing nearby.\n\nYou remember you're here on a quest to find the legendary Crystal of Eternity.",
+    "choices": [
+      { "text": "Explore the village", "goto": "village" },
+      { "text": "Head to the tavern", "goto": "tavern" },
+      { "text": "Leave immediately", "goto": "leave_early" }
+    ]
+  },
+
+  "village": {
+    "text": "You walk through the village square. Villagers are setting up their market stalls. An old woman beckons you over.",
+    "choices": [
+      { "text": "Talk to the old woman", "goto": "old_woman" },
+      { "text": "Browse the market", "goto": "market" },
+      { "text": "Go to the tavern", "goto": "tavern" }
+    ]
+  },
+
+  "old_woman": {
+    "text": "Old Woman: 'Ah, you must be the adventurer! The Crystal you seek lies in the Ancient Cave to the north. But beware - a fearsome guardian protects it.'\n\nShe hands you a small amulet.\n\n'This may help you on your journey.'",
+    "action": "hasAmulet=true",
+    "choices": [
+      { "text": "Thank her and continue", "goto": "after_woman" }
+    ]
+  },
+
+  "after_woman": {
+    "text": "You now have the Protective Amulet. Where do you want to go?",
+    "choices": [
+      { "text": "Browse the market", "goto": "market" },
+      { "text": "Go to the tavern", "goto": "tavern" },
+      { "text": "Head north to the cave", "goto": "cave_entrance" }
+    ]
+  },
+
+  "market": {
+    "text": "The market is bustling with activity. You see a merchant selling potions and supplies.",
+    "choices": [
+      { "text": "Buy a healing potion (50 gold)", "goto": "buy_potion", "condition": "gold>=50" },
+      { "text": "Buy a healing potion (50 gold)", "goto": "no_gold", "condition": "gold<50" },
+      { "text": "Leave the market", "goto": "village_center" }
+    ]
+  },
+
+  "buy_potion": {
+    "text": "You purchase a healing potion. The merchant smiles and wishes you luck.",
+    "action": { "set": { "hasPotion": true }, "increment": { "gold": -50 } },
+    "choices": [
+      { "text": "Continue", "goto": "village_center" }
+    ]
+  },
+
+  "no_gold": {
+    "text": "Merchant: 'Sorry friend, you don't have enough gold for that.'",
+    "choices": [
+      { "text": "Leave", "goto": "village_center" }
+    ]
+  },
+
+  "village_center": {
+    "text": "You're back in the village center. Where to next?",
+    "choices": [
+      { "text": "Go to the tavern", "goto": "tavern" },
+      { "text": "Head to the cave", "goto": "cave_entrance" },
+      { "text": "Talk to villagers", "goto": "villagers" }
+    ]
+  },
+
+  "tavern": {
+    "text": "The tavern is warm and inviting. A bard plays a lute in the corner. The innkeeper greets you warmly.",
+    "choices": [
+      { "text": "Order a drink", "goto": "order_drink" },
+      { "text": "Talk to the bard", "goto": "bard" },
+      { "text": "Leave", "goto": "village_center" }
+    ]
+  },
+
+  "order_drink": {
+    "text": "Innkeeper: 'That'll be 5 gold for our finest ale!'\n\nYou enjoy a refreshing drink and hear some local rumors about the cave.",
+    "action": { "increment": { "gold": -5 } },
+    "choices": [
+      { "text": "Continue", "goto": "tavern" }
+    ]
+  },
+
+  "bard": {
+    "text": "Bard: 'Ah, seeking the Crystal, are you? I know a song about that guardian... They say it fears fire above all else. Perhaps that knowledge will serve you well.'",
+    "action": "knowsWeakness=true",
+    "choices": [
+      { "text": "Thank the bard", "goto": "tavern" }
+    ]
+  },
+
+  "cave_entrance": {
+    "text": "You arrive at the Ancient Cave. The entrance is dark and foreboding. Strange sounds echo from within.",
+    "choices": [
+      { "text": "Enter the cave", "goto": "cave_inside" },
+      { "text": "Go back to village", "goto": "village_center" }
+    ]
+  },
+
+  "cave_inside": {
+    "text": "The cave is cold and damp. You venture deeper, torch in hand. Suddenly, a massive stone guardian awakens before you!",
+    "choices": [
+      { "text": "Fight the guardian", "goto": "fight_guardian" },
+      { "text": "Try to sneak past", "goto": "sneak_attempt" },
+      { "text": "Run away", "goto": "cave_entrance" }
+    ]
+  },
+
+  "fight_guardian": {
+    "text": "You engage the guardian in combat!",
+    "condition": "hasAmulet==true",
+    "else_goto": "fight_no_amulet",
+    "choices": [
+      { "text": "Attack with full force", "goto": "fight_with_amulet" },
+      { "text": "Use fire (if you know weakness)", "goto": "fight_fire", "condition": "knowsWeakness==true" }
+    ]
+  },
+
+  "fight_with_amulet": {
+    "text": "Your amulet glows with protective magic! The guardian's attacks are weakened. After a fierce battle, you defeat it!",
+    "choices": [
+      { "text": "Take the Crystal", "goto": "victory" }
+    ]
+  },
+
+  "fight_fire": {
+    "text": "Remembering the bard's words, you conjure flames! The guardian recoils in fear. Its stone body cracks and crumbles. Victory is yours!",
+    "choices": [
+      { "text": "Take the Crystal", "goto": "victory" }
+    ]
+  },
+
+  "fight_no_amulet": {
+    "text": "Without the protective amulet, the guardian's attacks are devastating. You barely escape with your life, fleeing back to the entrance.",
+    "choices": [
+      { "text": "Return to village", "goto": "village_center" }
+    ]
+  },
+
+  "sneak_attempt": {
+    "text": "You attempt to sneak past the guardian...",
+    "choices": [
+      { "text": "Continue...", "goto": "sneak_result" }
+    ]
+  },
+
+  "sneak_result": {
+    "text": "The guardian's eyes glow red! It detects you immediately. You have no choice but to fight or flee!",
+    "choices": [
+      { "text": "Fight!", "goto": "fight_guardian" },
+      { "text": "Flee!", "goto": "cave_entrance" }
+    ]
+  },
+
+  "victory": {
+    "text": "You claim the Crystal of Eternity! Its radiant light fills the cave. You have completed your quest!\n\nThe villagers will sing songs of your bravery for generations to come.",
+    "end": true,
+    "choices": []
+  },
+
+  "leave_early": {
+    "text": "You decide the quest is too dangerous and leave the village. Perhaps another adventurer will claim the Crystal...",
+    "end": true,
+    "choices": []
+  },
+
+  "villagers": {
+    "text": "You talk to some villagers. They share stories about the cave and warn you of its dangers. One mentions that the old woman near the square knows much about the Crystal.",
+    "choices": [
+      { "text": "Continue", "goto": "village_center" }
+    ]
+  }
+}
