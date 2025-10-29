@@ -1,0 +1,281 @@
+{
+  "generated_at": "2025-10-29T02:53:22.655667",
+  "total_images": 33,
+  "note": "These are placeholder images. Replace with actual pixel art when API key is available.",
+  "categories": {
+    "achievements": [
+      {
+        "name": "First Dollar",
+        "description": "Earned your first dollar from content",
+        "category": "achievements",
+        "filename": "first_dollar.png",
+        "path": "generated/achievements/first_dollar.png",
+        "timestamp": "2025-10-29T02:53:22.581409"
+      },
+      {
+        "name": "The Flipper",
+        "description": "Completed first furniture flip",
+        "category": "achievements",
+        "filename": "the_flipper.png",
+        "path": "generated/achievements/the_flipper.png",
+        "timestamp": "2025-10-29T02:53:22.584003"
+      },
+      {
+        "name": "Consistent Creator",
+        "description": "Posted daily for 7 days",
+        "category": "achievements",
+        "filename": "consistent_creator.png",
+        "path": "generated/achievements/consistent_creator.png",
+        "timestamp": "2025-10-29T02:53:22.586580"
+      },
+      {
+        "name": "Four Figures",
+        "description": "Saved $1,000",
+        "category": "achievements",
+        "filename": "four_figures.png",
+        "path": "generated/achievements/four_figures.png",
+        "timestamp": "2025-10-29T02:53:22.588975"
+      },
+      {
+        "name": "Ten Grand",
+        "description": "Hit $10K in land fund",
+        "category": "achievements",
+        "filename": "ten_grand.png",
+        "path": "generated/achievements/ten_grand.png",
+        "timestamp": "2025-10-29T02:53:22.591255"
+      },
+      {
+        "name": "Workshop Dreamer",
+        "description": "Created detailed workshop plan",
+        "category": "achievements",
+        "filename": "workshop_dreamer.png",
+        "path": "generated/achievements/workshop_dreamer.png",
+        "timestamp": "2025-10-29T02:53:22.593964"
+      },
+      {
+        "name": "Custom Creator",
+        "description": "Completed first custom commission",
+        "category": "achievements",
+        "filename": "custom_creator.png",
+        "path": "generated/achievements/custom_creator.png",
+        "timestamp": "2025-10-29T02:53:22.596338"
+      },
+      {
+        "name": "YouTube Partner",
+        "description": "Achieved monetization",
+        "category": "achievements",
+        "filename": "youtube_partner.png",
+        "path": "generated/achievements/youtube_partner.png",
+        "timestamp": "2025-10-29T02:53:22.598534"
+      },
+      {
+        "name": "Landowner",
+        "description": "Purchased your land",
+        "category": "achievements",
+        "filename": "landowner.png",
+        "path": "generated/achievements/landowner.png",
+        "timestamp": "2025-10-29T02:53:22.600560"
+      },
+      {
+        "name": "Boss Mode",
+        "description": "Hired your first employee",
+        "category": "achievements",
+        "filename": "boss_mode.png",
+        "path": "generated/achievements/boss_mode.png",
+        "timestamp": "2025-10-29T02:53:22.602712"
+      }
+    ],
+    "quests": [
+      {
+        "name": "Van Life",
+        "description": "Van Down By The River quest line",
+        "category": "quests",
+        "filename": "van_life.png",
+        "path": "generated/quests/van_life.png",
+        "timestamp": "2025-10-29T02:53:22.604829"
+      },
+      {
+        "name": "Land Fund",
+        "description": "The Land Fund quest line",
+        "category": "quests",
+        "filename": "land_fund.png",
+        "path": "generated/quests/land_fund.png",
+        "timestamp": "2025-10-29T02:53:22.606867"
+      },
+      {
+        "name": "Workshop Path",
+        "description": "Building the Workshop quest line",
+        "category": "quests",
+        "filename": "workshop_path.png",
+        "path": "generated/quests/workshop_path.png",
+        "timestamp": "2025-10-29T02:53:22.609209"
+      },
+      {
+        "name": "Content Empire",
+        "description": "Content Empire quest line",
+        "category": "quests",
+        "filename": "content_empire.png",
+        "path": "generated/quests/content_empire.png",
+        "timestamp": "2025-10-29T02:53:22.611296"
+      },
+      {
+        "name": "Business Builder",
+        "description": "Business Empire quest line",
+        "category": "quests",
+        "filename": "business_builder.png",
+        "path": "generated/quests/business_builder.png",
+        "timestamp": "2025-10-29T02:53:22.613553"
+      }
+    ],
+    "stats": [
+      {
+        "name": "Cash",
+        "description": "Cash on hand",
+        "category": "stats",
+        "filename": "cash.png",
+        "path": "generated/stats/cash.png",
+        "timestamp": "2025-10-29T02:53:22.615427"
+      },
+      {
+        "name": "Land Fund",
+        "description": "Land fund savings",
+        "category": "stats",
+        "filename": "land_fund.png",
+        "path": "generated/stats/land_fund.png",
+        "timestamp": "2025-10-29T02:53:22.617493"
+      },
+      {
+        "name": "Content Pieces",
+        "description": "Content pieces created",
+        "category": "stats",
+        "filename": "content_pieces.png",
+        "path": "generated/stats/content_pieces.png",
+        "timestamp": "2025-10-29T02:53:22.619813"
+      },
+      {
+        "name": "Restorations",
+        "description": "Restoration projects completed",
+        "category": "stats",
+        "filename": "restorations.png",
+        "path": "generated/stats/restorations.png",
+        "timestamp": "2025-10-29T02:53:22.622053"
+      },
+      {
+        "name": "Skills",
+        "description": "Skills learned",
+        "category": "stats",
+        "filename": "skills.png",
+        "path": "generated/stats/skills.png",
+        "timestamp": "2025-10-29T02:53:22.623949"
+      },
+      {
+        "name": "Connections",
+        "description": "Connections made",
+        "category": "stats",
+        "filename": "connections.png",
+        "path": "generated/stats/connections.png",
+        "timestamp": "2025-10-29T02:53:22.625957"
+      },
+      {
+        "name": "Level Up",
+        "description": "Level up effect",
+        "category": "stats",
+        "filename": "level_up.png",
+        "path": "generated/stats/level_up.png",
+        "timestamp": "2025-10-29T02:53:22.628053"
+      },
+      {
+        "name": "XP Gain",
+        "description": "XP gain indicator",
+        "category": "stats",
+        "filename": "xp_gain.png",
+        "path": "generated/stats/xp_gain.png",
+        "timestamp": "2025-10-29T02:53:22.630055"
+      }
+    ],
+    "characters": [
+      {
+        "name": "Protagonist Front",
+        "description": "Main character front view",
+        "category": "characters",
+        "filename": "protagonist_front.png",
+        "path": "generated/characters/protagonist_front.png",
+        "timestamp": "2025-10-29T02:53:22.632694"
+      },
+      {
+        "name": "Protagonist Side",
+        "description": "Main character side view",
+        "category": "characters",
+        "filename": "protagonist_side.png",
+        "path": "generated/characters/protagonist_side.png",
+        "timestamp": "2025-10-29T02:53:22.635606"
+      },
+      {
+        "name": "Van Asset",
+        "description": "Player's van home",
+        "category": "characters",
+        "filename": "van_asset.png",
+        "path": "generated/characters/van_asset.png",
+        "timestamp": "2025-10-29T02:53:22.638033"
+      },
+      {
+        "name": "Workshop Building",
+        "description": "Workshop location",
+        "category": "characters",
+        "filename": "workshop_building.png",
+        "path": "generated/characters/workshop_building.png",
+        "timestamp": "2025-10-29T02:53:22.640861"
+      }
+    ],
+    "ui": [
+      {
+        "name": "Trophy Gold",
+        "description": "Achievement trophy",
+        "category": "ui",
+        "filename": "trophy_gold.png",
+        "path": "generated/ui/trophy_gold.png",
+        "timestamp": "2025-10-29T02:53:22.643589"
+      },
+      {
+        "name": "Trophy Silver",
+        "description": "Second place trophy",
+        "category": "ui",
+        "filename": "trophy_silver.png",
+        "path": "generated/ui/trophy_silver.png",
+        "timestamp": "2025-10-29T02:53:22.645979"
+      },
+      {
+        "name": "Trophy Bronze",
+        "description": "Third place trophy",
+        "category": "ui",
+        "filename": "trophy_bronze.png",
+        "path": "generated/ui/trophy_bronze.png",
+        "timestamp": "2025-10-29T02:53:22.648198"
+      },
+      {
+        "name": "Quest Complete",
+        "description": "Quest completion banner",
+        "category": "ui",
+        "filename": "quest_complete.png",
+        "path": "generated/ui/quest_complete.png",
+        "timestamp": "2025-10-29T02:53:22.650695"
+      },
+      {
+        "name": "Daily Streak",
+        "description": "Daily streak indicator",
+        "category": "ui",
+        "filename": "daily_streak.png",
+        "path": "generated/ui/daily_streak.png",
+        "timestamp": "2025-10-29T02:53:22.652990"
+      },
+      {
+        "name": "Money Bag",
+        "description": "Money bag icon",
+        "category": "ui",
+        "filename": "money_bag.png",
+        "path": "generated/ui/money_bag.png",
+        "timestamp": "2025-10-29T02:53:22.655382"
+      }
+    ]
+  }
+}

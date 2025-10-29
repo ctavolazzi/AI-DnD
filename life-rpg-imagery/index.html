@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life RPG - Asset Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 1rem;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .note {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+        }
+
+        .note strong {
+            color: #fbbf24;
+        }
+
+        .category {
+            margin-bottom: 3rem;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .category-icon {
+            font-size: 2rem;
+        }
+
+        .category-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .category-count {
+            color: #10b981;
+            font-weight: 600;
+            margin-left: auto;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        .assets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .asset-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(51, 65, 85, 0.6);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .asset-card:hover {
+            border-color: #10b981;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .asset-image-container {
+            background: #1e293b;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+        }
+
+        .asset-image {
+            max-width: 100%;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        .asset-name {
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .asset-description {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        /* Category-specific colors */
+        .category-achievements .category-header { border-bottom-color: rgba(251, 191, 36, 0.5); }
+        .category-achievements .category-count { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
+        .category-achievements .asset-card:hover { border-color: #fbbf24; box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3); }
+
+        .category-quests .category-header { border-bottom-color: rgba(6, 182, 212, 0.5); }
+        .category-quests .category-count { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
+        .category-quests .asset-card:hover { border-color: #06b6d4; box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3); }
+
+        .category-stats .category-header { border-bottom-color: rgba(16, 185, 129, 0.5); }
+        .category-stats .category-count { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .category-stats .asset-card:hover { border-color: #10b981; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3); }
+
+        .category-characters .category-header { border-bottom-color: rgba(168, 85, 247, 0.5); }
+        .category-characters .category-count { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+        .category-characters .asset-card:hover { border-color: #a855f7; box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3); }
+
+        .category-ui .category-header { border-bottom-color: rgba(249, 115, 22, 0.5); }
+        .category-ui .category-count { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+        .category-ui .asset-card:hover { border-color: #f97316; box-shadow: 0 10px 30px rgba(249, 115, 22, 0.3); }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(51, 65, 85, 0.6);
+            color: #64748b;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(51, 65, 85, 0.6);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* Modal for enlarged view */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            image-rendering: pixelated;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: #f1f5f9;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Life RPG Asset Gallery</h1>
+            <p class="subtitle">Pixel Art Assets for the Life RPG Prototype</p>
+        </header>
+
+        <div class="note">
+            <strong>Note:</strong> These are placeholder images generated for demonstration purposes.
+            The actual pixel art assets can be generated using the PixelLab API when a valid API key is available.
+            The placeholders show the structure and organization of the asset system.
+        </div>
+
+        <div class="stats-summary">
+            <div class="stat-card">
+                <div class="stat-value" id="total-assets">33</div>
+                <div class="stat-label">Total Assets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">64x64</div>
+                <div class="stat-label">Standard Size</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">128x128</div>
+                <div class="stat-label">Character Size</div>
+            </div>
+        </div>
+
+        <div class="category category-achievements">
+            <div class="category-header">
+                <span class="category-icon">🏆</span>
+                <h2 class="category-title">Achievement Badges</h2>
+                <span class="category-count">10 assets</span>
+            </div>
+            <div class="assets-grid" id="achievements-grid"></div>
+        </div>
+
+        <div class="category category-quests">
+            <div class="category-header">
+                <span class="category-icon">🎯</span>
+                <h2 class="category-title">Quest Line Icons</h2>
+                <span class="category-count">5 assets</span>
+            </div>
+            <div class="assets-grid" id="quests-grid"></div>
+        </div>
+
+        <div class="category category-stats">
+            <div class="category-header">
+                <span class="category-icon">📊</span>
+                <h2 class="category-title">Stat Icons</h2>
+                <span class="category-count">8 assets</span>
+            </div>
+            <div class="assets-grid" id="stats-grid"></div>
+        </div>
+
+        <div class="category category-characters">
+            <div class="category-header">
+                <span class="category-icon">👤</span>
+                <h2 class="category-title">Character Sprites</h2>
+                <span class="category-count">4 assets</span>
+            </div>
+            <div class="assets-grid" id="characters-grid"></div>
+        </div>
+
+        <div class="category category-ui">
+            <div class="category-header">
+                <span class="category-icon">🎨</span>
+                <h2 class="category-title">UI Elements</h2>
+                <span class="category-count">6 assets</span>
+            </div>
+            <div class="assets-grid" id="ui-grid"></div>
+        </div>
+
+        <footer>
+            <p>Generated with the Life RPG Asset Generator</p>
+            <p>Part of the AI-DnD Project</p>
+        </footer>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal" id="imageModal">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <script>
+        // Load metadata and populate galleries
+        fetch('generated/metadata.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = data.categories;
+
+                // Populate each category
+                Object.keys(categories).forEach(category => {
+                    const grid = document.getElementById(`${category}-grid`);
+                    const assets = categories[category];
+
+                    assets.forEach(asset => {
+                        const card = createAssetCard(asset);
+                        grid.appendChild(card);
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error loading metadata:', error);
+                // Fallback: load images directly
+                loadImagesDirectly();
+            });
+
+        function createAssetCard(asset) {
+            const card = document.createElement('div');
+            card.className = 'asset-card';
+            card.onclick = () => openModal(asset.path);
+
+            card.innerHTML = `
+                <div class="asset-image-container">
+                    <img src="${asset.path}" alt="${asset.name}" class="asset-image">
+                </div>
+                <div class="asset-name">${asset.name}</div>
+                <div class="asset-description">${asset.description}</div>
+            `;
+
+            return card;
+        }
+
+        function openModal(imagePath) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.classList.add('active');
+            modalImg.src = imagePath;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('active');
+        }
+
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').onclick = function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        }
+
+        // Fallback function to load images directly if metadata fails
+        function loadImagesDirectly() {
+            const categories = {
+                achievements: [
+                    'first_dollar', 'the_flipper', 'consistent_creator', 'four_figures',
+                    'ten_grand', 'workshop_dreamer', 'custom_creator', 'youtube_partner',
+                    'landowner', 'boss_mode'
+                ],
+                quests: [
+                    'van_life', 'land_fund', 'workshop_path', 'content_empire', 'business_builder'
+                ],
+                stats: [
+                    'cash', 'land_fund', 'content_pieces', 'restorations',
+                    'skills', 'connections', 'level_up', 'xp_gain'
+                ],
+                characters: [
+                    'protagonist_front', 'protagonist_side', 'van_asset', 'workshop_building'
+                ],
+                ui: [
+                    'trophy_gold', 'trophy_silver', 'trophy_bronze',
+                    'quest_complete', 'daily_streak', 'money_bag'
+                ]
+            };
+
+            Object.keys(categories).forEach(category => {
+                const grid = document.getElementById(`${category}-grid`);
+                categories[category].forEach(assetName => {
+                    const asset = {
+                        name: assetName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        description: `${category} asset`,
+                        path: `generated/${category}/${assetName}.png`
+                    };
+                    const card = createAssetCard(asset);
+                    grid.appendChild(card);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
