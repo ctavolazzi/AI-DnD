@@ -12,7 +12,7 @@ from pathlib import Path
 
 from .config import settings
 from .database import engine, Base, get_db
-from .api import images_router, scenes_router, maintenance_router, migrate_router, game_router
+from .api import images_router, scenes_router, maintenance_router, migrate_router, game_router, game_logic_router, narrative_router, frontend_router, character_generation_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -52,6 +52,10 @@ app.include_router(scenes_router)
 app.include_router(maintenance_router)
 app.include_router(migrate_router)
 app.include_router(game_router)
+app.include_router(game_logic_router)
+app.include_router(narrative_router)
+app.include_router(frontend_router)
+app.include_router(character_generation_router)
 
 # Serve static images
 images_path = Path(settings.IMAGE_STORAGE_DIR)

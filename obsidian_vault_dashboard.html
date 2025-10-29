@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian Vault Dashboard - AI-DnD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            padding: 30px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .status-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .status-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .status-card .label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .characters-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .characters-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .character-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .character-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .character-item:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 10px rgba(52, 152, 219, 0.1);
+        }
+
+        .character-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .character-status {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .dashboard {
+                padding: 20px;
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Obsidian Vault Dashboard</h1>
+            <p>AI-DnD System Integration</p>
+        </div>
+
+        <div class="dashboard">
+            <div id="status-container">
+                <div class="loading">
+                    <h3>Loading vault status...</h3>
+                    <p>Please wait while we connect to your Obsidian vault.</p>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-success" onclick="refreshStatus()">🔄 Refresh Status</button>
+                <button class="btn" onclick="syncAllCharacters()">👥 Sync All Characters</button>
+                <button class="btn btn-warning" onclick="openVaultFolder()">📁 Open Vault Folder</button>
+                <button class="btn btn-danger" onclick="clearVault()">🗑️ Clear Vault</button>
+            </div>
+
+            <div id="characters-container">
+                <!-- Characters will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <button class="refresh-btn" onclick="refreshStatus()" title="Refresh Status">
+        🔄
+    </button>
+
+    <script>
+        let vaultStatus = null;
+
+        // Load vault status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshStatus();
+        });
+
+        async function refreshStatus() {
+            try {
+                showLoading();
+
+                // Simulate API call - in practice, this would call your Python backend
+                const response = await fetch('/api/vault-status');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                vaultStatus = await response.json();
+                displayStatus(vaultStatus);
+                loadCharacters();
+
+            } catch (error) {
+                console.error('Error fetching vault status:', error);
+                showError('Failed to load vault status. Make sure the sync server is running.');
+
+                // Fallback: show demo data
+                showDemoData();
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('status-container').innerHTML = `
+                <div class="loading">
+                    <h3>Loading vault status...</h3>
+                    <p>Please wait while we connect to your Obsidian vault.</p>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            document.getElementById('status-container').innerHTML = `
+                <div class="error">
+                    <h3>❌ Error</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function showDemoData() {
+            // Show demo data when API is not available
+            const demoStatus = {
+                vault_path: "ai-dnd-test-vault",
+                vault_exists: true,
+                vault_writable: true,
+                last_updated: new Date().toLocaleString(),
+                total_files: 12,
+                characters: 3,
+                locations: 2,
+                events: 4,
+                quests: 2,
+                items: 1,
+                sessions: 0,
+                journals: 3
+            };
+
+            displayStatus(demoStatus);
+            loadDemoCharacters();
+        }
+
+        function displayStatus(status) {
+            const statusHtml = `
+                <div class="status-grid">
+                    <div class="status-card">
+                        <h3>📁 Total Files</h3>
+                        <div class="value">${status.total_files || 0}</div>
+                        <div class="label">Markdown files in vault</div>
+                    </div>
+                    <div class="status-card">
+                        <h3>👥 Characters</h3>
+                        <div class="value">${status.characters || 0}</div>
+                        <div class="label">Character profiles</div>
+                    </div>
+                    <div class="status-card">
+                        <h3>🗺️ Locations</h3>
+                        <div class="value">${status.locations || 0}</div>
+                        <div class="label">World locations</div>
+                    </div>
+                    <div class="status-card">
+                        <h3>📜 Events</h3>
+                        <div class="value">${status.events || 0}</div>
+                        <div class="label">Game events</div>
+                    </div>
+                    <div class="status-card">
+                        <h3>🎯 Quests</h3>
+                        <div class="value">${status.quests || 0}</div>
+                        <div class="label">Active quests</div>
+                    </div>
+                    <div class="status-card">
+                        <h3>⚔️ Items</h3>
+                        <div class="value">${status.items || 0}</div>
+                        <div class="label">Items discovered</div>
+                    </div>
+                </div>
+
+                <div class="success">
+                    <h3>✅ Vault Status</h3>
+                    <p><strong>Path:</strong> ${status.vault_path}</p>
+                    <p><strong>Last Updated:</strong> ${status.last_updated || 'Never'}</p>
+                    <p><strong>Status:</strong> ${status.vault_exists ? '✅ Connected' : '❌ Not Found'}</p>
+                </div>
+            `;
+
+            document.getElementById('status-container').innerHTML = statusHtml;
+        }
+
+        async function loadCharacters() {
+            try {
+                const response = await fetch('/api/characters');
+                const characters = await response.json();
+                displayCharacters(characters);
+            } catch (error) {
+                console.error('Error loading characters:', error);
+                loadDemoCharacters();
+            }
+        }
+
+        function loadDemoCharacters() {
+            const demoCharacters = [
+                { name: "Thorin Ironbeard", status: "Active - HP: 18/20", class: "Fighter" },
+                { name: "Luna Starshine", status: "Active - HP: 15/15", class: "Wizard" },
+                { name: "Grimlock the Bold", status: "Active - HP: 22/22", class: "Cleric" }
+            ];
+            displayCharacters(demoCharacters);
+        }
+
+        function displayCharacters(characters) {
+            if (!characters || characters.length === 0) {
+                document.getElementById('characters-container').innerHTML = `
+                    <div class="characters-section">
+                        <h3>👥 Characters</h3>
+                        <p>No characters found in vault.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const charactersHtml = `
+                <div class="characters-section">
+                    <h3>👥 Characters (${characters.length})</h3>
+                    <div class="character-list">
+                        ${characters.map(char => `
+                            <div class="character-item">
+                                <div class="character-name">${char.name}</div>
+                                <div class="character-status">${char.status || char.class || 'Unknown'}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('characters-container').innerHTML = charactersHtml;
+        }
+
+        async function syncAllCharacters() {
+            try {
+                showMessage('Syncing all characters to vault...', 'info');
+
+                const response = await fetch('/api/sync-all', { method: 'POST' });
+
+                if (response.ok) {
+                    showMessage('✅ All characters synced successfully!', 'success');
+                    setTimeout(refreshStatus, 1000);
+                } else {
+                    throw new Error('Sync failed');
+                }
+            } catch (error) {
+                console.error('Error syncing characters:', error);
+                showMessage('❌ Failed to sync characters. Using demo data.', 'error');
+                loadDemoCharacters();
+            }
+        }
+
+        function openVaultFolder() {
+            // This would open the vault folder in the file explorer
+            showMessage('📁 Opening vault folder...', 'info');
+            // In practice, you'd use a backend endpoint to open the folder
+        }
+
+        function clearVault() {
+            if (confirm('Are you sure you want to clear the vault? This will delete all files!')) {
+                showMessage('🗑️ Clearing vault...', 'warning');
+                // In practice, you'd call a backend endpoint to clear the vault
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'error' ? 'error' :
+                                  type === 'success' ? 'success' : 'info';
+            messageDiv.innerHTML = `<p>${message}</p>`;
+
+            const container = document.querySelector('.dashboard');
+            container.insertBefore(messageDiv, container.firstChild);
+
+            // Remove message after 5 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 5000);
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshStatus, 30000);
+    </script>
+</body>
+</html>

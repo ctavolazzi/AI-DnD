@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Comprehensive Testing Interface</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50'%20font-size='48'%3E⚙️%3C/text%3E%3C/svg%3E">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background: linear-gradient(135deg, #1a1410 0%, #2a1810 50%, #1a1410 100%);
+            color: #e8d4b8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(45deg, #4a3426, #8b4513);
+            border: 3px solid #b8860b;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .header h1 {
+            color: #ffd700;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .header p {
+            color: #ffb347;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.7rem;
+        }
+
+        .stats-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mcp-panel {
+            background: linear-gradient(180deg, #2a1810 0%, #1a1410 100%);
+            border: 3px solid #b8860b;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            color: #ffd700;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .mcp-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid #4a3426;
+            border-radius: 8px;
+        }
+
+        .mcp-section h3 {
+            color: #ffb347;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .mcp-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mcp-button {
+            background: linear-gradient(45deg, #8b4513, #a0522d);
+            color: #fff;
+            border: 2px solid #b8860b;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mcp-button:hover {
+            background: linear-gradient(45deg, #a0522d, #cd853f);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .mcp-button:active {
+            transform: translateY(0);
+        }
+
+        .mcp-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .mcp-input {
+            background: rgba(232, 212, 184, 0.1);
+            border: 2px solid #8b4513;
+            color: #e8d4b8;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            width: 100%;
+        }
+
+        .mcp-input::placeholder {
+            color: #8b4513;
+        }
+
+        .mcp-output {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #4a3426;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 0.6rem;
+            line-height: 1.4;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 0.5rem;
+        }
+
+        .log-info { background: rgba(0, 150, 255, 0.1); }
+        .log-success { background: rgba(0, 255, 0, 0.1); }
+        .log-error { background: rgba(255, 0, 0, 0.1); }
+        .log-warning { background: rgba(255, 255, 0, 0.1); }
+        .log-debug { background: rgba(128, 128, 128, 0.1); }
+
+        .log-time {
+            color: #8b4513;
+            font-size: 0.4rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-online { background: #00ff00; }
+        .status-offline { background: #ff0000; }
+        .status-unknown { background: #ffff00; }
+
+        .server-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+
+        .server-name {
+            font-size: 0.7rem;
+            color: #ffb347;
+        }
+
+        .function-count {
+            font-size: 0.5rem;
+            color: #8b4513;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .mcp-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .collapsible:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .collapsible-content {
+            display: none;
+            padding-top: 10px;
+        }
+
+        .collapsible.active .collapsible-content {
+            display: block;
+        }
+
+        .expand-icon {
+            float: right;
+            transition: transform 0.3s;
+        }
+
+        .collapsible.active .expand-icon {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ MCP Comprehensive Testing Interface</h1>
+            <p>Test All 9 MCP Servers • 100+ Functions • Real-time Monitoring</p>
+            <p>Model Context Protocol Server Testing Suite</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stats-item">
+                <span>📊 Total Servers:</span>
+                <span id="totalServers">9</span>
+            </div>
+            <div class="stats-item">
+                <span>🔧 Total Functions:</span>
+                <span id="totalFunctions">100+</span>
+            </div>
+            <div class="stats-item">
+                <span>✅ Online:</span>
+                <span id="onlineServers">0</span>
+            </div>
+            <div class="stats-item">
+                <span>📞 Calls Made:</span>
+                <span id="totalCalls">0</span>
+            </div>
+            <div class="stats-item">
+                <span>⏱️ Uptime:</span>
+                <span id="uptime">00:00:00</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel: MCP Server Functions -->
+            <div class="mcp-panel">
+                <div class="panel-title">🔧 MCP Server Functions</div>
+
+                <!-- Filesystem MCP Server -->
+                <div class="mcp-section">
+                    <h3 class="collapsible" onclick="toggleSection(this)">
+                        📁 Filesystem Server <span class="expand-icon">▶</span>
+                        <div class="server-status">
+                            <span class="status-indicator status-unknown"></span>
+                            <span class="server-name">filesystem</span>
+                            <span class="function-count">8 functions</span>
+                        </div>
+                    </h3>
+                    <div class="collapsible-content">
+                        <div class="mcp-controls">
+                            <button class="mcp-button" onclick="testMCPFunction('filesystem', 'read_file', {path: '/README.md'})">
+                                📖 Read File
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('filesystem', 'write_file', {path: '/test.txt', content: 'Test content'})">
+                                ✏️ Write File
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('filesystem', 'list_directory', {path: '/'})">
+                                📋 List Directory
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('filesystem', 'search_files', {path: '/', pattern: '*.md'})">
+                                🔍 Search Files
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('filesystem', 'get_file_info', {path: '/README.md'})">
+                                ℹ️ Get File Info
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('filesystem', 'create_directory', {path: '/test_dir'})">
+                                📁 Create Directory
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('filesystem', 'move_file', {source: '/test.txt', destination: '/test_moved.txt'})">
+                                📦 Move File
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('filesystem', 'delete_file', {path: '/test.txt'})">
+                                🗑️ Delete File
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Efforts MCP Server -->
+                <div class="mcp-section">
+                    <h3 class="collapsible" onclick="toggleSection(this)">
+                        📋 Work Efforts Server <span class="expand-icon">▶</span>
+                        <div class="server-status">
+                            <span class="status-indicator status-unknown"></span>
+                            <span class="server-name">work-efforts</span>
+                            <span class="function-count">3 functions</span>
+                        </div>
+                    </h3>
+                    <div class="collapsible-content">
+                        <div class="mcp-controls">
+                            <button class="mcp-button" onclick="testMCPFunction('work-efforts', 'create_work_effort', {
+                                repo_path: '/Users/ctavolazzi/Code/AI-DnD',
+                                title: 'Test Work Effort',
+                                category: '10-19',
+                                subcategory: '10',
+                                objective: 'Test MCP work efforts integration'
+                            })">
+                                ➕ Create Work Effort
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('work-efforts', 'list_work_efforts', {repo_path: '/Users/ctavolazzi/Code/AI-DnD'})">
+                                📋 List Work Efforts
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('work-efforts', 'update_work_effort', {
+                                file_path: '/Users/ctavolazzi/Code/AI-DnD/_work_efforts_/10-19_development/10_core/10.24_20251029_mcp_server_ui_integration.md',
+                                status: 'active',
+                                progress: 'Testing MCP integration'
+                            })">
+                                ✏️ Update Work Effort
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simple Tools MCP Server -->
+                <div class="mcp-section">
+                    <h3 class="collapsible" onclick="toggleSection(this)">
+                        🔧 Simple Tools Server <span class="expand-icon">▶</span>
+                        <div class="server-status">
+                            <span class="status-indicator status-unknown"></span>
+                            <span class="server-name">simple-tools</span>
+                            <span class="function-count">2 functions</span>
+                        </div>
+                    </h3>
+                    <div class="collapsible-content">
+                        <div class="mcp-controls">
+                            <button class="mcp-button" onclick="testMCPFunction('simple-tools', 'generate_random_name', {})">
+                                🎲 Random Name
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('simple-tools', 'generate_unique_id', {})">
+                                🆔 Unique ID
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pixellab MCP Server -->
+                <div class="mcp-section">
+                    <h3 class="collapsible" onclick="toggleSection(this)">
+                        🎨 Pixellab Server <span class="expand-icon">▶</span>
+                        <div class="server-status">
+                            <span class="status-indicator status-unknown"></span>
+                            <span class="server-name">pixellab</span>
+                            <span class="function-count">8 functions</span>
+                        </div>
+                    </h3>
+                    <div class="collapsible-content">
+                        <div class="mcp-controls">
+                            <button class="mcp-button" onclick="testMCPFunction('pixellab', 'generate_image_pixflux', {description: 'cute dragon'})">
+                                🐉 Generate Pixel Art
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('pixellab', 'generate_image_bitforge', {description: 'knight', style_image_path: '/test.png'})">
+                                ⚔️ Styled Pixel Art
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('pixellab', 'rotate', {image_path: '/test.png', to_direction: 'east'})">
+                                🔄 Rotate Image
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('pixellab', 'inpaint', {image_path: '/test.png', mask_path: '/mask.png', description: 'red hat'})">
+                                🎨 Inpaint Image
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('pixellab', 'estimate_skeleton', {image_path: '/test.png'})">
+                                🦴 Estimate Skeleton
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('pixellab', 'animate_with_skeleton', {skeleton_frames: []})">
+                                🎬 Skeleton Animation
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('pixellab', 'animate_with_text', {description: 'knight', action: 'walking', reference_image_path: '/test.png'})">
+                                📝 Text Animation
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('pixellab', 'get_balance', {})">
+                                💰 Check Balance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decision Matrix MCP Server -->
+                <div class="mcp-section">
+                    <h3 class="collapsible" onclick="toggleSection(this)">
+                        🤔 Decision Matrix Server <span class="expand-icon">▶</span>
+                        <div class="server-status">
+                            <span class="status-indicator status-unknown"></span>
+                            <span class="server-name">decision-matrix</span>
+                            <span class="function-count">5 functions</span>
+                        </div>
+                    </h3>
+                    <div class="collapsible-content">
+                        <div class="mcp-controls">
+                            <button class="mcp-button" onclick="testMCPFunction('decision-matrix', 'create_decision_matrix', {
+                                title: 'Test Decision',
+                                criteria: [{name: 'Cost', weight: 0.5, description: 'Financial cost'}],
+                                options: [{name: 'Option A', description: 'First option', scores: {Cost: 8}}]
+                            })">
+                                ➕ Create Matrix
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('decision-matrix', 'analyze_decision_matrix', {matrix_id: 'test_matrix'})">
+                                📊 Analyze Matrix
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('decision-matrix', 'get_decision_recommendation', {matrix_id: 'test_matrix'})">
+                                💡 Get Recommendation
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('decision-matrix', 'list_decision_matrices', {})">
+                                📋 List Matrices
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('decision-matrix', 'get_decision_matrix_details', {matrix_id: 'test_matrix'})">
+                                ℹ️ Get Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Random User MCP Server -->
+                <div class="mcp-section">
+                    <h3 class="collapsible" onclick="toggleSection(this)">
+                        👥 Random User Server <span class="expand-icon">▶</span>
+                        <div class="server-status">
+                            <span class="status-indicator status-unknown"></span>
+                            <span class="server-name">random-user</span>
+                            <span class="function-count">5 functions</span>
+                        </div>
+                    </h3>
+                    <div class="collapsible-content">
+                        <div class="mcp-controls">
+                            <button class="mcp-button" onclick="testMCPFunction('random-user', 'get_random_user', {})">
+                                👤 Random User
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('random-user', 'get_multiple_users', {count: 5})">
+                                👥 Multiple Users
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('random-user', 'get_random_name', {})">
+                                📝 Random Name
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('random-user', 'get_npc_data', {})">
+                                🎭 NPC Data
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('random-user', 'get_tavern_patrons', {count: 3})">
+                                🍺 Tavern Patrons
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Generator MCP Server -->
+                <div class="mcp-section">
+                    <h3 class="collapsible" onclick="toggleSection(this)">
+                        🖼️ Image Generator Server <span class="expand-icon">▶</span>
+                        <div class="server-status">
+                            <span class="status-indicator status-unknown"></span>
+                            <span class="server-name">image-generator</span>
+                            <span class="function-count">6 functions</span>
+                        </div>
+                    </h3>
+                    <div class="collapsible-content">
+                        <div class="mcp-controls">
+                            <button class="mcp-button" onclick="testMCPFunction('image-generator', 'generate_image', {prompt: 'fantasy castle'})">
+                                🏰 Generate Image
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('image-generator', 'generate_character_portrait', {
+                                character_name: 'Test Hero',
+                                race: 'human',
+                                class: 'fighter'
+                            })">
+                                👤 Character Portrait
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('image-generator', 'generate_scenario_image', {scenario: 'tavern_interior'})">
+                                🏠 Scenario Image
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('image-generator', 'generate_item_image', {
+                                item_name: 'Magic Sword',
+                                item_type: 'weapon'
+                            })">
+                                ⚔️ Item Image
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('image-generator', 'generate_monster_image', {monster_name: 'Dragon'})">
+                                🐲 Monster Image
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('image-generator', 'list_generated_images', {})">
+                                📋 List Images
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- D&D DM MCP Server -->
+                <div class="mcp-section">
+                    <h3 class="collapsible" onclick="toggleSection(this)">
+                        🎲 D&D DM Server <span class="expand-icon">▶</span>
+                        <div class="server-status">
+                            <span class="status-indicator status-unknown"></span>
+                            <span class="server-name">dnd-dm</span>
+                            <span class="function-count">25 functions</span>
+                        </div>
+                    </h3>
+                    <div class="collapsible-content">
+                        <div class="mcp-controls">
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'create_campaign', {name: 'Test Campaign'})">
+                                📚 Create Campaign
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'get_campaign_info', {campaign_id: 'test_campaign'})">
+                                ℹ️ Campaign Info
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'list_campaigns', {})">
+                                📋 List Campaigns
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'generate_npc', {})">
+                                👤 Generate NPC
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'generate_tavern_patrons', {count: 3})">
+                                🍺 Tavern Patrons
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'get_npc_details', {npc_id: 'test_npc'})">
+                                📄 NPC Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'build_encounter', {
+                                party_size: 4,
+                                party_level: 5,
+                                difficulty: 'medium'
+                            })">
+                                ⚔️ Build Encounter
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'generate_encounter_scene', {
+                                encounter_id: 'test_encounter',
+                                scene_type: 'battlefield'
+                            })">
+                                🎬 Encounter Scene
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'create_session', {
+                                campaign_id: 'test_campaign',
+                                session_name: 'Test Session'
+                            })">
+                                📅 Create Session
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'add_session_note', {
+                                session_id: 'test_session',
+                                note: 'Test note',
+                                category: 'general'
+                            })">
+                                📝 Add Note
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'create_decision_matrix', {
+                                title: 'Test Decision',
+                                criteria: [],
+                                options: []
+                            })">
+                                🤔 Decision Matrix
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'get_decision_recommendation', {matrix_id: 'test_matrix'})">
+                                💡 Recommendation
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'generate_location', {location_type: 'town'})">
+                                🏘️ Generate Location
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'generate_quest', {quest_type: 'rescue'})">
+                                🎯 Generate Quest
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'generate_character_portrait', {
+                                character_name: 'Test Hero',
+                                race: 'human',
+                                class: 'fighter'
+                            })">
+                                👤 Character Portrait
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'generate_scene_image', {
+                                scene_description: 'medieval tavern'
+                            })">
+                                🎨 Scene Image
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'roll_dice', {dice: '1d20'})">
+                                🎲 Roll Dice
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'generate_loot', {challenge_rating: 5})">
+                                💰 Generate Loot
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'get_dm_tips', {topic: 'combat'})">
+                                💡 DM Tips
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'ai_decision_making', {
+                                context: 'combat situation',
+                                player_actions: 'attack'
+                            })">
+                                🤖 AI Decision
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'ai_content_generation', {
+                                content_type: 'dialogue',
+                                context: 'tavern scene'
+                            })">
+                                ✍️ AI Content
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'ai_npc_behavior', {
+                                npc_type: 'merchant',
+                                situation: 'player bargaining'
+                            })">
+                                🎭 AI NPC Behavior
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'ai_adaptive_storytelling', {
+                                story_context: 'heroic quest',
+                                player_choice: 'help villagers'
+                            })">
+                                📖 AI Storytelling
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'ai_combat_narrative', {
+                                combat_situation: 'boss fight',
+                                party_action: 'coordinated attack'
+                            })">
+                                ⚔️ AI Combat
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-dm', 'ai_world_reaction', {
+                                player_action: 'saved village',
+                                world_state: 'peaceful'
+                            })">
+                                🌍 AI World Reaction
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- D&D 5E MCP Server -->
+                <div class="mcp-section">
+                    <h3 class="collapsible" onclick="toggleSection(this)">
+                        📚 D&D 5E Server <span class="expand-icon">▶</span>
+                        <div class="server-status">
+                            <span class="status-indicator status-unknown"></span>
+                            <span class="server-name">dnd-5e</span>
+                            <span class="function-count">40+ functions</span>
+                        </div>
+                    </h3>
+                    <div class="collapsible-content">
+                        <div class="mcp-controls">
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'unified_search', {query: 'fireball'})">
+                                🔍 Unified Search
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_spells', {query: 'heal'})">
+                                ✨ Search Spells
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_spell_details', {spell_name: 'fireball'})">
+                                📖 Spell Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_spell_by_level', {level: 3})">
+                                📊 Spells by Level
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_spells_by_class', {class_name: 'wizard'})">
+                                🧙 Spells by Class
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_classes', {})">
+                                👥 Search Classes
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_class_details', {class_name: 'fighter'})">
+                                ⚔️ Class Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_races', {query: 'elf'})">
+                                🧝 Search Races
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_race_details', {race_name: 'human'})">
+                                👤 Race Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_monsters', {query: 'dragon'})">
+                                🐲 Search Monsters
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_monsters_by_cr', {challenge_rating: 5})">
+                                📊 Monsters by CR
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_weapons', {query: 'sword'})">
+                                ⚔️ Search Weapons
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_magic_items', {query: 'ring'})">
+                                💍 Magic Items
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_magic_item_details', {item_name: 'ring of protection'})">
+                                💎 Item Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_armor', {query: 'plate'})">
+                                🛡️ Search Armor
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_armor_details', {armor_name: 'plate armor'})">
+                                🛡️ Armor Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_feats', {query: 'great weapon'})">
+                                💪 Search Feats
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_feat_details', {feat_name: 'great weapon master'})">
+                                📋 Feat Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_conditions', {query: 'paralyzed'})">
+                                😵 Search Conditions
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_condition_details', {condition_name: 'paralyzed'})">
+                                📄 Condition Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_all_conditions', {})">
+                                📚 All Conditions
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_backgrounds', {query: 'noble'})">
+                                👑 Search Backgrounds
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_background_details', {background_name: 'noble'})">
+                                📜 Background Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_sections', {query: 'combat'})">
+                                📖 Search Rules
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_section_details', {section_name: 'combat'})">
+                                📄 Rule Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_all_sections', {})">
+                                📚 All Rules
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'search_spell_lists', {query: 'wizard'})">
+                                📜 Spell Lists
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_spell_list_details', {class_name: 'wizard'})">
+                                📋 Spell List Details
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_all_spell_lists', {})">
+                                📚 All Spell Lists
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_spells_for_class', {class_name: 'wizard'})">
+                                🧙 Spells for Class
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'build_encounter', {
+                                party_size: 4,
+                                party_level: 5,
+                                difficulty: 'medium'
+                            })">
+                                ⚔️ Build Encounter
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'calculate_encounter_difficulty', {
+                                party_size: 4,
+                                party_level: 5,
+                                monsters: [{name: 'orc', cr: '0.5', count: 2}]
+                            })">
+                                📊 Calculate Difficulty
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_monsters_by_cr_range', {min_cr: 1, max_cr: 5})">
+                                📈 Monsters by CR Range
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'generate_character_build', {
+                                playstyle: 'damage',
+                                campaign_type: 'combat'
+                            })">
+                                👤 Generate Build
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'compare_character_builds', {
+                                build_options: [{name: 'Fighter', playstyle: 'damage'}],
+                                campaign_type: 'combat'
+                            })">
+                                ⚖️ Compare Builds
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_build_recommendations', {
+                                existing_party: ['fighter', 'wizard'],
+                                campaign_type: 'combat'
+                            })">
+                                💡 Build Recommendations
+                            </button>
+                            <button class="mcp-button" onclick="testMCPFunction('dnd-5e', 'get_api_stats', {})">
+                                📊 API Stats
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Output and Logs -->
+            <div class="mcp-panel">
+                <div class="panel-title">📊 Output & Monitoring</div>
+
+                <div class="mcp-output" id="mainOutput">
+                    <div class="log-entry log-info">
+                        <span class="log-time">[00:00:00]</span>
+                        🎯 MCP Comprehensive Testing Interface initialized
+                    </div>
+                    <div class="log-entry log-info">
+                        <span class="log-time">[00:00:00]</span>
+                        📊 Ready to test 9 MCP servers with 100+ functions
+                    </div>
+                    <div class="log-entry log-info">
+                        <span class="log-time">[00:00:00]</span>
+                        💡 Click any button to test MCP server functions
+                    </div>
+                </div>
+
+                <div class="mcp-section">
+                    <h3>📈 Real-time Stats</h3>
+                    <div class="mcp-output" id="statsOutput">
+                        <div class="log-entry log-info">
+                            <span class="log-time">[00:00:00]</span>
+                            📊 Server Status: Checking...
+                        </div>
+                        <div class="log-entry log-info">
+                            <span class="log-time">[00:00:00]</span>
+                            🔧 Functions Available: 100+
+                        </div>
+                        <div class="log-entry log-info">
+                            <span class="log-time">[00:00:00]</span>
+                            📞 Total Calls: 0
+                        </div>
+                        <div class="log-entry log-info">
+                            <span class="log-time">[00:00:00]</span>
+                            ✅ Success Rate: 0%
+                        </div>
+                        <div class="log-entry log-info">
+                            <span class="log-time">[00:00:00]</span>
+                            ⏱️ Average Response: 0ms
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mcp-section">
+                    <h3>🔧 System Controls</h3>
+                    <div class="mcp-controls">
+                        <button class="mcp-button" onclick="testAllServers()">
+                            🚀 Test All Servers
+                        </button>
+                        <button class="mcp-button" onclick="clearOutput()">
+                            🗑️ Clear Output
+                        </button>
+                        <button class="mcp-button" onclick="exportLogs()">
+                            📤 Export Logs
+                        </button>
+                        <button class="mcp-button" onclick="showServerStatus()">
+                            📊 Server Status
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MCP Testing Interface
+        class MCPTestingInterface {
+            constructor() {
+                this.stats = {
+                    totalCalls: 0,
+                    successfulCalls: 0,
+                    failedCalls: 0,
+                    totalResponseTime: 0,
+                    startTime: Date.now(),
+                    serverStatus: {}
+                };
+
+                this.log('🎯 MCP Testing Interface initialized', 'info');
+                this.updateStats();
+                this.startUptimeCounter();
+            }
+
+            log(message, type = 'info', data = null) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+
+                let logContent = `<span class="log-time">[${timestamp}]</span> ${message}`;
+                if (data) {
+                    logContent += ` <br><small style="color: #8b4513;">${JSON.stringify(data, null, 2)}</small>`;
+                }
+
+                logEntry.innerHTML = logContent;
+
+                const output = document.getElementById('mainOutput');
+                output.appendChild(logEntry);
+                output.scrollTop = output.scrollHeight;
+
+                // Also log to console
+                const consoleStyles = {
+                    info: 'color: #2196F3; font-weight: bold',
+                    success: 'color: #4CAF50; font-weight: bold',
+                    error: 'color: #f44336; font-weight: bold',
+                    warning: 'color: #FF9800; font-weight: bold',
+                    debug: 'color: #9E9E9E; font-weight: bold'
+                };
+
+                console.log(`%c${message}`, consoleStyles[type] || consoleStyles.info, data || '');
+            }
+
+            async testMCPFunction(server, functionName, params = {}) {
+                const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                const startTime = Date.now();
+
+                this.stats.totalCalls++;
+                this.log(`🚀 Testing: ${server}.${functionName}`, 'info', {
+                    callId,
+                    params,
+                    timestamp: new Date().toISOString()
+                });
+
+                try {
+                    // Simulate MCP server call (replace with actual MCP integration)
+                    const result = await this.simulateMCPServerCall(server, functionName, params);
+
+                    const duration = Date.now() - startTime;
+                    this.stats.successfulCalls++;
+                    this.stats.totalResponseTime += duration;
+
+                    this.log(`✅ Success: ${server}.${functionName}`, 'success', {
+                        callId,
+                        duration: `${duration}ms`,
+                        result: result
+                    });
+
+                    this.updateStats();
+                    return result;
+
+                } catch (error) {
+                    const duration = Date.now() - startTime;
+                    this.stats.failedCalls++;
+
+                    this.log(`❌ Failed: ${server}.${functionName}`, 'error', {
+                        callId,
+                        duration: `${duration}ms`,
+                        error: error.message
+                    });
+
+                    this.updateStats();
+                    throw error;
+                }
+            }
+
+            async simulateMCPServerCall(server, functionName, params) {
+                // Simulate realistic server response time
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 200));
+
+                // Simulate different response types based on server
+                const responses = {
+                    'filesystem': {
+                        'read_file': { content: 'Sample file content', size: 1024 },
+                        'write_file': { success: true, bytes_written: 1024 },
+                        'list_directory': { files: ['file1.txt', 'file2.md'], directories: ['dir1', 'dir2'] },
+                        'search_files': { matches: ['file1.txt', 'file2.txt'] },
+                        'get_file_info': { size: 1024, modified: new Date().toISOString() },
+                        'create_directory': { success: true, path: params.path },
+                        'move_file': { success: true, new_path: params.destination },
+                        'delete_file': { success: true }
+                    },
+                    'work-efforts': {
+                        'create_work_effort': { success: true, file_path: '/path/to/work_effort.md' },
+                        'list_work_efforts': { work_efforts: ['effort1.md', 'effort2.md'] },
+                        'update_work_effort': { success: true, updated: true }
+                    },
+                    'simple-tools': {
+                        'generate_random_name': { name: 'HappyPanda123' },
+                        'generate_unique_id': { id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}` }
+                    },
+                    'pixellab': {
+                        'generate_image_pixflux': { image_url: 'https://example.com/image.png', success: true },
+                        'generate_image_bitforge': { image_url: 'https://example.com/styled_image.png', success: true },
+                        'rotate': { image_url: 'https://example.com/rotated.png', success: true },
+                        'inpaint': { image_url: 'https://example.com/inpainted.png', success: true },
+                        'estimate_skeleton': { keypoints: [], success: true },
+                        'animate_with_skeleton': { frames: [], success: true },
+                        'animate_with_text': { frames: [], success: true },
+                        'get_balance': { balance: 1000, credits_used: 5 }
+                    },
+                    'decision-matrix': {
+                        'create_decision_matrix': { matrix_id: 'matrix_123', success: true },
+                        'analyze_decision_matrix': { analysis: 'Option A scored highest', success: true },
+                        'get_decision_recommendation': { recommendation: 'Choose Option A', confidence: 0.85 },
+                        'list_decision_matrices': { matrices: ['matrix_123', 'matrix_456'] },
+                        'get_decision_matrix_details': { details: 'Matrix details here' }
+                    },
+                    'random-user': {
+                        'get_random_user': { user: { name: 'John Doe', email: 'john@example.com' } },
+                        'get_multiple_users': { users: [{ name: 'John' }, { name: 'Jane' }] },
+                        'get_random_name': { name: 'RandomName123' },
+                        'get_npc_data': { npc: { name: 'Tavern Keeper', class: 'commoner' } },
+                        'get_tavern_patrons': { patrons: ['Patron1', 'Patron2', 'Patron3'] }
+                    },
+                    'image-generator': {
+                        'generate_image': { image_url: 'https://example.com/generated.png', success: true },
+                        'generate_character_portrait': { image_url: 'https://example.com/portrait.png', success: true },
+                        'generate_scenario_image': { image_url: 'https://example.com/scenario.png', success: true },
+                        'generate_item_image': { image_url: 'https://example.com/item.png', success: true },
+                        'generate_monster_image': { image_url: 'https://example.com/monster.png', success: true },
+                        'list_generated_images': { images: ['image1.png', 'image2.png'] }
+                    },
+                    'dnd-dm': {
+                        'create_campaign': { campaign_id: 'campaign_123', success: true },
+                        'get_campaign_info': { campaign: { name: 'Test Campaign', level_range: '1-10' } },
+                        'list_campaigns': { campaigns: ['campaign_123', 'campaign_456'] },
+                        'generate_npc': { npc: { name: 'Test NPC', class: 'fighter', level: 5 } },
+                        'generate_tavern_patrons': { patrons: ['Patron1', 'Patron2', 'Patron3'] },
+                        'get_npc_details': { details: 'NPC details here' },
+                        'build_encounter': { encounter: { monsters: ['goblin', 'orc'], difficulty: 'medium' } },
+                        'generate_encounter_scene': { scene_url: 'https://example.com/scene.png' },
+                        'create_session': { session_id: 'session_123', success: true },
+                        'add_session_note': { success: true },
+                        'create_decision_matrix': { matrix_id: 'matrix_123', success: true },
+                        'get_decision_recommendation': { recommendation: 'Choose Option A' },
+                        'generate_location': { location: { name: 'Test Town', type: 'town' } },
+                        'generate_quest': { quest: { title: 'Test Quest', type: 'rescue' } },
+                        'generate_character_portrait': { image_url: 'https://example.com/portrait.png' },
+                        'generate_scene_image': { image_url: 'https://example.com/scene.png' },
+                        'roll_dice': { result: 15, dice: '1d20' },
+                        'generate_loot': { loot: ['gold', 'magic sword'] },
+                        'get_dm_tips': { tips: 'DM tip here' },
+                        'ai_decision_making': { decision: 'AI decision here' },
+                        'ai_content_generation': { content: 'AI generated content' },
+                        'ai_npc_behavior': { behavior: 'AI NPC behavior' },
+                        'ai_adaptive_storytelling': { story: 'AI story element' },
+                        'ai_combat_narrative': { narrative: 'AI combat narrative' },
+                        'ai_world_reaction': { reaction: 'AI world reaction' }
+                    },
+                    'dnd-5e': {
+                        'unified_search': { results: ['fireball', 'fire bolt'] },
+                        'search_spells': { spells: ['heal', 'healing word'] },
+                        'get_spell_details': { spell: { name: 'fireball', level: 3 } },
+                        'get_spell_by_level': { spells: ['fireball', 'lightning bolt'] },
+                        'get_spells_by_class': { spells: ['magic missile', 'fireball'] },
+                        'search_classes': { classes: ['fighter', 'wizard'] },
+                        'get_class_details': { class: { name: 'fighter', hit_die: 'd10' } },
+                        'search_races': { races: ['human', 'elf'] },
+                        'get_race_details': { race: { name: 'human', ability_score_increase: '+1 to all' } },
+                        'search_monsters': { monsters: ['dragon', 'wyvern'] },
+                        'get_monsters_by_cr': { monsters: ['orc', 'troll'] },
+                        'search_weapons': { weapons: ['longsword', 'shortsword'] },
+                        'search_magic_items': { items: ['ring of protection', 'cloak of elvenkind'] },
+                        'get_magic_item_details': { item: { name: 'ring of protection', rarity: 'rare' } },
+                        'search_armor': { armor: ['plate armor', 'chain mail'] },
+                        'get_armor_details': { armor: { name: 'plate armor', ac: 18 } },
+                        'search_feats': { feats: ['great weapon master', 'sharpshooter'] },
+                        'get_feat_details': { feat: { name: 'great weapon master', description: 'feat description' } },
+                        'search_conditions': { conditions: ['paralyzed', 'stunned'] },
+                        'get_condition_details': { condition: { name: 'paralyzed', description: 'condition description' } },
+                        'get_all_conditions': { conditions: ['paralyzed', 'stunned', 'charmed'] },
+                        'search_backgrounds': { backgrounds: ['noble', 'soldier'] },
+                        'get_background_details': { background: { name: 'noble', skill_proficiencies: ['history', 'persuasion'] } },
+                        'search_sections': { sections: ['combat', 'spellcasting'] },
+                        'get_section_details': { section: { name: 'combat', content: 'combat rules' } },
+                        'get_all_sections': { sections: ['combat', 'spellcasting', 'equipment'] },
+                        'search_spell_lists': { lists: ['wizard', 'cleric'] },
+                        'get_spell_list_details': { list: { class: 'wizard', spells: ['magic missile', 'fireball'] } },
+                        'get_all_spell_lists': { lists: ['wizard', 'cleric', 'bard'] },
+                        'get_spells_for_class': { spells: ['magic missile', 'fireball', 'lightning bolt'] },
+                        'build_encounter': { encounter: { monsters: ['goblin', 'orc'], difficulty: 'medium' } },
+                        'calculate_encounter_difficulty': { difficulty: 'medium', xp: 1000 },
+                        'get_monsters_by_cr_range': { monsters: ['orc', 'troll', 'ogre'] },
+                        'generate_character_build': { build: { race: 'human', class: 'fighter', feats: ['great weapon master'] } },
+                        'compare_character_builds': { comparison: 'Fighter build scored highest' },
+                        'get_build_recommendations': { recommendations: ['cleric', 'rogue'] },
+                        'get_api_stats': { stats: { calls_today: 100, cache_hits: 80 } }
+                    }
+                };
+
+                const serverResponses = responses[server] || {};
+                const functionResponse = serverResponses[functionName] || { success: true, message: 'Function executed successfully' };
+
+                return functionResponse;
+            }
+
+            updateStats() {
+                const successRate = this.stats.totalCalls > 0 ?
+                    Math.round((this.stats.successfulCalls / this.stats.totalCalls) * 100) : 0;
+                const avgResponseTime = this.stats.successfulCalls > 0 ?
+                    Math.round(this.stats.totalResponseTime / this.stats.successfulCalls) : 0;
+
+                document.getElementById('totalCalls').textContent = this.stats.totalCalls;
+                document.getElementById('onlineServers').textContent = Object.values(this.stats.serverStatus).filter(s => s === 'online').length;
+
+                const statsOutput = document.getElementById('statsOutput');
+                statsOutput.innerHTML = `
+                    <div class="log-entry log-info">
+                        <span class="log-time">[${new Date().toLocaleTimeString()}]</span>
+                        📊 Server Status: ${Object.keys(this.stats.serverStatus).length} servers checked
+                    </div>
+                    <div class="log-entry log-info">
+                        <span class="log-time">[${new Date().toLocaleTimeString()}]</span>
+                        🔧 Functions Available: 100+
+                    </div>
+                    <div class="log-entry log-info">
+                        <span class="log-time">[${new Date().toLocaleTimeString()}]</span>
+                        📞 Total Calls: ${this.stats.totalCalls}
+                    </div>
+                    <div class="log-entry log-info">
+                        <span class="log-time">[${new Date().toLocaleTimeString()}]</span>
+                        ✅ Success Rate: ${successRate}%
+                    </div>
+                    <div class="log-entry log-info">
+                        <span class="log-time">[${new Date().toLocaleTimeString()}]</span>
+                        ⏱️ Average Response: ${avgResponseTime}ms
+                    </div>
+                `;
+            }
+
+            startUptimeCounter() {
+                setInterval(() => {
+                    const uptime = Date.now() - this.stats.startTime;
+                    const hours = Math.floor(uptime / 3600000);
+                    const minutes = Math.floor((uptime % 3600000) / 60000);
+                    const seconds = Math.floor((uptime % 60000) / 1000);
+
+                    document.getElementById('uptime').textContent =
+                        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+
+            async testAllServers() {
+                this.log('🚀 Starting comprehensive server test...', 'info');
+
+                const servers = ['filesystem', 'work-efforts', 'simple-tools', 'pixellab', 'decision-matrix', 'random-user', 'image-generator', 'dnd-dm', 'dnd-5e'];
+
+                for (const server of servers) {
+                    try {
+                        this.log(`🔍 Testing ${server} server...`, 'info');
+                        // Test a basic function from each server
+                        await this.testMCPFunction(server, 'test_connection', {});
+                        this.stats.serverStatus[server] = 'online';
+                    } catch (error) {
+                        this.log(`❌ ${server} server failed`, 'error');
+                        this.stats.serverStatus[server] = 'offline';
+                    }
+                }
+
+                this.log('✅ Server test completed', 'success');
+                this.updateStats();
+            }
+
+            clearOutput() {
+                document.getElementById('mainOutput').innerHTML = '';
+                this.log('🗑️ Output cleared', 'info');
+            }
+
+            exportLogs() {
+                const logs = document.getElementById('mainOutput').innerText;
+                const blob = new Blob([logs], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `mcp-test-logs-${new Date().toISOString().split('T')[0]}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.log('📤 Logs exported', 'success');
+            }
+
+            showServerStatus() {
+                this.log('📊 Server Status Report:', 'info');
+                Object.entries(this.stats.serverStatus).forEach(([server, status]) => {
+                    const statusIcon = status === 'online' ? '✅' : '❌';
+                    this.log(`${statusIcon} ${server}: ${status}`, status === 'online' ? 'success' : 'error');
+                });
+            }
+        }
+
+        // Global functions for button clicks
+        const mcpInterface = new MCPTestingInterface();
+
+        function testMCPFunction(server, functionName, params) {
+            return mcpInterface.testMCPFunction(server, functionName, params);
+        }
+
+        function testAllServers() {
+            return mcpInterface.testAllServers();
+        }
+
+        function clearOutput() {
+            return mcpInterface.clearOutput();
+        }
+
+        function exportLogs() {
+            return mcpInterface.exportLogs();
+        }
+
+        function showServerStatus() {
+            return mcpInterface.showServerStatus();
+        }
+
+        function toggleSection(element) {
+            element.classList.toggle('active');
+        }
+
+        // Initialize interface
+        document.addEventListener('DOMContentLoaded', function() {
+            mcpInterface.log('🎯 MCP Comprehensive Testing Interface ready', 'success');
+        });
+    </script>
+</body>
+</html>

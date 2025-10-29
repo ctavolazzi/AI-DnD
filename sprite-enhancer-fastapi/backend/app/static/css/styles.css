@@ -1,0 +1,114 @@
+/* Basic styling for Sprite Enhancer */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Georgia', serif;
+    background: linear-gradient(90deg, #8B4513 0%, #A0522D 50%, #8B4513 100%);
+    color: #2c1810;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    padding: 25px;
+    background: linear-gradient(180deg, #d2691e 0%, #8B4513 100%);
+    border: 4px solid #3e2723;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-size: 38px;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #ffecb3;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.panel {
+    background: linear-gradient(180deg, #daa520 0%, #b8860b 100%);
+    border: 3px solid #5d4037;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #3e2723;
+    font-weight: bold;
+}
+
+textarea, select, input[type="text"], input[type="password"], input[type="email"] {
+    width: 100%;
+    padding: 12px;
+    background: #fef9e7;
+    border: 2px solid #5d4037;
+    border-radius: 4px;
+    font-family: 'Georgia', serif;
+    font-size: 15px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.btn-primary {
+    padding: 12px 24px;
+    background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+    color: #ffd700;
+    border: 2px solid #3e2723;
+    border-radius: 4px;
+    font-family: 'Georgia', serif;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(180deg, #a0522d 0%, #8B4513 100%);
+    transform: translateY(-1px);
+}
+
+.htmx-indicator {
+    display: none;
+    padding: 10px;
+    background: rgba(135, 206, 250, 0.3);
+    border: 2px solid #4682B4;
+    border-radius: 4px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.htmx-indicator.htmx-request {
+    display: block;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #8B7355;
+}
+

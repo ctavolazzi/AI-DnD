@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI D&D - MCP Integrated Adventure</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50'%20font-size='48'%3E%F0%9F%8F%9B%EF%B8%8F%3C/text%3E%3C/svg%3E">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background: linear-gradient(135deg, #1a1410 0%, #2a1810 50%, #1a1410 100%);
+            color: #e8d4b8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(45deg, #4a3426, #8b4513);
+            border: 3px solid #b8860b;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .header h1 {
+            color: #ffd700;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .header p {
+            color: #ffb347;
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .game-panel {
+            background: linear-gradient(180deg, #e8d4b8 0%, #d4c4a8 100%);
+            border: 3px solid #4a3426;
+            border-radius: 10px;
+            padding: 20px;
+            color: #2a1810;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .mcp-panel {
+            background: linear-gradient(180deg, #2a1810 0%, #1a1410 100%);
+            border: 3px solid #b8860b;
+            border-radius: 10px;
+            padding: 20px;
+            color: #e8d4b8;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #b8860b;
+            padding-bottom: 10px;
+        }
+
+        .mcp-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(74, 52, 38, 0.3);
+            border-radius: 8px;
+            border: 1px solid #8b4513;
+        }
+
+        .mcp-section h3 {
+            color: #ffb347;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .mcp-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mcp-button {
+            background: linear-gradient(45deg, #8b4513, #a0522d);
+            color: #fff;
+            border: 2px solid #b8860b;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .mcp-button:hover {
+            background: linear-gradient(45deg, #a0522d, #cd853f);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+
+        .mcp-button:active {
+            transform: translateY(0);
+        }
+
+        .mcp-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .mcp-input {
+            background: rgba(232, 212, 184, 0.1);
+            border: 2px solid #8b4513;
+            border-radius: 5px;
+            padding: 8px;
+            color: #e8d4b8;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .mcp-input::placeholder {
+            color: #8b4513;
+        }
+
+        .mcp-output {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #4a3426;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.6rem;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+
+        .character-display {
+            background: linear-gradient(45deg, #4a3426, #8b4513);
+            border: 2px solid #b8860b;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: #e8d4b8;
+        }
+
+        .character-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.7rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+
+        .stat-label {
+            color: #ffb347;
+        }
+
+        .stat-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .image-display {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .generated-image {
+            max-width: 100%;
+            max-height: 200px;
+            border: 2px solid #b8860b;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .loading {
+            color: #ffb347;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error {
+            color: #cd5c5c;
+            background: rgba(205, 92, 92, 0.1);
+            border: 1px solid #cd5c5c;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.7rem;
+        }
+
+        .success {
+            color: #32cd32;
+            background: rgba(50, 205, 50, 0.1);
+            border: 1px solid #32cd32;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.7rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Logging System Styles */
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            border-left: 3px solid;
+        }
+
+        .log-info {
+            background: rgba(33, 150, 243, 0.1);
+            border-left-color: #2196F3;
+        }
+
+        .log-success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left-color: #4CAF50;
+        }
+
+        .log-error {
+            background: rgba(244, 67, 54, 0.1);
+            border-left-color: #f44336;
+        }
+
+        .log-warning {
+            background: rgba(255, 152, 0, 0.1);
+            border-left-color: #ff9800;
+        }
+
+        .log-debug {
+            background: rgba(156, 39, 176, 0.1);
+            border-left-color: #9c27b0;
+        }
+
+        .log-time {
+            color: #ffb347;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .log-message {
+            color: #e8d4b8;
+        }
+
+        .log-data {
+            background: rgba(0,0,0,0.3);
+            padding: 4px;
+            margin-top: 4px;
+            border-radius: 3px;
+            font-size: 0.5rem;
+            color: #ffb347;
+            overflow-x: auto;
+        }
+
+        .stats-display {
+            background: rgba(74, 52, 38, 0.5);
+            border: 1px solid #8b4513;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.7rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #ffb347;
+        }
+
+        .stat-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎲 AI D&D - MCP Integrated</h1>
+            <p>Powered by Model Context Protocol Servers</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Main Game Panel -->
+            <div class="game-panel">
+                <div class="panel-title">🎮 Game Interface</div>
+
+                <div class="character-display" id="characterDisplay">
+                    <h3>Character</h3>
+                    <div class="character-stats" id="characterStats">
+                        <div class="stat-item">
+                            <span class="stat-label">Name:</span>
+                            <span class="stat-value" id="charName">Click "Generate Character"</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Race:</span>
+                            <span class="stat-value" id="charRace">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Class:</span>
+                            <span class="stat-value" id="charClass">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Level:</span>
+                            <span class="stat-value" id="charLevel">1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="image-display" id="imageDisplay">
+                    <h3>Character Portrait</h3>
+                    <div id="characterImage" class="generated-image">
+                        <div class="loading">No image generated yet</div>
+                    </div>
+                </div>
+
+                <div class="mcp-output" id="gameOutput">
+                    Welcome to the MCP-Integrated D&D Adventure!<br>
+                    Use the MCP tools on the right to generate characters, create images, and manage your campaign.
+                </div>
+            </div>
+
+            <!-- MCP Tools Panel -->
+            <div class="mcp-panel">
+                <div class="panel-title">⚙️ MCP Tools</div>
+
+                <!-- Character Generation -->
+                <div class="mcp-section">
+                    <h3>🎭 Character Generation</h3>
+                    <div class="mcp-controls">
+                        <button class="mcp-button" onclick="generateRandomCharacter()">
+                            Generate Random Character
+                        </button>
+                        <button class="mcp-button" onclick="generateNPC()">
+                            Generate NPC
+                        </button>
+                        <button class="mcp-button" onclick="generateTavernPatrons()">
+                            Generate Tavern Patrons
+                        </button>
+                    </div>
+                    <div class="mcp-output" id="characterOutput"></div>
+                </div>
+
+                <!-- Image Generation -->
+                <div class="mcp-section">
+                    <h3>🎨 Image Generation</h3>
+                    <div class="mcp-controls">
+                        <input type="text" class="mcp-input" id="imagePrompt" placeholder="Describe the image...">
+                        <button class="mcp-button" onclick="generateCharacterPortrait()">
+                            Generate Portrait
+                        </button>
+                        <button class="mcp-button" onclick="generateSceneImage()">
+                            Generate Scene
+                        </button>
+                        <button class="mcp-button" onclick="generateItemImage()">
+                            Generate Item
+                        </button>
+                    </div>
+                    <div class="mcp-output" id="imageOutput"></div>
+                </div>
+
+                <!-- Campaign Management -->
+                <div class="mcp-section">
+                    <h3>📚 Campaign Management</h3>
+                    <div class="mcp-controls">
+                        <button class="mcp-button" onclick="createCampaign()">
+                            Create Campaign
+                        </button>
+                        <button class="mcp-button" onclick="createSession()">
+                            Create Session
+                        </button>
+                        <button class="mcp-button" onclick="buildEncounter()">
+                            Build Encounter
+                        </button>
+                        <button class="mcp-button" onclick="generateQuest()">
+                            Generate Quest
+                        </button>
+                    </div>
+                    <div class="mcp-output" id="campaignOutput"></div>
+                </div>
+
+                <!-- Decision Making -->
+                <div class="mcp-section">
+                    <h3>🤔 Decision Matrix</h3>
+                    <div class="mcp-controls">
+                        <button class="mcp-button" onclick="createDecisionMatrix()">
+                            Create Decision Matrix
+                        </button>
+                        <button class="mcp-button" onclick="analyzeDecision()">
+                            Analyze Decision
+                        </button>
+                    </div>
+                    <div class="mcp-output" id="decisionOutput"></div>
+                </div>
+
+                <!-- Utility Tools -->
+                <div class="mcp-section">
+                    <h3>🔧 Utilities</h3>
+                    <div class="mcp-controls">
+                        <button class="mcp-button" onclick="generateRandomName()">
+                            Random Name
+                        </button>
+                        <button class="mcp-button" onclick="generateUniqueId()">
+                            Unique ID
+                        </button>
+                        <button class="mcp-button" onclick="rollDice()">
+                            Roll Dice
+                        </button>
+                    </div>
+                    <div class="mcp-output" id="utilityOutput"></div>
+                </div>
+
+                <!-- System Logs & Stats -->
+                <div class="mcp-section">
+                    <h3>📊 System Logs & Stats</h3>
+                    <div class="mcp-controls">
+                        <button class="mcp-button" onclick="showStats()">
+                            Show Stats
+                        </button>
+                        <button class="mcp-button" onclick="clearLogs()">
+                            Clear Logs
+                        </button>
+                        <button class="mcp-button" onclick="exportLogs()">
+                            Export Logs
+                        </button>
+                    </div>
+                    <div class="mcp-output" id="logOutput" style="max-height: 300px; overflow-y: auto;">
+                        <div class="log-entry log-info">
+                            <span class="log-time">Loading...</span>
+                            <span class="log-message">System logs will appear here</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MCP Server Integration
+        class MCPIntegration {
+            constructor() {
+                this.campaignId = null;
+                this.sessionId = null;
+                this.currentCharacter = null;
+                this.logs = [];
+                this.stats = {
+                    totalCalls: 0,
+                    successfulCalls: 0,
+                    failedCalls: 0,
+                    startTime: Date.now()
+                };
+
+                this.log('🎯 MCP Integration initialized', 'info');
+                this.log(`📊 Stats initialized: ${JSON.stringify(this.stats)}`, 'debug');
+            }
+
+            log(message, level = 'info', data = null) {
+                const timestamp = new Date().toISOString();
+                const logEntry = {
+                    timestamp,
+                    level,
+                    message,
+                    data,
+                    sessionTime: Date.now() - this.stats.startTime
+                };
+
+                this.logs.push(logEntry);
+
+                // Console logging with emojis and colors
+                const emoji = {
+                    'info': 'ℹ️',
+                    'success': '✅',
+                    'error': '❌',
+                    'warning': '⚠️',
+                    'debug': '🐛'
+                }[level] || '📝';
+
+                const color = {
+                    'info': 'color: #2196F3',
+                    'success': 'color: #4CAF50',
+                    'error': 'color: #f44336',
+                    'warning': 'color: #ff9800',
+                    'debug': 'color: #9c27b0'
+                }[level] || 'color: #666';
+
+                console.log(
+                    `%c${emoji} [${timestamp}] ${message}`,
+                    color,
+                    data ? data : ''
+                );
+
+                // Update stats
+                if (level === 'success') this.stats.successfulCalls++;
+                if (level === 'error') this.stats.failedCalls++;
+
+                // Update UI log display
+                this.updateLogDisplay();
+            }
+
+            updateLogDisplay() {
+                const logContainer = document.getElementById('logOutput');
+                if (logContainer) {
+                    const recentLogs = this.logs.slice(-10).reverse();
+                    logContainer.innerHTML = recentLogs.map(log =>
+                        `<div class="log-entry log-${log.level}">
+                            <span class="log-time">${new Date(log.timestamp).toLocaleTimeString()}</span>
+                            <span class="log-message">${log.message}</span>
+                            ${log.data ? `<pre class="log-data">${JSON.stringify(log.data, null, 2)}</pre>` : ''}
+                        </div>`
+                    ).join('');
+                }
+            }
+
+            getStats() {
+                const uptime = Date.now() - this.stats.startTime;
+                return {
+                    ...this.stats,
+                    uptime: `${Math.floor(uptime / 1000)}s`,
+                    successRate: this.stats.totalCalls > 0 ?
+                        ((this.stats.successfulCalls / this.stats.totalCalls) * 100).toFixed(1) + '%' : '0%'
+                };
+            }
+
+            async callMCPServer(server, tool, params = {}) {
+                const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                this.stats.totalCalls++;
+
+                this.log(`🚀 MCP Call Started: ${server}.${tool}`, 'info', {
+                    callId,
+                    server,
+                    tool,
+                    params,
+                    totalCalls: this.stats.totalCalls
+                });
+
+                const startTime = Date.now();
+
+                try {
+                    // This would normally call the actual MCP server
+                    // For now, we'll simulate the responses
+                    const result = await this.simulateMCPServer(server, tool, params);
+
+                    const duration = Date.now() - startTime;
+                    this.log(`✅ MCP Call Success: ${server}.${tool}`, 'success', {
+                        callId,
+                        duration: `${duration}ms`,
+                        resultSize: JSON.stringify(result).length,
+                        successRate: this.getStats().successRate
+                    });
+
+                    return result;
+                } catch (error) {
+                    const duration = Date.now() - startTime;
+                    this.log(`❌ MCP Call Failed: ${server}.${tool}`, 'error', {
+                        callId,
+                        duration: `${duration}ms`,
+                        error: error.message,
+                        stack: error.stack,
+                        params
+                    });
+
+                    console.error(`%c❌ MCP Server Error (${server}.${tool}):`, 'color: #f44336; font-weight: bold', error);
+                    return { error: error.message, callId };
+                }
+            }
+
+            // Safe base64 encoding for Unicode strings
+            safeBase64Encode(str) {
+                try {
+                    // First encode to UTF-8 bytes, then to base64
+                    const utf8Bytes = new TextEncoder().encode(str);
+                    const binaryString = Array.from(utf8Bytes, byte => String.fromCharCode(byte)).join('');
+                    return btoa(binaryString);
+                } catch (error) {
+                    this.log(`⚠️ Base64 encoding fallback used`, 'warning', { error: error.message });
+                    // Fallback: remove non-ASCII characters
+                    const asciiStr = str.replace(/[^\x00-\x7F]/g, '?');
+                    return btoa(asciiStr);
+                }
+            }
+
+            generateSVGImage(type, prompt) {
+                const svgTemplates = {
+                    character: `
+                        <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="200" height="200" fill="#8b4513"/>
+                            <circle cx="100" cy="80" r="30" fill="#ffd700"/>
+                            <rect x="70" y="110" width="60" height="80" fill="#4a3426"/>
+                            <text x="100" y="180" text-anchor="middle" fill="#fff" font-size="12">Character</text>
+                        </svg>
+                    `,
+                    scene: `
+                        <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="200" height="200" fill="#2a1810"/>
+                            <rect x="50" y="150" width="100" height="50" fill="#4a3426"/>
+                            <circle cx="100" cy="100" r="20" fill="#ffd700"/>
+                            <text x="100" y="190" text-anchor="middle" fill="#fff" font-size="10">Scene</text>
+                        </svg>
+                    `,
+                    item: `
+                        <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="200" height="200" fill="#1a1410"/>
+                            <rect x="80" y="60" width="40" height="80" fill="#b8860b"/>
+                            <rect x="85" y="40" width="30" height="20" fill="#ffd700"/>
+                            <text x="100" y="180" text-anchor="middle" fill="#fff" font-size="12">Item</text>
+                        </svg>
+                    `,
+                    portrait: `
+                        <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="50" cy="50" r="40" fill="#ffd700"/>
+                            <circle cx="50" cy="40" r="15" fill="#8b4513"/>
+                            <rect x="30" y="60" width="40" height="30" fill="#8b4513"/>
+                            <text x="50" y="55" text-anchor="middle" fill="#000" font-size="20">P</text>
+                        </svg>
+                    `
+                };
+
+                const svg = svgTemplates[type] || svgTemplates.character;
+                return `data:image/svg+xml;base64,${this.safeBase64Encode(svg)}`;
+            }
+
+            async simulateMCPServer(server, tool, params) {
+                this.log(`🔄 Simulating MCP Server: ${server}.${tool}`, 'debug', { params });
+
+                // Simulate realistic server response time
+                const delay = 800 + Math.random() * 1500;
+                await new Promise(resolve => setTimeout(resolve, delay));
+
+                switch (`${server}.${tool}`) {
+                    case 'dnd-dm.generate_npc':
+                        const npc = {
+                            id: `npc_${Date.now()}`,
+                            name: this.generateRandomName(),
+                            race: this.getRandomRace(),
+                            class: this.getRandomClass(),
+                            level: Math.floor(Math.random() * 10) + 1,
+                            description: "A mysterious figure approaches...",
+                            stats: this.generateStats()
+                        };
+                        this.log(`🎭 Generated NPC: ${npc.name}`, 'success', npc);
+                        return { success: true, npc };
+
+                    case 'dnd-dm.create_campaign':
+                        this.campaignId = `campaign_${Date.now()}`;
+                        const campaign = {
+                            id: this.campaignId,
+                            name: params.name || "New Campaign",
+                            setting: params.setting || "Fantasy World",
+                            level_range: params.level_range || "1-10",
+                            tone: params.tone || "epic"
+                        };
+                        this.log(`📚 Created Campaign: ${campaign.name}`, 'success', campaign);
+                        return { success: true, campaign_id: this.campaignId, campaign };
+
+                    case 'dnd-dm.create_session':
+                        this.sessionId = `session_${Date.now()}`;
+                        const session = {
+                            id: this.sessionId,
+                            campaign_id: this.campaignId,
+                            name: params.session_name || "New Session",
+                            status: "planned"
+                        };
+                        this.log(`🎮 Created Session: ${session.name}`, 'success', session);
+                        return { success: true, session_id: this.sessionId, session };
+
+                    case 'image-generator.generate_image':
+                        const imageType = params.prompt?.toLowerCase().includes('character') ? 'character' :
+                                        params.prompt?.toLowerCase().includes('scene') ? 'scene' :
+                                        params.prompt?.toLowerCase().includes('item') ? 'item' : 'character';
+                        const imageUrl = this.generateSVGImage(imageType, params.prompt);
+                        this.log(`🎨 Generated Image: ${params.prompt}`, 'success', { type: imageType, prompt: params.prompt });
+                        return { success: true, image_url: imageUrl };
+
+                    case 'random-user.get_random_user':
+                        const user = {
+                            name: {
+                                first: this.generateRandomName(),
+                                last: this.generateRandomName()
+                            },
+                            gender: params.gender || (Math.random() > 0.5 ? 'male' : 'female'),
+                            location: { country: this.getRandomCountry() },
+                            picture: { large: this.generateSVGImage('portrait') }
+                        };
+                        this.log(`👤 Generated User: ${user.name.first} ${user.name.last}`, 'success', user);
+                        return { success: true, user };
+
+                    case 'simple-tools.generate_random_name':
+                        const name = this.generateRandomName();
+                        this.log(`🏷️ Generated Name: ${name}`, 'success', { name });
+                        return { success: true, name };
+
+                    case 'simple-tools.generate_unique_id':
+                        const id = `id_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                        this.log(`🆔 Generated ID: ${id}`, 'success', { id });
+                        return { success: true, id };
+
+                    default:
+                        this.log(`❓ Unknown MCP Call: ${server}.${tool}`, 'warning', { server, tool, params });
+                        return {
+                            success: true,
+                            message: `Simulated response for ${server}.${tool}`,
+                            data: params
+                        };
+                }
+            }
+
+            generateRandomName() {
+                const adjectives = ['Brave', 'Wise', 'Swift', 'Bold', 'Clever', 'Noble', 'Mystic', 'Ancient'];
+                const nouns = ['Dragon', 'Eagle', 'Wolf', 'Phoenix', 'Storm', 'Shadow', 'Flame', 'Star'];
+                const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+                const noun = nouns[Math.floor(Math.random() * nouns.length)];
+                const num = Math.floor(Math.random() * 1000);
+                return `${adj}${noun}${num}`;
+            }
+
+            getRandomRace() {
+                const races = ['Human', 'Elf', 'Dwarf', 'Halfling', 'Dragonborn', 'Tiefling', 'Gnome', 'Half-Orc'];
+                return races[Math.floor(Math.random() * races.length)];
+            }
+
+            getRandomClass() {
+                const classes = ['Fighter', 'Wizard', 'Rogue', 'Cleric', 'Paladin', 'Ranger', 'Bard', 'Barbarian'];
+                return classes[Math.floor(Math.random() * classes.length)];
+            }
+
+            getRandomCountry() {
+                const countries = ['Fantasy Kingdom', 'Mystic Realm', 'Ancient Empire', 'Wild Frontier', 'Frozen North'];
+                return countries[Math.floor(Math.random() * countries.length)];
+            }
+
+            generateStats() {
+                return {
+                    strength: Math.floor(Math.random() * 20) + 1,
+                    dexterity: Math.floor(Math.random() * 20) + 1,
+                    constitution: Math.floor(Math.random() * 20) + 1,
+                    intelligence: Math.floor(Math.random() * 20) + 1,
+                    wisdom: Math.floor(Math.random() * 20) + 1,
+                    charisma: Math.floor(Math.random() * 20) + 1
+                };
+            }
+
+            updateOutput(elementId, content, type = 'info') {
+                const element = document.getElementById(elementId);
+                const timestamp = new Date().toLocaleTimeString();
+                const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+
+                this.log(`📤 UI Update: ${elementId}`, 'debug', { content, type, timestamp });
+
+                element.innerHTML = `<div class="${className}">[${timestamp}] ${content}</div>`;
+            }
+
+            updateCharacter(character) {
+                this.currentCharacter = character;
+                this.log(`👤 Character Updated: ${character.name}`, 'success', character);
+
+                document.getElementById('charName').textContent = character.name;
+                document.getElementById('charRace').textContent = character.race;
+                document.getElementById('charClass').textContent = character.class;
+                document.getElementById('charLevel').textContent = character.level || 1;
+            }
+
+            updateCharacterImage(imageUrl) {
+                const imageElement = document.getElementById('characterImage');
+                imageElement.innerHTML = `<img src="${imageUrl}" alt="Character Portrait" class="generated-image">`;
+            }
+        }
+
+        // Initialize MCP Integration
+        const mcp = new MCPIntegration();
+
+        // Character Generation Functions
+        async function generateRandomCharacter() {
+            mcp.log('🎭 Starting random character generation', 'info');
+            mcp.updateOutput('characterOutput', 'Generating random character...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('random-user', 'get_random_user', { gender: 'male' });
+                if (result.success) {
+                    const character = {
+                        name: `${result.user.name.first} ${result.user.name.last}`,
+                        race: mcp.getRandomRace(),
+                        class: mcp.getRandomClass(),
+                        level: Math.floor(Math.random() * 10) + 1,
+                        stats: mcp.generateStats()
+                    };
+
+                    mcp.updateCharacter(character);
+                    mcp.updateOutput('characterOutput', `Generated: ${character.name} (${character.race} ${character.class})`, 'success');
+                    mcp.log('🎭 Random character generation completed', 'success', character);
+                } else {
+                    mcp.log('❌ Random character generation failed', 'error', result);
+                    mcp.updateOutput('characterOutput', `Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                mcp.log('❌ Random character generation exception', 'error', { error: error.message, stack: error.stack });
+                mcp.updateOutput('characterOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateNPC() {
+            mcp.updateOutput('characterOutput', 'Generating NPC...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('dnd-dm', 'generate_npc');
+                if (result.success) {
+                    mcp.updateCharacter(result.npc);
+                    mcp.updateOutput('characterOutput', `Generated NPC: ${result.npc.name} (${result.npc.race} ${result.npc.class})`, 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('characterOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateTavernPatrons() {
+            mcp.updateOutput('characterOutput', 'Generating tavern patrons...', 'info');
+
+            try {
+                const patrons = [];
+                for (let i = 0; i < 3; i++) {
+                    const result = await mcp.callMCPServer('random-user', 'get_random_user');
+                    if (result.success) {
+                        patrons.push(`${result.user.name.first} ${result.user.name.last}`);
+                    }
+                }
+
+                mcp.updateOutput('characterOutput', `Tavern Patrons: ${patrons.join(', ')}`, 'success');
+            } catch (error) {
+                mcp.updateOutput('characterOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Image Generation Functions
+        async function generateCharacterPortrait() {
+            const prompt = document.getElementById('imagePrompt').value || 'fantasy character portrait';
+            mcp.updateOutput('imageOutput', `Generating character portrait: "${prompt}"...`, 'info');
+
+            try {
+                const result = await mcp.callMCPServer('image-generator', 'generate_image', { prompt });
+                if (result.success) {
+                    mcp.updateCharacterImage(result.image_url);
+                    mcp.updateOutput('imageOutput', 'Character portrait generated successfully!', 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('imageOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateSceneImage() {
+            const prompt = document.getElementById('imagePrompt').value || 'fantasy tavern scene';
+            mcp.updateOutput('imageOutput', `Generating scene: "${prompt}"...`, 'info');
+
+            try {
+                const result = await mcp.callMCPServer('image-generator', 'generate_image', { prompt });
+                if (result.success) {
+                    mcp.updateCharacterImage(result.image_url);
+                    mcp.updateOutput('imageOutput', 'Scene generated successfully!', 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('imageOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateItemImage() {
+            const prompt = document.getElementById('imagePrompt').value || 'magical sword';
+            mcp.updateOutput('imageOutput', `Generating item: "${prompt}"...`, 'info');
+
+            try {
+                const result = await mcp.callMCPServer('image-generator', 'generate_image', { prompt });
+                if (result.success) {
+                    mcp.updateCharacterImage(result.image_url);
+                    mcp.updateOutput('imageOutput', 'Item generated successfully!', 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('imageOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Campaign Management Functions
+        async function createCampaign() {
+            mcp.updateOutput('campaignOutput', 'Creating new campaign...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('dnd-dm', 'create_campaign', {
+                    name: 'MCP Adventure Campaign',
+                    setting: 'Fantasy World',
+                    level_range: '1-10',
+                    tone: 'epic'
+                });
+
+                if (result.success) {
+                    mcp.campaignId = result.campaign_id;
+                    mcp.updateOutput('campaignOutput', `Campaign created: ${result.campaign.name} (ID: ${result.campaign_id})`, 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('campaignOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function createSession() {
+            if (!mcp.campaignId) {
+                mcp.updateOutput('campaignOutput', 'Please create a campaign first!', 'error');
+                return;
+            }
+
+            mcp.updateOutput('campaignOutput', 'Creating new session...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('dnd-dm', 'create_session', {
+                    campaign_id: mcp.campaignId,
+                    session_name: 'MCP Test Session'
+                });
+
+                if (result.success) {
+                    mcp.sessionId = result.session_id;
+                    mcp.updateOutput('campaignOutput', `Session created: ${result.session.name} (ID: ${result.session_id})`, 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('campaignOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function buildEncounter() {
+            mcp.updateOutput('campaignOutput', 'Building encounter...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('dnd-dm', 'build_encounter', {
+                    party_size: 4,
+                    party_level: 3,
+                    difficulty: 'medium'
+                });
+
+                if (result.success) {
+                    mcp.updateOutput('campaignOutput', `Encounter built: ${result.encounter.description}`, 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('campaignOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateQuest() {
+            mcp.updateOutput('campaignOutput', 'Generating quest...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('dnd-dm', 'generate_quest', {
+                    quest_type: 'exploration',
+                    difficulty: 'medium'
+                });
+
+                if (result.success) {
+                    mcp.updateOutput('campaignOutput', `Quest generated: ${result.quest.title}`, 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('campaignOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Decision Matrix Functions
+        async function createDecisionMatrix() {
+            mcp.updateOutput('decisionOutput', 'Creating decision matrix...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('decision-matrix', 'create_decision_matrix', {
+                    title: 'D&D Adventure Decision',
+                    criteria: [
+                        { name: 'Fun Factor', weight: 0.4, description: 'How enjoyable this option is' },
+                        { name: 'Difficulty', weight: 0.3, description: 'How challenging this is' },
+                        { name: 'Reward', weight: 0.3, description: 'Potential rewards' }
+                    ],
+                    options: [
+                        { name: 'Explore Dungeon', description: 'Delve into the ancient ruins', scores: { 'Fun Factor': 9, 'Difficulty': 7, 'Reward': 8 } },
+                        { name: 'Visit Tavern', description: 'Gather information in town', scores: { 'Fun Factor': 6, 'Difficulty': 3, 'Reward': 5 } },
+                        { name: 'Hunt Monsters', description: 'Seek out dangerous creatures', scores: { 'Fun Factor': 8, 'Difficulty': 9, 'Reward': 9 } }
+                    ]
+                });
+
+                if (result.success) {
+                    mcp.updateOutput('decisionOutput', 'Decision matrix created successfully!', 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('decisionOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function analyzeDecision() {
+            mcp.updateOutput('decisionOutput', 'Analyzing decision...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('decision-matrix', 'analyze_decision_matrix', {
+                    matrix_id: 'matrix_1'
+                });
+
+                if (result.success) {
+                    mcp.updateOutput('decisionOutput', `Analysis complete: ${result.recommendation}`, 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('decisionOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Utility Functions
+        async function generateRandomName() {
+            mcp.updateOutput('utilityOutput', 'Generating random name...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('simple-tools', 'generate_random_name');
+                if (result.success) {
+                    mcp.updateOutput('utilityOutput', `Random name: ${result.name}`, 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('utilityOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateUniqueId() {
+            mcp.updateOutput('utilityOutput', 'Generating unique ID...', 'info');
+
+            try {
+                const result = await mcp.callMCPServer('simple-tools', 'generate_unique_id');
+                if (result.success) {
+                    mcp.updateOutput('utilityOutput', `Unique ID: ${result.id}`, 'success');
+                }
+            } catch (error) {
+                mcp.updateOutput('utilityOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function rollDice() {
+            const dice = Math.floor(Math.random() * 20) + 1;
+            mcp.updateOutput('utilityOutput', `Rolled d20: ${dice}`, 'success');
+        }
+
+        // Logging System Utility Functions
+        function showStats() {
+            const stats = mcp.getStats();
+            const statsHtml = `
+                <div class="stats-display">
+                    <div class="stat-row">
+                        <span class="stat-label">Total Calls:</span>
+                        <span class="stat-value">${stats.totalCalls}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Successful:</span>
+                        <span class="stat-value">${stats.successfulCalls}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Failed:</span>
+                        <span class="stat-value">${stats.failedCalls}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Success Rate:</span>
+                        <span class="stat-value">${stats.successRate}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Uptime:</span>
+                        <span class="stat-value">${stats.uptime}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Campaign ID:</span>
+                        <span class="stat-value">${mcp.campaignId || 'None'}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Session ID:</span>
+                        <span class="stat-value">${mcp.sessionId || 'None'}</span>
+                    </div>
+                </div>
+            `;
+
+            mcp.updateOutput('logOutput', statsHtml, 'info');
+            mcp.log('📊 Stats displayed', 'info', stats);
+        }
+
+        function clearLogs() {
+            mcp.logs = [];
+            mcp.updateLogDisplay();
+            mcp.log('🧹 Logs cleared', 'info');
+        }
+
+        function exportLogs() {
+            const logData = {
+                exportTime: new Date().toISOString(),
+                stats: mcp.getStats(),
+                logs: mcp.logs,
+                campaignId: mcp.campaignId,
+                sessionId: mcp.sessionId,
+                currentCharacter: mcp.currentCharacter
+            };
+
+            const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mcp-logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            mcp.log('📁 Logs exported', 'success', { logCount: mcp.logs.length });
+        }
+
+        // Initialize the interface
+        document.addEventListener('DOMContentLoaded', function() {
+            // Console welcome message
+            console.log('%c🎲 AI D&D - MCP Integrated Adventure', 'color: #ffd700; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);');
+            console.log('%c⚙️ Powered by Model Context Protocol Servers', 'color: #ffb347; font-size: 16px; font-weight: bold;');
+            console.log('%c📊 Comprehensive logging and stats tracking enabled', 'color: #4CAF50; font-size: 14px;');
+            console.log('%c🔧 Open browser dev tools to see detailed logs', 'color: #2196F3; font-size: 12px;');
+            console.log('%c' + '='.repeat(60), 'color: #8b4513; font-size: 12px;');
+
+            mcp.log('🎯 DOM Content Loaded', 'info');
+            mcp.updateOutput('gameOutput', 'MCP Integration loaded successfully! All tools are ready to use.', 'success');
+            mcp.log('✅ MCP Integration initialized successfully', 'success');
+
+            // Show initial stats
+            setTimeout(() => {
+                mcp.log('📊 Initial stats available', 'info', mcp.getStats());
+                console.log('%c📊 Initial Stats:', 'color: #9c27b0; font-weight: bold;', mcp.getStats());
+            }, 1000);
+
+            // Log browser info
+            mcp.log('🌐 Browser Info', 'debug', {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                platform: navigator.platform,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine
+            });
+        });
+    </script>
+</body>
+</html>

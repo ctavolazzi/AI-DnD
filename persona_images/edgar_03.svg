@@ -1,0 +1,22 @@
+
+        <svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#f0f0f0;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#e0e0e0;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <rect width="512" height="512" fill="url(#bg)"/>
+            <circle cx="256" cy="180" r="60" fill="#4A90E2" opacity="0.8"/>
+            <rect x="196" y="260" width="120" height="120" rx="20" fill="#4A90E2" opacity="0.6"/>
+            <text x="256" y="420" text-anchor="middle" fill="#666" font-family="Arial" font-size="16" font-weight="bold">
+                Edgar Brattås
+            </text>
+            <text x="256" y="440" text-anchor="middle" fill="#888" font-family="Arial" font-size="12">
+                cooking in kitchen wearing apron
+            </text>
+            <text x="256" y="460" text-anchor="middle" fill="#aaa" font-family="Arial" font-size="10">
+                AI Generated Placeholder
+            </text>
+        </svg>
+        

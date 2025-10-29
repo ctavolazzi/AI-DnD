@@ -1,0 +1,77 @@
+{
+  "person": {
+    "name": "Edgar Bratt\u00e5s",
+    "first_name": "Edgar",
+    "last_name": "Bratt\u00e5s",
+    "title": "Mr",
+    "gender": "male",
+    "age": 57,
+    "email": "edgar.brattas@example.com",
+    "phone": "85123453",
+    "cell": "49889344",
+    "location": {
+      "street": "573 Sigbj\u00f8rn Obstfelders vei",
+      "city": "Gilja",
+      "state": "Akershus",
+      "country": "Norway",
+      "postcode": "8976"
+    },
+    "profile_picture": "https://randomuser.me/api/portraits/men/80.jpg",
+    "nationality": "NO"
+  },
+  "images": [
+    {
+      "path": "persona_images/edgar_00.svg",
+      "scenario": "professional headshot in business attire",
+      "index": 1
+    },
+    {
+      "path": "persona_images/edgar_01.svg",
+      "scenario": "casual selfie at a coffee shop",
+      "index": 2
+    },
+    {
+      "path": "persona_images/edgar_02.svg",
+      "scenario": "outdoor hiking photo with nature background",
+      "index": 3
+    },
+    {
+      "path": "persona_images/edgar_03.svg",
+      "scenario": "cooking in kitchen wearing apron",
+      "index": 4
+    },
+    {
+      "path": "persona_images/edgar_04.svg",
+      "scenario": "reading a book in a library",
+      "index": 5
+    },
+    {
+      "path": "persona_images/edgar_05.svg",
+      "scenario": "playing guitar or musical instrument",
+      "index": 6
+    },
+    {
+      "path": "persona_images/edgar_06.svg",
+      "scenario": "working out at gym",
+      "index": 7
+    },
+    {
+      "path": "persona_images/edgar_07.svg",
+      "scenario": "travel photo at famous landmark",
+      "index": 8
+    },
+    {
+      "path": "persona_images/edgar_08.svg",
+      "scenario": "petting a dog or cat",
+      "index": 9
+    },
+    {
+      "path": "persona_images/edgar_09.svg",
+      "scenario": "smiling portrait with friends",
+      "index": 10
+    }
+  ],
+  "generated_at": "2025-10-28T23:28:36.506829",
+  "total_images": 10,
+  "success_rate": 100.0
+}

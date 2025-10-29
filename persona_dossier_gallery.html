@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persona Dossier Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .setup-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .setup-panel h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .generate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .progress-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .current-task {
+            text-align: center;
+            font-size: 16px;
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .gallery-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .persona-info {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        .persona-info h2 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .persona-info p {
+            color: #718096;
+            margin-bottom: 5px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .gallery-item {
+            background: #f7fafc;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .gallery-item-info {
+            padding: 15px;
+        }
+
+        .gallery-item-info h3 {
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .gallery-item-info p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .error-panel {
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-panel {
+            background: #c6f6d5;
+            border: 1px solid #9ae6b4;
+            color: #2f855a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .loading-dots {
+            display: inline-block;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Persona Dossier Generator</h1>
+            <p>Generate realistic fake personas with AI-generated images for testing purposes</p>
+        </div>
+
+        <div class="error-panel" id="errorPanel">
+            <strong>Error:</strong> <span id="errorMessage"></span>
+        </div>
+
+        <div class="success-panel" id="successPanel">
+            <strong>Success:</strong> <span id="successMessage"></span>
+        </div>
+
+        <div class="setup-panel" id="setupPanel">
+            <h2>⚙️ Generation Settings</h2>
+            <form id="generationForm">
+                <div class="form-group">
+                    <label for="numImages">Number of Images:</label>
+                    <select id="numImages">
+                        <option value="5">5 Images</option>
+                        <option value="10" selected>10 Images</option>
+                        <option value="15">15 Images</option>
+                        <option value="20">20 Images</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="imageQuality">Image Quality:</label>
+                    <select id="imageQuality">
+                        <option value="fast">Fast (Lower Quality)</option>
+                        <option value="balanced" selected>Balanced</option>
+                        <option value="high">High Quality (Slower)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="personaType">Persona Type:</label>
+                    <select id="personaType">
+                        <option value="random" selected>Random</option>
+                        <option value="professional">Professional</option>
+                        <option value="casual">Casual</option>
+                        <option value="creative">Creative</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="generate-btn" id="generateBtn">
+                    🚀 Generate Persona Dossier
+                </button>
+            </form>
+        </div>
+
+        <div class="progress-panel" id="progressPanel">
+            <div class="progress-header">
+                <h2>🎨 Generating Persona Dossier</h2>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="progress-text" id="progressText">Initializing<span class="loading-dots"></span></div>
+            <div class="current-task" id="currentTask">Preparing to generate persona...</div>
+
+            <div style="text-align: center;">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <div class="gallery-panel" id="galleryPanel">
+            <div class="persona-info" id="personaInfo">
+                <!-- Persona information will be populated here -->
+            </div>
+
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Images will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PersonaDossierGenerator {
+            constructor() {
+                this.form = document.getElementById('generationForm');
+                this.setupPanel = document.getElementById('setupPanel');
+                this.progressPanel = document.getElementById('progressPanel');
+                this.galleryPanel = document.getElementById('galleryPanel');
+                this.errorPanel = document.getElementById('errorPanel');
+                this.successPanel = document.getElementById('successPanel');
+
+                this.progressFill = document.getElementById('progressFill');
+                this.progressText = document.getElementById('progressText');
+                this.currentTask = document.getElementById('currentTask');
+
+                this.personaInfo = document.getElementById('personaInfo');
+                this.galleryGrid = document.getElementById('galleryGrid');
+
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.startGeneration();
+                });
+            }
+
+            async startGeneration() {
+                const formData = new FormData(this.form);
+                const settings = {
+                    numImages: parseInt(document.getElementById('numImages').value),
+                    imageQuality: document.getElementById('imageQuality').value,
+                    personaType: document.getElementById('personaType').value
+                };
+
+                // Show confirmation
+                const confirmed = confirm(
+                    `Generate persona dossier with these settings?\n\n` +
+                    `• Images: ${settings.numImages}\n` +
+                    `• Quality: ${settings.imageQuality}\n` +
+                    `• Type: ${settings.personaType}\n\n` +
+                    `This will take approximately ${Math.ceil(settings.numImages * 0.5)} minutes.`
+                );
+
+                if (!confirmed) return;
+
+                this.showProgress();
+                this.hideError();
+                this.hideSuccess();
+
+                try {
+                    await this.generatePersonaDossier(settings);
+                } catch (error) {
+                    this.showError(`Generation failed: ${error.message}`);
+                    this.showSetup();
+                }
+            }
+
+            showProgress() {
+                this.setupPanel.style.display = 'none';
+                this.galleryPanel.style.display = 'none';
+                this.progressPanel.style.display = 'block';
+            }
+
+            showSetup() {
+                this.progressPanel.style.display = 'none';
+                this.galleryPanel.style.display = 'none';
+                this.setupPanel.style.display = 'block';
+            }
+
+            showGallery() {
+                this.setupPanel.style.display = 'none';
+                this.progressPanel.style.display = 'none';
+                this.galleryPanel.style.display = 'block';
+            }
+
+            showError(message) {
+                document.getElementById('errorMessage').textContent = message;
+                this.errorPanel.style.display = 'block';
+            }
+
+            hideError() {
+                this.errorPanel.style.display = 'none';
+            }
+
+            showSuccess(message) {
+                document.getElementById('successMessage').textContent = message;
+                this.successPanel.style.display = 'block';
+            }
+
+            hideSuccess() {
+                this.successPanel.style.display = 'none';
+            }
+
+            updateProgress(percent, text, task) {
+                this.progressFill.style.width = `${percent}%`;
+                this.progressText.textContent = text;
+                this.currentTask.textContent = task;
+            }
+
+            async generatePersonaDossier(settings) {
+                try {
+                    // Start generation
+                    const response = await fetch('http://localhost:5002/api/generate-persona', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(settings)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+
+                    // Poll for progress
+                    const pollInterval = setInterval(async () => {
+                        try {
+                            const statusResponse = await fetch('http://localhost:5002/api/generation-status');
+                            const status = await statusResponse.json();
+
+                            if (status.error) {
+                                clearInterval(pollInterval);
+                                throw new Error(status.error);
+                            }
+
+                            this.updateProgress(
+                                status.progress,
+                                status.current_task,
+                                status.current_image > 0 ?
+                                    `Generating image ${status.current_image}/${status.total_images}` :
+                                    status.current_task
+                            );
+
+                            if (!status.is_generating && status.progress === 100) {
+                                clearInterval(pollInterval);
+
+                                // Get the generated dossier
+                                const dossierResponse = await fetch('http://localhost:5002/api/dossiers');
+                                const dossiers = await dossierResponse.json();
+
+                                if (dossiers.dossiers.length > 0) {
+                                    const latestDossier = dossiers.dossiers[0];
+                                    const dossierDataResponse = await fetch(`http://localhost:5002/api/dossier/${latestDossier.filename}`);
+                                    const dossier = await dossierDataResponse.json();
+
+                                    this.displayDossier(dossier);
+                                    this.showSuccess(`Generated ${dossier.images.length} images for ${dossier.person.name}`);
+                                } else {
+                                    throw new Error('No dossier found after generation');
+                                }
+                            }
+                        } catch (error) {
+                            clearInterval(pollInterval);
+                            throw error;
+                        }
+                    }, 1000);
+
+                } catch (error) {
+                    throw new Error(`Generation failed: ${error.message}`);
+                }
+            }
+
+            getImageScenario(index) {
+                const scenarios = [
+                    'professional headshot',
+                    'casual coffee shop selfie',
+                    'outdoor hiking photo',
+                    'cooking in kitchen',
+                    'reading in library',
+                    'playing guitar',
+                    'working out at gym',
+                    'travel landmark photo',
+                    'petting a dog',
+                    'smiling with friends'
+                ];
+                return scenarios[index] || 'portrait photo';
+            }
+
+            generateMockDossier(settings) {
+                const names = ['Alex Johnson', 'Sarah Chen', 'Marcus Williams', 'Emma Rodriguez', 'David Kim'];
+                const cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'];
+                const ages = [25, 28, 32, 35, 29];
+
+                const randomIndex = Math.floor(Math.random() * names.length);
+                const person = {
+                    name: names[randomIndex],
+                    age: ages[randomIndex],
+                    city: cities[randomIndex],
+                    email: `${names[randomIndex].toLowerCase().replace(' ', '.')}@example.com`,
+                    phone: `(555) ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`
+                };
+
+                const images = [];
+                for (let i = 0; i < settings.numImages; i++) {
+                    images.push({
+                        path: `persona_images/${person.name.toLowerCase().replace(' ', '_')}_${i.toString().padStart(2, '0')}.png`,
+                        scenario: this.getImageScenario(i),
+                        index: i + 1
+                    });
+                }
+
+                return {
+                    person,
+                    images,
+                    generated_at: new Date().toISOString(),
+                    total_images: images.length,
+                    success_rate: 100
+                };
+            }
+
+            displayDossier(dossier) {
+                // Display persona information
+                this.personaInfo.innerHTML = `
+                    <h2>👤 ${dossier.person.name}</h2>
+                    <p><strong>Age:</strong> ${dossier.person.age} years old</p>
+                    <p><strong>Location:</strong> ${dossier.person.location.city}, ${dossier.person.location.state}</p>
+                    <p><strong>Email:</strong> ${dossier.person.email}</p>
+                    <p><strong>Phone:</strong> ${dossier.person.phone}</p>
+                    <p><strong>Generated:</strong> ${new Date(dossier.generated_at).toLocaleString()}</p>
+                `;
+
+                // Display images
+                this.galleryGrid.innerHTML = '';
+                dossier.images.forEach(image => {
+                    const imageElement = document.createElement('div');
+                    imageElement.className = 'gallery-item';
+                    imageElement.innerHTML = `
+                        <img src="http://localhost:5002/api/persona-image/${image.path}" alt="${image.scenario}" onerror="this.src='data:image/svg+xml;base64,${this.generatePlaceholderImage()}'">
+                        <div class="gallery-item-info">
+                            <h3>Image ${image.index}</h3>
+                            <p>${image.scenario}</p>
+                        </div>
+                    `;
+                    this.galleryGrid.appendChild(imageElement);
+                });
+
+                this.showGallery();
+            }
+
+            generatePlaceholderImage() {
+                // Generate a simple SVG placeholder
+                const svg = `
+                    <svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="300" height="300" fill="#e2e8f0"/>
+                        <circle cx="150" cy="120" r="40" fill="#cbd5e0"/>
+                        <rect x="100" y="180" width="100" height="80" rx="10" fill="#cbd5e0"/>
+                        <text x="150" y="280" text-anchor="middle" fill="#718096" font-family="Arial" font-size="12">
+                            AI Generated Image
+                        </text>
+                    </svg>
+                `;
+                return btoa(svg);
+            }
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialize the generator when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new PersonaDossierGenerator();
+        });
+    </script>
+</body>
+</html>

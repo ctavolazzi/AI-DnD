@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprite Enhancer - PixelLab + Nano Banana</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background:
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px),
+                linear-gradient(90deg, #8B4513 0%, #A0522D 50%, #8B4513 100%);
+            background-size: 100% 100%, 100% 100%, 100% 100%;
+            background-attachment: fixed;
+            color: #2c1810;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background:
+                repeating-linear-gradient(90deg, #654321 0px, #8B4513 2px, #654321 4px),
+                linear-gradient(180deg, #d2691e 0%, #8B4513 100%);
+            border: 4px solid #3e2723;
+            border-radius: 8px;
+            box-shadow:
+                inset 0 2px 4px rgba(255,255,255,0.3),
+                inset 0 -2px 4px rgba(0,0,0,0.5),
+                0 4px 8px rgba(0,0,0,0.4);
+        }
+
+        h1 {
+            font-size: 38px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+            margin-bottom: 10px;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            color: #ffecb3;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 550px 1fr;  /* Wider left panel for larger sprites */
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: start;  /* Align panels to top */
+        }
+
+        .panel {
+            background:
+                repeating-linear-gradient(90deg, #d2691e 0px, #cd853f 2px, #d2691e 4px),
+                linear-gradient(180deg, #daa520 0%, #b8860b 100%);
+            border: 3px solid #5d4037;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow:
+                inset 0 1px 3px rgba(255,255,255,0.4),
+                inset 0 -1px 3px rgba(0,0,0,0.4),
+                0 3px 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            height: fit-content;  /* Shrink to content */
+            transition: box-shadow 0.3s ease;
+        }
+
+        .panel:hover {
+            box-shadow:
+                inset 0 1px 3px rgba(255,255,255,0.4),
+                inset 0 -1px 3px rgba(0,0,0,0.4),
+                0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        /* Left panel (generation) - compact */
+        .panel:first-child {
+            max-height: none;
+        }
+
+        /* Right panel (enhancement) - expand to fit image */
+        .panel:last-child {
+            min-height: 600px;
+        }
+
+        .panel-header {
+            font-size: 22px;
+            font-weight: bold;
+            color: #3e2723;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255,236,179,0.6);
+            border: 2px solid #8B4513;
+            border-radius: 4px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #3e2723;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            background: #fef9e7;
+            border: 2px solid #5d4037;
+            border-radius: 4px;
+            color: #2c1810;
+            font-family: 'Georgia', serif;
+            font-size: 15px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            box-shadow: 0 0 8px rgba(218, 165, 32, 0.6);
+            border-color: #daa520;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            background: #fef9e7;
+            border: 2px solid #5d4037;
+            color: #2c1810;
+            border-radius: 4px;
+            font-family: 'Georgia', serif;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+            color: #ffd700;
+            border: 2px solid #3e2723;
+            border-radius: 4px;
+            font-family: 'Georgia', serif;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            box-shadow:
+                inset 0 1px 2px rgba(255,255,255,0.2),
+                0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        button:hover {
+            background: linear-gradient(180deg, #a0522d 0%, #8B4513 100%);
+            transform: translateY(-1px);
+            box-shadow:
+                inset 0 1px 2px rgba(255,255,255,0.3),
+                0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow:
+                inset 0 2px 4px rgba(0,0,0,0.3),
+                0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            background: linear-gradient(180deg, #666 0%, #444 100%);
+            color: #999;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .preset-btn {
+            padding: 10px 16px;
+            font-size: 13px;
+            background: linear-gradient(180deg, #d2691e 0%, #b8860b 100%);
+        }
+
+        .preset-btn:hover {
+            background: linear-gradient(180deg, #daa520 0%, #cd853f 100%);
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(180deg, #ffd700 0%, #daa520 100%);
+            color: #3e2723;
+            border-color: #8B4513;
+        }
+
+        .randomize-btn {
+            background: linear-gradient(180deg, #ff8c00 0%, #d2691e 100%);
+            color: #fff;
+        }
+
+        .randomize-btn:hover {
+            background: linear-gradient(180deg, #ffa500 0%, #ff8c00 100%);
+        }
+
+        .image-container {
+            background: #1a1410;
+            border: 3px solid #3e2723;
+            border-radius: 4px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+            gap: 10px;
+        }
+
+        /* Left panel image container - larger for pixel art */
+        .panel:first-child .image-container {
+            min-height: 450px;
+            max-height: 650px;
+        }
+
+        /* Right panel image container - large for enhanced images */
+        .panel:last-child .image-container {
+            min-height: 500px;
+            flex: 1;  /* Take all available space */
+        }
+
+        .content-section {
+            flex: 0 0 auto;
+            width: 100%;
+        }
+
+        .image-section {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            margin-top: 15px;
+            width: 100%;
+            min-height: 0;  /* Allow flex shrinking */
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border: 2px solid #8B4513;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            animation: fadeIn 0.5s ease-in;
+            transition: transform 0.2s ease;
+        }
+
+        .image-container img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Pixel art rendering for generated sprites - FORCE LARGE SIZE */
+        .panel:first-child .image-container img {
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            min-width: 320px !important;
+            min-height: 320px !important;
+            width: 400px !important;
+            height: 400px !important;
+            object-fit: contain;
+        }
+
+        /* Smooth rendering for enhanced images */
+        .panel:last-child .image-container img {
+            image-rendering: auto;
+        }
+
+        .placeholder {
+            color: #8B7355;
+            text-align: center;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 12px 15px;
+            background: rgba(255,236,179,0.3);
+            border: 2px solid #8B4513;
+            border-radius: 6px;
+            font-size: 13px;
+            text-align: center;
+            color: #3e2723;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .status.loading {
+            background: rgba(135, 206, 250, 0.3);
+            border-color: #4682B4;
+            color: #1E3A5F;
+            animation: pulse 1.5s infinite, shimmer 2s infinite;
+        }
+
+        .status.error {
+            background: rgba(255, 107, 107, 0.4);
+            border-color: #8B0000;
+            color: #8B0000;
+            animation: shake 0.5s ease;
+        }
+
+        .status.success {
+            background: rgba(144, 238, 144, 0.4);
+            border-color: #228B22;
+            color: #006400;
+            animation: successPop 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.98); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes successPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .info-panel {
+            background:
+                repeating-linear-gradient(90deg, #d2691e 0px, #cd853f 2px, #d2691e 4px),
+                linear-gradient(180deg, #daa520 0%, #b8860b 100%);
+            border: 3px solid #5d4037;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .info-panel h3 {
+            color: #3e2723;
+            margin-bottom: 10px;
+            font-size: 18px;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+        }
+
+        .info-panel ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-panel li {
+            padding: 5px 0;
+            font-size: 14px;
+            color: #2c1810;
+        }
+
+        .info-panel li::before {
+            content: "🍺 ";
+        }
+
+        .custom-prompt-section {
+            background: rgba(255,236,179,0.2);
+            border: 2px solid #8B4513;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .custom-prompt-section label {
+            font-size: 16px;
+            color: #3e2723;
+        }
+
+        .download-btn {
+            background: linear-gradient(180deg, #cd853f 0%, #8B4513 100%);
+            margin-top: 10px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(180deg, #daa520 0%, #a0522d 100%);
+        }
+
+        /* Improved spacing for controls */
+        .input-group + .input-group {
+            margin-top: 20px;
+        }
+
+        /* Collapsible sections */
+        .control-section {
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .control-section:last-of-type {
+            margin-bottom: 0;
+        }
+
+        #enhance-btn {
+            background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+        }
+
+        #enhance-btn:hover:not(:disabled) {
+            background: linear-gradient(180deg, #a0522d 0%, #8B4513 100%);
+        }
+
+        #generate-btn {
+            background: linear-gradient(180deg, #d2691e 0%, #8B4513 100%);
+        }
+
+        #generate-btn:hover:not(:disabled) {
+            background: linear-gradient(180deg, #daa520 0%, #a0522d 100%);
+        }
+
+        /* History Panel */
+        .history-panel {
+            background:
+                repeating-linear-gradient(90deg, #d2691e 0px, #cd853f 2px, #d2691e 4px),
+                linear-gradient(180deg, #daa520 0%, #b8860b 100%);
+            border: 3px solid #5d4037;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .history-panel:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8B4513;
+        }
+
+        .history-header h3 {
+            color: #3e2723;
+            font-size: 20px;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-count {
+            background: rgba(139, 69, 19, 0.3);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #3e2723;
+        }
+
+        .history-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .history-btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+            color: #ffd700;
+            border: 2px solid #3e2723;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-btn:hover {
+            background: linear-gradient(180deg, #a0522d 0%, #8B4513 100%);
+            transform: translateY(-1px);
+        }
+
+        .history-carousel {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        .history-item {
+            background: #1a1410;
+            border: 3px solid #3e2723;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .history-item:hover {
+            border-color: #daa520;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(218, 165, 32, 0.4);
+        }
+
+        .history-item-images {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+
+        .history-thumbnail {
+            width: 100%;
+            height: auto;
+            border: 1px solid #8B4513;
+            border-radius: 3px;
+            image-rendering: pixelated;
+        }
+
+        .history-thumbnail.enhanced {
+            image-rendering: auto;
+        }
+
+        .history-item-info {
+            font-size: 11px;
+            color: #8B7355;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .history-item-date {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+        }
+
+        .history-delete {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(139, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover .history-delete {
+            display: flex;
+        }
+
+        .history-delete:hover {
+            background: rgba(139, 0, 0, 1);
+            transform: scale(1.1);
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 40px;
+            color: #8B7355;
+            font-style: italic;
+        }
+
+        /* Scrollbar styling for history carousel */
+        .history-carousel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .history-carousel::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+
+        .history-carousel::-webkit-scrollbar-thumb {
+            background: #8B4513;
+            border-radius: 4px;
+        }
+
+        .history-carousel::-webkit-scrollbar-thumb:hover {
+            background: #a0522d;
+        }
+
+        /* Responsive breakpoints */
+        @media (max-width: 1600px) {
+            .workspace {
+                grid-template-columns: 500px 1fr;
+            }
+        }
+
+        @media (max-width: 1400px) {
+            .workspace {
+                grid-template-columns: 450px 1fr;
+            }
+
+            .history-carousel {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .panel:last-child {
+                min-height: 500px;
+            }
+
+            .preset-buttons {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .panel {
+                padding: 15px;
+            }
+
+            .panel-header {
+                font-size: 18px;
+            }
+
+            .preset-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>⚔️ THE SPRITE TAVERN 🍺</h1>
+            <div class="subtitle">Where Pixel Art Meets Magic • PixelLab + Nano Banana</div>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="workspace">
+            <!-- Left Panel: PixelLab Generation -->
+            <div class="panel">
+                <div class="content-section">
+                    <div class="panel-header">⚔️ STEP 1: GENERATE SPRITE ⚔️</div>
+
+                    <!-- Custom Prompt Section -->
+                    <div class="custom-prompt-section">
+                    <label for="sprite-prompt">✨ Custom Sprite Description:</label>
+                    <textarea
+                        id="sprite-prompt"
+                        placeholder="Describe your sprite... (e.g., cyberpunk ninja with neon katana)"
+                        rows="3"
+                    >fantasy knight with sword and shield</textarea>
+                    <div class="button-group" style="margin-top: 10px;">
+                        <button class="randomize-btn" onclick="randomizePrompt()">🎲 Randomize</button>
+                        <button class="randomize-btn" onclick="loadTestSprite()">🧪 Load Test Sprite</button>
+                    </div>
+                </div>
+
+                <!-- Preset Style Buttons -->
+                <div class="input-group">
+                    <label>Quick Style Presets:</label>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="applyPreset('photorealistic')">📸 Photorealistic</button>
+                        <button class="preset-btn" onclick="applyPreset('cyberpunk')">🌃 Cyberpunk</button>
+                        <button class="preset-btn" onclick="applyPreset('medieval')">🏰 Medieval</button>
+                        <button class="preset-btn" onclick="applyPreset('fantasy')">🧙 Fantasy</button>
+                        <button class="preset-btn" onclick="applyPreset('scifi')">🚀 Sci-Fi</button>
+                        <button class="preset-btn" onclick="applyPreset('horror')">👻 Horror</button>
+                        <button class="preset-btn" onclick="applyPreset('cute')">🌸 Cute</button>
+                        <button class="preset-btn" onclick="applyPreset('pixel')">🎮 Retro</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="sprite-size">Size:</label>
+                    <select id="sprite-size">
+                        <option value="64">64x64 (Standard)</option>
+                        <option value="128">128x128 (Large)</option>
+                        <option value="256">256x256 (XL)</option>
+                    </select>
+                </div>
+
+                    <div class="button-group">
+                        <button id="generate-btn" onclick="generateSprite()">Generate Sprite</button>
+                    </div>
+                </div>
+
+                <div class="image-section">
+                    <div class="image-container" id="sprite-container">
+                    <div class="placeholder">🎮 No sprite generated yet</div>
+                </div>
+
+                    <div id="sprite-status" class="status" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Nano Banana Enhancement -->
+            <div class="panel">
+                <div class="content-section">
+                    <div class="panel-header">✨ STEP 2: ENHANCE WITH AI ✨</div>
+
+                <!-- Enhancement Preset Buttons -->
+                <div class="input-group">
+                    <label>Enhancement Style Presets:</label>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="applyEnhancePreset('photorealistic')">📸 Photorealistic</button>
+                        <button class="preset-btn" onclick="applyEnhancePreset('cyberpunk')">🌃 Cyberpunk</button>
+                        <button class="preset-btn" onclick="applyEnhancePreset('medieval')">🏰 Medieval</button>
+                        <button class="preset-btn" onclick="applyEnhancePreset('fantasy')">🧙 High Fantasy</button>
+                        <button class="preset-btn" onclick="applyEnhancePreset('anime')">🎌 Anime</button>
+                        <button class="preset-btn" onclick="applyEnhancePreset('painterly')">🎨 Painterly</button>
+                        <button class="preset-btn" onclick="applyEnhancePreset('comic')">💥 Comic</button>
+                        <button class="preset-btn" onclick="applyEnhancePreset('dark')">🌑 Dark Fantasy</button>
+                    </div>
+                </div>
+
+                <!-- Custom Enhancement Details -->
+                <div class="custom-prompt-section">
+                    <label for="enhance-prompt">✨ Custom Enhancement Details:</label>
+                    <textarea
+                        id="enhance-prompt"
+                        placeholder="Add your own details... (e.g., dramatic lighting, epic background)"
+                        rows="3"
+                    >cinematic lighting, epic fantasy setting</textarea>
+                </div>
+
+                    <div class="button-group">
+                        <button id="enhance-btn" onclick="enhanceSprite()" disabled>Enhance Sprite</button>
+                    </div>
+                </div>
+
+                <div class="image-section">
+                    <div class="image-container enhanced" id="enhanced-container">
+                    <div class="placeholder">✨ Generate a sprite first</div>
+                </div>
+
+                    <div id="enhanced-status" class="status" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Panel -->
+        <div class="history-panel">
+            <div class="history-header">
+                <h3>
+                    📜 Generation History
+                    <span class="history-count" id="history-count">0 items</span>
+                </h3>
+                <div class="history-controls">
+                    <button class="history-btn" onclick="toggleHistory()" id="toggle-history-btn">
+                        🔽 Hide
+                    </button>
+                    <button class="history-btn" onclick="clearHistory()">
+                        🗑️ Clear All
+                    </button>
+                </div>
+            </div>
+            <div class="history-carousel" id="history-carousel">
+                <div class="history-empty">
+                    🎨 No generations yet. Start creating to build your history!
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <h3>🍺 HOW TO USE THIS TAVERN'S MAGIC 🍺</h3>
+            <ul>
+                <li><strong>Custom Prompt:</strong> Write your own sprite description for full creative control</li>
+                <li><strong>Preset Buttons:</strong> Quick-apply popular styles like Cyberpunk, Medieval, etc.</li>
+                <li><strong>Randomize:</strong> Let the tavern's magic create a random character for you</li>
+                <li><strong>Generate:</strong> Create pixel art sprite with PixelLab AI</li>
+                <li><strong>Enhance:</strong> Transform your sprite into a detailed masterpiece with Gemini</li>
+                <li><strong>Compare:</strong> See both versions side-by-side and download your favorites</li>
+                <li><strong>History:</strong> Click any sprite to restore and re-enhance it (sprites only - enhanced images are too large to store)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentSpriteImage = null;
+        let currentSpriteDescription = null;
+        let currentPresetStyle = null;
+        let generationHistory = [];
+        let historyVisible = true;
+
+        // API Configuration
+        const NANO_BANANA_URL = 'http://localhost:5000';
+        const PIXELLAB_URL = 'http://localhost:5001';
+
+        // History Management
+        const HISTORY_STORAGE_KEY = 'sprite_enhancer_history';
+        const MAX_HISTORY_ITEMS = 10;  // Reduced from 30 due to large image sizes
+
+        // Load history from localStorage
+        function loadHistory() {
+            try {
+                const stored = localStorage.getItem(HISTORY_STORAGE_KEY);
+                generationHistory = stored ? JSON.parse(stored) : [];
+                console.log(`📜 [HISTORY] Loaded ${generationHistory.length} items from storage`);
+                renderHistory();
+            } catch (error) {
+                console.error('❌ [HISTORY] Error loading history:', error);
+                generationHistory = [];
+            }
+        }
+
+        // Save history to localStorage
+        function saveHistory() {
+            try {
+                // Keep only the most recent MAX_HISTORY_ITEMS
+                if (generationHistory.length > MAX_HISTORY_ITEMS) {
+                    generationHistory = generationHistory.slice(0, MAX_HISTORY_ITEMS);
+                }
+                localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(generationHistory));
+                console.log(`💾 [HISTORY] Saved ${generationHistory.length} items to storage`);
+            } catch (error) {
+                console.error('❌ [HISTORY] Error saving history:', error);
+                // If storage is full, remove oldest items and try again
+                if (error.name === 'QuotaExceededError') {
+                    generationHistory = generationHistory.slice(0, 10);
+                    try {
+                        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(generationHistory));
+                        console.log('⚠️ [HISTORY] Storage full, kept only 10 most recent items');
+                    } catch (e) {
+                        console.error('❌ [HISTORY] Still failed to save after cleanup');
+                    }
+                }
+            }
+        }
+
+        // Add item to history (only stores sprites, not enhanced images due to size)
+        function addToHistory(sprite, enhanced, description) {
+            const historyItem = {
+                id: Date.now(),
+                sprite: sprite,
+                enhanced: null,  // Don't store enhanced images - they're too large (1-2MB each)
+                description: description,
+                timestamp: new Date().toISOString()
+            };
+
+            // Add to beginning of array (most recent first)
+            generationHistory.unshift(historyItem);
+            saveHistory();
+            renderHistory();
+            console.log(`✅ [HISTORY] Added sprite to history: ${description}`);
+        }
+
+        // Render history carousel
+        function renderHistory() {
+            const carousel = document.getElementById('history-carousel');
+            const countEl = document.getElementById('history-count');
+
+            countEl.textContent = `${generationHistory.length} ${generationHistory.length === 1 ? 'item' : 'items'}`;
+
+            if (generationHistory.length === 0) {
+                carousel.innerHTML = `
+                    <div class="history-empty">
+                        🎨 No generations yet. Start creating to build your history!
+                    </div>
+                `;
+                return;
+            }
+
+            carousel.innerHTML = generationHistory.map(item => {
+                const date = new Date(item.timestamp);
+                const timeAgo = getTimeAgo(date);
+
+                return `
+                    <div class="history-item" data-id="${item.id}">
+                        <button class="history-delete" onclick="deleteHistoryItem(event, ${item.id})">×</button>
+                        <div class="history-item-images" onclick="restoreFromHistory(${item.id})">
+                            ${item.sprite ? `<img src="${item.sprite}" class="history-thumbnail" alt="Sprite">` : ''}
+                        </div>
+                        <div class="history-item-info" onclick="restoreFromHistory(${item.id})">${truncateText(item.description, 30)}</div>
+                        <div class="history-item-date" onclick="restoreFromHistory(${item.id})">${timeAgo}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Restore item from history (sprites only - enhanced images not stored)
+        function restoreFromHistory(id) {
+            const item = generationHistory.find(h => h.id === id);
+            if (!item) return;
+
+            console.log(`🔄 [HISTORY] Restoring sprite: ${item.description}`);
+
+            // Restore sprite
+            if (item.sprite) {
+                currentSpriteImage = item.sprite;
+                currentSpriteDescription = item.description;
+                updateImageContainer('sprite-container', item.sprite, null);
+                document.getElementById('sprite-prompt').value = item.description;
+                document.getElementById('enhance-btn').disabled = false;
+                showStatus('sprite-status', '✅ Sprite restored from history!', 'success');
+            }
+
+            // Clear enhanced container (we don't store enhanced images)
+            updateImageContainer('enhanced-container', null, '✨ Generate a sprite first');
+        }
+
+        // Delete single history item
+        function deleteHistoryItem(event, id) {
+            event.stopPropagation(); // Prevent restoring when clicking delete
+
+            if (!confirm('Delete this item from history?')) return;
+
+            generationHistory = generationHistory.filter(h => h.id !== id);
+            saveHistory();
+            renderHistory();
+            console.log(`🗑️ [HISTORY] Deleted item ${id}`);
+        }
+
+        // Clear all history
+        function clearHistory() {
+            if (!confirm(`Clear all ${generationHistory.length} items from history?`)) return;
+
+            generationHistory = [];
+            saveHistory();
+            renderHistory();
+            console.log('🗑️ [HISTORY] Cleared all history');
+        }
+
+        // Toggle history visibility
+        function toggleHistory() {
+            historyVisible = !historyVisible;
+            const carousel = document.getElementById('history-carousel');
+            const btn = document.getElementById('toggle-history-btn');
+
+            if (historyVisible) {
+                carousel.style.display = 'grid';
+                btn.textContent = '🔽 Hide';
+            } else {
+                carousel.style.display = 'none';
+                btn.textContent = '🔼 Show';
+            }
+        }
+
+        // Helper: Get time ago string
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+            return date.toLocaleDateString();
+        }
+
+        // Helper: Truncate text
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+
+        // Test sprite for quick testing (64x64 fantasy knight - actual PixelLab generated sprite)
+        const TEST_SPRITE_BASE64 = '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';
+        const TEST_SPRITE_DESCRIPTION = 'medieval knight with sword and shield';
+
+        // Timing tracker for generation performance
+        class GenerationTimingTracker {
+            constructor(storageKey, minSamplesForOutliers = 10) {
+                this.storageKey = storageKey;
+                this.minSamplesForOutliers = minSamplesForOutliers;
+                this.loadTimes();
+            }
+
+            loadTimes() {
+                const stored = localStorage.getItem(this.storageKey);
+                this.times = stored ? JSON.parse(stored) : [];
+                console.log(`📊 [TIMING] Loaded ${this.times.length} previous ${this.storageKey} times`);
+            }
+
+            saveTimes() {
+                localStorage.setItem(this.storageKey, JSON.stringify(this.times));
+            }
+
+            calculateStats() {
+                if (this.times.length === 0) return null;
+
+                // Calculate mean
+                const sum = this.times.reduce((a, b) => a + b, 0);
+                const mean = sum / this.times.length;
+
+                // Calculate standard deviation
+                const squaredDiffs = this.times.map(t => Math.pow(t - mean, 2));
+                const variance = squaredDiffs.reduce((a, b) => a + b, 0) / this.times.length;
+                const stdDev = Math.sqrt(variance);
+
+                return { mean, stdDev, count: this.times.length };
+            }
+
+            isOutlier(time, stats) {
+                // Use 2.5 standard deviations as threshold
+                const threshold = 2.5;
+                const distance = Math.abs(time - stats.mean);
+                return distance > (threshold * stats.stdDev);
+            }
+
+            addTime(timeInSeconds) {
+                console.log(`⏱️ [TIMING] Recording ${this.storageKey}: ${timeInSeconds.toFixed(2)}s`);
+
+                const stats = this.calculateStats();
+
+                // If we have enough samples, check for outliers
+                if (stats && this.times.length >= this.minSamplesForOutliers) {
+                    if (this.isOutlier(timeInSeconds, stats)) {
+                        console.warn(`⚠️ [TIMING] Outlier detected (${timeInSeconds.toFixed(2)}s vs avg ${stats.mean.toFixed(2)}s ± ${stats.stdDev.toFixed(2)}s) - not recording`);
+                        return; // Don't add outliers
+                    }
+                }
+
+                this.times.push(timeInSeconds);
+
+                // Keep only last 50 samples
+                if (this.times.length > 50) {
+                    this.times.shift();
+                }
+
+                this.saveTimes();
+
+                const newStats = this.calculateStats();
+                console.log(`📊 [TIMING] New ${this.storageKey} average: ${newStats.mean.toFixed(2)}s (±${newStats.stdDev.toFixed(2)}s) from ${newStats.count} samples`);
+            }
+
+            getEstimate() {
+                const stats = this.calculateStats();
+                if (!stats) return null;
+
+                return {
+                    mean: stats.mean,
+                    min: Math.max(0, stats.mean - stats.stdDev),
+                    max: stats.mean + stats.stdDev,
+                    confidence: this.times.length >= this.minSamplesForOutliers ? 'high' : 'low',
+                    sampleSize: stats.count
+                };
+            }
+
+            formatEstimate() {
+                const estimate = this.getEstimate();
+                if (!estimate) return 'No data yet';
+
+                const confidence = estimate.confidence === 'high' ? '✓' : '~';
+                return `${confidence} ${estimate.mean.toFixed(1)}s (${estimate.min.toFixed(1)}-${estimate.max.toFixed(1)}s) [${estimate.sampleSize} samples]`;
+            }
+        }
+
+        // Create trackers
+        const pixelLabTimer = new GenerationTimingTracker('pixellab_times', 10);
+        const nanoBananaTimer = new GenerationTimingTracker('nano_banana_times', 10);
+
+        // Preset style definitions
+        const STYLE_PRESETS = {
+            photorealistic: {
+                description: "highly detailed photorealistic",
+                enhance: "photorealistic, cinematic lighting, 8k, ultra detailed"
+            },
+            cyberpunk: {
+                description: "cyberpunk style with neon lights",
+                enhance: "cyberpunk aesthetic, neon colors, futuristic city, blade runner style"
+            },
+            medieval: {
+                description: "medieval fantasy style",
+                enhance: "medieval fantasy, castle setting, knights and armor, epic"
+            },
+            fantasy: {
+                description: "high fantasy style",
+                enhance: "high fantasy, magical, epic fantasy art, dramatic"
+            },
+            scifi: {
+                description: "sci-fi futuristic style",
+                enhance: "science fiction, futuristic technology, space opera, detailed"
+            },
+            horror: {
+                description: "dark horror style",
+                enhance: "dark horror, gothic, eerie atmosphere, haunting"
+            },
+            cute: {
+                description: "cute kawaii style",
+                enhance: "cute, kawaii, adorable, pastel colors, chibi style"
+            },
+            pixel: {
+                description: "retro pixel art style",
+                enhance: "pixel art, 16-bit, retro gaming, classic sprite"
+            },
+            anime: {
+                description: "anime art style",
+                enhance: "anime style, manga aesthetic, vibrant colors, detailed"
+            },
+            painterly: {
+                description: "oil painting style",
+                enhance: "oil painting, painterly, artistic brushstrokes, museum quality"
+            },
+            comic: {
+                description: "comic book style",
+                enhance: "comic book art, bold lines, dynamic composition"
+            },
+            dark: {
+                description: "dark fantasy style",
+                enhance: "dark fantasy, gothic, moody atmosphere, dramatic shadows"
+            }
+        };
+
+        // Random prompt templates
+        const RANDOM_SUBJECTS = [
+            "warrior", "mage", "rogue", "knight", "archer", "paladin", "necromancer",
+            "dragon", "phoenix", "griffin", "demon", "angel", "vampire", "werewolf",
+            "robot", "cyborg", "android", "alien", "space marine", "pilot",
+            "ninja", "samurai", "monk", "barbarian", "druid", "bard"
+        ];
+
+        const RANDOM_ATTRIBUTES = [
+            "powerful", "ancient", "legendary", "mystical", "fierce", "wise",
+            "battle-hardened", "ethereal", "corrupted", "divine", "shadowy",
+            "glowing", "armored", "stealthy", "magical", "cursed"
+        ];
+
+        const RANDOM_ITEMS = [
+            "sword", "staff", "bow", "axe", "shield", "hammer", "dagger",
+            "spear", "katana", "wand", "tome", "orb", "scythe", "crossbow"
+        ];
+
+        // Show status message
+        function showStatus(elementId, message, type = 'success') {
+            const statusEl = document.getElementById(elementId);
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        // Hide status message
+        function hideStatus(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        // Update image container
+        function updateImageContainer(containerId, imageData, placeholderText) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            if (imageData) {
+                const img = document.createElement('img');
+                img.src = imageData;
+                container.appendChild(img);
+
+                // Add download button with smart filename
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'download-btn';
+                downloadBtn.textContent = 'Download';
+
+                // Determine type based on container
+                const isEnhanced = containerId === 'enhanced-container';
+                const type = isEnhanced ? 'enhanced' : 'sprite';
+                const description = currentSpriteDescription || 'generated-image';
+
+                downloadBtn.onclick = () => {
+                    const filename = generateFilename(description, type);
+                    console.log(`💾 [DOWNLOAD] Saving as: ${filename}`);
+                    downloadImage(imageData, filename);
+                };
+                container.appendChild(downloadBtn);
+            } else {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'placeholder';
+                placeholder.textContent = placeholderText;
+                container.appendChild(placeholder);
+            }
+        }
+
+        // Generate smart filename from description
+        function generateFilename(description, type = 'sprite') {
+            // Sanitize description: remove special chars, limit length
+            const sanitized = description
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                .replace(/\s+/g, '-')          // Replace spaces with dashes
+                .replace(/-+/g, '-')           // Remove duplicate dashes
+                .substring(0, 40);             // Max 40 chars
+
+            // Generate timestamp: YYYYMMDD_HHMMSS
+            const now = new Date();
+            const timestamp = [
+                now.getFullYear(),
+                String(now.getMonth() + 1).padStart(2, '0'),
+                String(now.getDate()).padStart(2, '0')
+            ].join('') + '_' + [
+                String(now.getHours()).padStart(2, '0'),
+                String(now.getMinutes()).padStart(2, '0'),
+                String(now.getSeconds()).padStart(2, '0')
+            ].join('');
+
+            // Format: description_type_timestamp.png
+            // Example: fantasy-knight-sword_sprite_20251028_232015.png
+            return `${sanitized}_${type}_${timestamp}.png`;
+        }
+
+        // Download image
+        function downloadImage(imageData, filename) {
+            const a = document.createElement('a');
+            a.href = imageData;
+            a.download = filename;
+            a.click();
+        }
+
+        // Apply preset style to sprite generation
+        function applyPreset(style) {
+            console.log('🎯 [PRESET] Applying generation preset:', style);
+            const preset = STYLE_PRESETS[style];
+            if (!preset) {
+                console.warn('⚠️ [PRESET] Unknown style:', style);
+                return;
+            }
+
+            currentPresetStyle = style;
+
+            // Get current prompt text
+            let currentPrompt = document.getElementById('sprite-prompt').value.trim();
+
+            // If empty or a previous preset, replace entirely
+            if (!currentPrompt || Object.values(STYLE_PRESETS).some(p => currentPrompt.includes(p.description))) {
+                // Use a random subject with the style
+                const subject = RANDOM_SUBJECTS[Math.floor(Math.random() * RANDOM_SUBJECTS.length)];
+                const attribute = RANDOM_ATTRIBUTES[Math.floor(Math.random() * RANDOM_ATTRIBUTES.length)];
+                const item = RANDOM_ITEMS[Math.floor(Math.random() * RANDOM_ITEMS.length)];
+                currentPrompt = `${attribute} ${subject} with ${item}`;
+            }
+
+            // Apply style to prompt
+            const finalPrompt = `${currentPrompt}, ${preset.description}`;
+            document.getElementById('sprite-prompt').value = finalPrompt;
+            console.log('🎯 [PRESET] Updated prompt:', finalPrompt);
+
+            // Visual feedback
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Apply preset enhancement style
+        function applyEnhancePreset(style) {
+            console.log('✨ [PRESET] Applying enhancement preset:', style);
+            const preset = STYLE_PRESETS[style];
+            if (!preset) {
+                console.warn('⚠️ [PRESET] Unknown style:', style);
+                return;
+            }
+
+            // Set enhancement details
+            document.getElementById('enhance-prompt').value = preset.enhance;
+            console.log('✨ [PRESET] Updated enhancement details:', preset.enhance);
+
+            // Visual feedback
+            const buttons = event.target.closest('.preset-buttons').querySelectorAll('.preset-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Randomize prompt
+        function randomizePrompt() {
+            console.log('🎲 [RANDOMIZE] Generating random prompt...');
+            const subject = RANDOM_SUBJECTS[Math.floor(Math.random() * RANDOM_SUBJECTS.length)];
+            const attribute = RANDOM_ATTRIBUTES[Math.floor(Math.random() * RANDOM_ATTRIBUTES.length)];
+            const item = RANDOM_ITEMS[Math.floor(Math.random() * RANDOM_ITEMS.length)];
+
+            // Choose a random style sometimes
+            const styles = Object.keys(STYLE_PRESETS);
+            const shouldAddStyle = Math.random() > 0.3; // 70% chance to add style
+
+            let prompt = `${attribute} ${subject} with ${item}`;
+
+            if (shouldAddStyle) {
+                const style = styles[Math.floor(Math.random() * styles.length)];
+                const preset = STYLE_PRESETS[style];
+                prompt += `, ${preset.description}`;
+            }
+
+            document.getElementById('sprite-prompt').value = prompt;
+            console.log('🎲 [RANDOMIZE] Generated:', prompt);
+
+            // Clear active preset buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        // Load test sprite for quick testing
+        function loadTestSprite() {
+            console.log('🧪 [TEST] Loading test sprite...');
+
+            // Set the test sprite (needs to be a data URL for the server)
+            currentSpriteImage = `data:image/png;base64,${TEST_SPRITE_BASE64}`;
+            currentSpriteDescription = TEST_SPRITE_DESCRIPTION;
+
+            // Update the UI using the shared function
+            updateImageContainer('sprite-container', currentSpriteImage, null);
+
+            // Update prompt field
+            document.getElementById('sprite-prompt').value = TEST_SPRITE_DESCRIPTION;
+
+            // Enable enhance button
+            document.getElementById('enhance-btn').disabled = false;
+
+            showStatus('sprite-status', '✅ Test sprite loaded! Ready to enhance.', 'success');
+            console.log('🧪 [TEST] Test sprite loaded successfully');
+        }
+
+        // Update progress with time estimate
+        function updateProgressStatus(elementId, startTime, estimateSeconds, operation) {
+            const elapsed = (performance.now() - startTime) / 1000;
+            const remaining = Math.max(0, estimateSeconds - elapsed);
+            const progress = Math.min(100, (elapsed / estimateSeconds) * 100);
+
+            const message = `${operation}... ${elapsed.toFixed(1)}s / ~${estimateSeconds.toFixed(1)}s (${progress.toFixed(0)}%)`;
+            showStatus(elementId, message, 'loading');
+        }
+
+        // Generate sprite using PixelLab (via MCP or direct API)
+        async function generateSprite() {
+            const prompt = document.getElementById('sprite-prompt').value.trim();
+            const size = parseInt(document.getElementById('sprite-size').value);
+            const generateBtn = document.getElementById('generate-btn');
+
+            if (!prompt) {
+                showStatus('sprite-status', '⚠️ Please enter a sprite description', 'error');
+                return;
+            }
+
+            // Show estimate
+            const estimate = pixelLabTimer.getEstimate();
+            const estimateText = estimate
+                ? `Expected: ${pixelLabTimer.formatEstimate()}`
+                : 'Collecting timing data...';
+            console.log(`📊 [GENERATE] ${estimateText}`);
+
+            // Disable button and show loading
+            generateBtn.disabled = true;
+            showStatus('sprite-status', `🎨 Generating... ${estimateText}`, 'loading');
+            updateImageContainer('sprite-container', null, '⏳ Generating...');
+
+            // Set up progress updates if we have an estimate
+            let progressInterval = null;
+            if (estimate) {
+                const startTime = performance.now();
+                progressInterval = setInterval(() => {
+                    updateProgressStatus('sprite-status', startTime, estimate.mean, '🎨 Generating pixel art');
+                }, 500);
+            }
+
+            try {
+                // Call PixelLab bridge server
+                console.log('🎨 [GENERATE] Sending request to PixelLab:', {
+                    url: `${PIXELLAB_URL}/generate-sprite`,
+                    prompt: prompt,
+                    size: `${size}x${size}`,
+                    no_background: true
+                });
+
+                const requestStart = performance.now();
+                const response = await fetch(`${PIXELLAB_URL}/generate-sprite`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        width: size,
+                        height: size,
+                        no_background: true
+                    })
+                });
+
+                const requestTime = (performance.now() - requestStart) / 1000;
+                console.log(`🎨 [GENERATE] Response received in ${requestTime.toFixed(2)}s:`, {
+                    status: response.status,
+                    ok: response.ok
+                });
+
+                // Clear progress interval
+                if (progressInterval) clearInterval(progressInterval);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('❌ [GENERATE] Error response:', errorData);
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ [GENERATE] Success! Image data received:', {
+                    hasImage: !!data.image,
+                    width: data.width,
+                    height: data.height,
+                    imagePreview: data.image ? data.image.substring(0, 50) + '...' : 'none'
+                });
+
+                // Record timing
+                pixelLabTimer.addTime(requestTime);
+
+                if (data.success && data.image) {
+                    // Display sprite
+                    const imageData = `data:image/png;base64,${data.image}`;
+                    currentSpriteImage = imageData;
+                    currentSpriteDescription = prompt;
+
+                    updateImageContainer('sprite-container', imageData, null);
+                    showStatus('sprite-status', `✅ Generated in ${requestTime.toFixed(2)}s!`, 'success');
+
+                    // Enable enhance button
+                    document.getElementById('enhance-btn').disabled = false;
+
+                    // Add to history (sprite only, no enhancement yet)
+                    addToHistory(imageData, null, prompt);
+                } else {
+                    throw new Error('No image returned from server');
+                }
+
+            } catch (error) {
+                // Clear progress interval on error
+                if (progressInterval) clearInterval(progressInterval);
+                console.error('❌ [GENERATE] Error generating sprite:', {
+                    message: error.message,
+                    stack: error.stack,
+                    prompt: prompt
+                });
+
+                let errorMessage = error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Cannot connect to PixelLab server. Is it running on port 5001?';
+                }
+
+                showStatus('sprite-status', `❌ ${errorMessage}`, 'error');
+                updateImageContainer('sprite-container', null, '❌ Generation failed');
+            } finally {
+                generateBtn.disabled = false;
+                console.log('🎨 [GENERATE] Request complete');
+            }
+        }
+
+        // Generate placeholder sprite (for demo)
+        function generatePlaceholderSprite(description, size) {
+            // Create a simple canvas-based pixel art placeholder
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Simple gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(0.5, '#4ecdc4');
+            gradient.addColorStop(1, '#45b7d1');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Add text
+            ctx.fillStyle = '#fff';
+            ctx.font = `${size / 8}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.fillText('DEMO', size / 2, size / 2);
+            ctx.font = `${size / 16}px monospace`;
+            ctx.fillText('SPRITE', size / 2, size / 2 + size / 8);
+
+            // Convert to data URL
+            const imageData = canvas.toDataURL('image/png');
+            currentSpriteImage = imageData;
+            currentSpriteDescription = description;
+
+            updateImageContainer('sprite-container', imageData, null);
+            showStatus('sprite-status', '✅ Demo sprite generated (using placeholder)', 'success');
+
+            // Enable enhance button
+            document.getElementById('enhance-btn').disabled = false;
+        }
+
+        // Enhance sprite using Nano Banana
+        async function enhanceSprite() {
+            if (!currentSpriteImage) {
+                showStatus('enhanced-status', '⚠️ Generate a sprite first', 'error');
+                return;
+            }
+
+            const additionalDetails = document.getElementById('enhance-prompt').value.trim();
+            const enhanceBtn = document.getElementById('enhance-btn');
+
+            // Build enhancement prompt
+            const baseDescription = currentSpriteDescription || 'pixel art character';
+            const enhancementPrompt = additionalDetails
+                ? `${baseDescription}, ${additionalDetails}`
+                : baseDescription;
+
+            // Show estimate
+            const estimate = nanoBananaTimer.getEstimate();
+            const estimateText = estimate
+                ? `Expected: ${nanoBananaTimer.formatEstimate()}`
+                : 'Collecting timing data...';
+            console.log(`📊 [ENHANCE] ${estimateText}`);
+
+            // Disable button and show loading
+            enhanceBtn.disabled = true;
+            showStatus('enhanced-status', `✨ Enhancing... ${estimateText}`, 'loading');
+            updateImageContainer('enhanced-container', null, '⏳ Enhancing...');
+
+            // Set up progress updates if we have an estimate
+            let progressInterval = null;
+            if (estimate) {
+                const startTime = performance.now();
+                progressInterval = setInterval(() => {
+                    updateProgressStatus('enhanced-status', startTime, estimate.mean, '✨ Enhancing with Gemini');
+                }, 500);
+            }
+
+            try {
+                // Call Nano Banana server
+                console.log('✨ [ENHANCE] Sending request to Nano Banana:', {
+                    url: `${NANO_BANANA_URL}/generate-scene`,
+                    description: enhancementPrompt,
+                    baseSprite: currentSpriteDescription,
+                    style: 'photorealistic',
+                    aspect_ratio: '1:1'
+                });
+
+                const requestStart = performance.now();
+                const response = await fetch(`${NANO_BANANA_URL}/generate-scene`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        description: enhancementPrompt,
+                        baseSprite: currentSpriteImage,  // ✨ SEND THE SPRITE IMAGE FOR ENHANCEMENT!
+                        style: 'photorealistic',  // Default style, details come from prompt
+                        aspect_ratio: '1:1'
+                    })
+                });
+
+                const requestTime = (performance.now() - requestStart) / 1000;
+                console.log(`✨ [ENHANCE] Response received in ${requestTime.toFixed(2)}s:`, {
+                    status: response.status,
+                    ok: response.ok
+                });
+
+                // Clear progress interval
+                if (progressInterval) clearInterval(progressInterval);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('❌ [ENHANCE] Error response:', errorData);
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ [ENHANCE] Success! Enhanced image received:', {
+                    hasImage: !!data.image,
+                    generationTime: data.generation_time,
+                    imagePreview: data.image ? data.image.substring(0, 50) + '...' : 'none'
+                });
+
+                // Record timing
+                nanoBananaTimer.addTime(requestTime);
+
+                if (data.success && data.image) {
+                    // Display enhanced image
+                    const imageData = `data:image/png;base64,${data.image}`;
+                    updateImageContainer('enhanced-container', imageData, null);
+                    showStatus('enhanced-status', `✅ Enhanced in ${requestTime.toFixed(2)}s!`, 'success');
+
+                    // Note: We don't save enhanced images to history due to their large size (1-2MB each)
+                    // Only sprites are saved to prevent localStorage quota errors
+                } else {
+                    throw new Error('No image returned from server');
+                }
+
+            } catch (error) {
+                // Clear progress interval on error
+                if (progressInterval) clearInterval(progressInterval);
+                console.error('❌ [ENHANCE] Error enhancing sprite:', {
+                    message: error.message,
+                    stack: error.stack,
+                    prompt: enhancementPrompt
+                });
+
+                let errorMessage = error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Cannot connect to Nano Banana server. Is it running on port 5000?';
+                }
+
+                showStatus('enhanced-status', `❌ ${errorMessage}`, 'error');
+                updateImageContainer('enhanced-container', null, '❌ Enhancement failed');
+            } finally {
+                enhanceBtn.disabled = false;
+                console.log('✨ [ENHANCE] Request complete');
+            }
+        }
+
+        // Check server status on load
+        async function checkServerStatus() {
+            // Check Nano Banana
+            try {
+                const response = await fetch(`${NANO_BANANA_URL}/health`);
+                if (response.ok) {
+                    console.log('✅ Nano Banana server (port 5000) is online');
+                } else {
+                    console.warn('⚠️ Nano Banana server responded but may have issues');
+                }
+            } catch (error) {
+                console.warn('⚠️ Nano Banana server not available. Start it with: python3 nano_banana_server.py');
+            }
+
+            // Check PixelLab Bridge
+            try {
+                const response = await fetch(`${PIXELLAB_URL}/health`);
+                if (response.ok) {
+                    console.log('✅ PixelLab Bridge server (port 5001) is online');
+                } else {
+                    console.warn('⚠️ PixelLab Bridge server responded but may have issues');
+                }
+            } catch (error) {
+                console.warn('⚠️ PixelLab Bridge server not available. Start it with: python3 pixellab_bridge_server.py');
+            }
+        }
+
+        // Initialize
+        loadHistory();  // Load history from localStorage
+        checkServerStatus();
+        console.log('🎨 Sprite Enhancer initialized');
+        console.log('📝 Start both servers to use all features:');
+        console.log('   1. python3 nano_banana_server.py (port 5000)');
+        console.log('   2. python3 pixellab_bridge_server.py (port 5001)');
+        console.log('\n📊 Timing Statistics:');
+        console.log(`   PixelLab: ${pixelLabTimer.formatEstimate()}`);
+        console.log(`   Nano Banana: ${nanoBananaTimer.formatEstimate()}`);
+        console.log(`\n📜 History: ${generationHistory.length} items loaded`);
+    </script>
+</body>
+</html>
+
+

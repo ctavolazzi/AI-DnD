@@ -1,0 +1,30 @@
+{
+  "session_id": "session_1761721236158",
+  "campaign_id": "campaign_1761721220869",
+  "session": {
+    "id": "session_1761721236158",
+    "campaign_id": "campaign_1761721220869",
+    "name": "MCP Server Integration Test Session",
+    "created_at": "2025-10-29T07:00:36.158Z",
+    "notes": [],
+    "encounters": [],
+    "status": "planned"
+  },
+  "campaign": {
+    "id": "campaign_1761721220869",
+    "name": "AI-DnD Test Campaign",
+    "setting": "Homebrew Fantasy World",
+    "level_range": "1-5",
+    "tone": "epic",
+    "created_at": "2025-10-29T07:00:20.869Z",
+    "sessions": ["session_1761721236158"],
+    "npcs": [],
+    "encounters": []
+  },
+  "metadata": {
+    "created_by": "MCP Server Integration Test",
+    "created_at": "2025-10-29T07:00:36.158Z",
+    "purpose": "Testing D&D DM MCP server functionality",
+    "status": "ready_for_play"
+  }
+}

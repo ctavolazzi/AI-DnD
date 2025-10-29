@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "decision-matrix": {
+      "command": "python3",
+      "args": ["decision_matrix_mcp_server.py"],
+      "env": {}
+    }
+  }
+}

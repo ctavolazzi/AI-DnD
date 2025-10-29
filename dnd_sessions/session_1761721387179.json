@@ -1,0 +1,13 @@
+{
+  "session_id": "session_1761721387179",
+  "campaign_id": "campaign_1761721220869",
+  "name": "AI-DnD Development Session",
+  "created_at": "2025-10-29T07:03:07.179Z",
+  "notes": [],
+  "encounters": [],
+  "status": "planned",
+  "campaign_info": {
+    "name": "AI-DnD Test Campaign",
+    "setting": "Homebrew Fantasy World"
+  }
+}

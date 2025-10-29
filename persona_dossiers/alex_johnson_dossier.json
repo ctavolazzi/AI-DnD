@@ -1,0 +1,26 @@
+{
+  "person": {
+    "name": "Alex Johnson",
+    "first_name": "Alex",
+    "last_name": "Johnson",
+    "title": "Mr",
+    "gender": "male",
+    "age": 28,
+    "email": "alex.johnson@example.com",
+    "phone": "(555) 123-4567",
+    "cell": "(555) 987-6543",
+    "location": {
+      "street": "123 Main St",
+      "city": "Anytown",
+      "state": "CA",
+      "country": "United States",
+      "postcode": "12345"
+    },
+    "profile_picture": "",
+    "nationality": "US"
+  },
+  "images": [],
+  "generated_at": "2025-10-28T23:25:50.193102",
+  "total_images": 0,
+  "success_rate": 0.0
+}

@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chat</title>
+    <style>
+        /* ============================================
+           🎨 THEME SYSTEM - CSS VARIABLES
+           ============================================ */
+        :root {
+            /* Default Theme - Purple Gradient */
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --header-gradient-start: #667eea;
+            --header-gradient-end: #764ba2;
+            --user-msg-gradient-start: #667eea;
+            --user-msg-gradient-end: #764ba2;
+            --container-bg: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #868e96;
+            --input-bg: #f8f9fa;
+            --input-border: #ced4da;
+            --assistant-msg-bg: #f1f3f5;
+            --button-primary: #667eea;
+            --button-primary-hover: #5568d3;
+            --accent-color: #51cf66;
+        }
+
+        [data-theme="ocean"] {
+            --bg-gradient-start: #0093E9;
+            --bg-gradient-end: #80D0C7;
+            --header-gradient-start: #0093E9;
+            --header-gradient-end: #80D0C7;
+            --user-msg-gradient-start: #0093E9;
+            --user-msg-gradient-end: #80D0C7;
+            --button-primary: #0093E9;
+            --button-primary-hover: #0077c7;
+            --accent-color: #80D0C7;
+        }
+
+        [data-theme="sunset"] {
+            --bg-gradient-start: #FA8BFF;
+            --bg-gradient-end: #2BD2FF;
+            --header-gradient-start: #FA8BFF;
+            --header-gradient-end: #2BD2FF;
+            --user-msg-gradient-start: #FA8BFF;
+            --user-msg-gradient-end: #2BD2FF;
+            --button-primary: #FA8BFF;
+            --button-primary-hover: #e877eb;
+            --accent-color: #2BD2FF;
+        }
+
+        [data-theme="forest"] {
+            --bg-gradient-start: #134E5E;
+            --bg-gradient-end: #71B280;
+            --header-gradient-start: #134E5E;
+            --header-gradient-end: #71B280;
+            --user-msg-gradient-start: #134E5E;
+            --user-msg-gradient-end: #71B280;
+            --button-primary: #134E5E;
+            --button-primary-hover: #0f3d4a;
+            --accent-color: #71B280;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient-start: #0F2027;
+            --bg-gradient-end: #2C5364;
+            --header-gradient-start: #0F2027;
+            --header-gradient-end: #2C5364;
+            --user-msg-gradient-start: #4776E6;
+            --user-msg-gradient-end: #8E54E9;
+            --container-bg: #1a1a2e;
+            --text-primary: #eaeaea;
+            --text-secondary: #aaaaaa;
+            --input-bg: #16213e;
+            --input-border: #2c3e50;
+            --assistant-msg-bg: #16213e;
+            --button-primary: #4776E6;
+            --button-primary-hover: #3a62c7;
+            --accent-color: #8E54E9;
+        }
+
+        [data-theme="fire"] {
+            --bg-gradient-start: #F2994A;
+            --bg-gradient-end: #F2C94C;
+            --header-gradient-start: #F2994A;
+            --header-gradient-end: #F2C94C;
+            --user-msg-gradient-start: #F2994A;
+            --user-msg-gradient-end: #F2C94C;
+            --button-primary: #F2994A;
+            --button-primary-hover: #d97f2e;
+            --accent-color: #F2C94C;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .theme-switcher {
+            position: relative;
+        }
+
+        .theme-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        .theme-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .theme-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            min-width: 180px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .theme-menu.show {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .theme-option {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+            transition: background 0.2s;
+        }
+
+        .theme-option:hover {
+            background: var(--input-bg);
+        }
+
+        .theme-option.active {
+            background: var(--input-bg);
+            font-weight: 600;
+        }
+
+        .theme-preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid var(--input-border);
+        }
+
+        .theme-preview.purple {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .theme-preview.ocean {
+            background: linear-gradient(135deg, #0093E9, #80D0C7);
+        }
+
+        .theme-preview.sunset {
+            background: linear-gradient(135deg, #FA8BFF, #2BD2FF);
+        }
+
+        .theme-preview.forest {
+            background: linear-gradient(135deg, #134E5E, #71B280);
+        }
+
+        .theme-preview.dark {
+            background: linear-gradient(135deg, #0F2027, #2C5364);
+        }
+
+        .theme-preview.fire {
+            background: linear-gradient(135deg, #F2994A, #F2C94C);
+        }
+
+        .api-key-setup {
+            padding: 20px;
+            background: var(--input-bg);
+            border-bottom: 1px solid var(--input-border);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .api-key-setup input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--container-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .api-key-setup button {
+            padding: 10px 20px;
+            background: var(--button-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .api-key-setup button:hover {
+            background: var(--button-primary-hover);
+        }
+
+        .api-key-setup.hidden {
+            display: none;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, var(--user-msg-gradient-start) 0%, var(--user-msg-gradient-end) 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        .message.assistant .message-content {
+            background: var(--assistant-msg-bg);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .message.error .message-content {
+            background: #ffe0e0;
+            color: #d32f2f;
+            border: 1px solid #ffcdd2;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: var(--input-bg);
+            border-top: 1px solid var(--input-border);
+            display: flex;
+            gap: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .input-container textarea {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            font-size: 15px;
+            resize: none;
+            font-family: inherit;
+            min-height: 50px;
+            max-height: 150px;
+            background: var(--container-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .input-container textarea:focus {
+            outline: none;
+            border-color: var(--button-primary);
+        }
+
+        .input-container button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--user-msg-gradient-start) 0%, var(--user-msg-gradient-end) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .input-container button:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        .input-container button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: flex;
+            gap: 5px;
+            padding: 12px 16px;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--button-primary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+            transition: background 0.3s ease;
+        }
+
+        .loading-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .welcome-message {
+            text-align: center;
+            color: #868e96;
+            padding: 40px 20px;
+        }
+
+        .welcome-message h2 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.connected {
+            background: #51cf66;
+        }
+
+        .status-indicator.disconnected {
+            background: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-left">
+                <span class="status-indicator disconnected" id="statusIndicator"></span>
+                Gemini Chat
+            </div>
+            <div class="theme-switcher">
+                <button class="theme-button" onclick="toggleThemeMenu()">
+                    <span>🎨</span>
+                    <span>Theme</span>
+                </button>
+                <div class="theme-menu" id="themeMenu">
+                    <div class="theme-option active" data-theme="default" onclick="setTheme('default')">
+                        <div class="theme-preview purple"></div>
+                        <span>Purple</span>
+                    </div>
+                    <div class="theme-option" data-theme="ocean" onclick="setTheme('ocean')">
+                        <div class="theme-preview ocean"></div>
+                        <span>Ocean</span>
+                    </div>
+                    <div class="theme-option" data-theme="sunset" onclick="setTheme('sunset')">
+                        <div class="theme-preview sunset"></div>
+                        <span>Sunset</span>
+                    </div>
+                    <div class="theme-option" data-theme="forest" onclick="setTheme('forest')">
+                        <div class="theme-preview forest"></div>
+                        <span>Forest</span>
+                    </div>
+                    <div class="theme-option" data-theme="dark" onclick="setTheme('dark')">
+                        <div class="theme-preview dark"></div>
+                        <span>Dark</span>
+                    </div>
+                    <div class="theme-option" data-theme="fire" onclick="setTheme('fire')">
+                        <div class="theme-preview fire"></div>
+                        <span>Fire</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-key-setup" id="apiKeySetup">
+            <input
+                type="password"
+                id="apiKeyInput"
+                placeholder="Enter your Gemini API key (or set GEMINI_API_KEY environment variable)"
+            >
+            <button onclick="setApiKey()">Connect</button>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+            <div class="welcome-message">
+                <h2>Welcome to Gemini Chat</h2>
+                <p>Enter your API key to start chatting with Gemini 2.5 Flash</p>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <textarea
+                id="messageInput"
+                placeholder="Type your message..."
+                disabled
+                onkeydown="handleKeyDown(event)"
+            ></textarea>
+            <button onclick="sendMessage()" id="sendButton" disabled>Send</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { GoogleGenAI } from 'https://esm.run/@google/genai';
+
+        let client = null;
+        let conversationHistory = [];
+        let sessionStats = {
+            messagesCount: 0,
+            totalTokens: 0,
+            cachedTokens: 0,
+            inputTokens: 0,
+            outputTokens: 0,
+            startTime: Date.now(),
+            apiCalls: 0,
+            errors: 0
+        };
+
+        // ============================================
+        // 🎨 ADVANCED CONSOLE LOGGING SYSTEM 🎨
+        // ============================================
+
+        // Print ASCII art banner
+        const banner = `
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║   ██████╗ ███████╗███╗   ███╗██╗███╗   ██╗██╗          ║
+║  ██╔════╝ ██╔════╝████╗ ████║██║████╗  ██║██║          ║
+║  ██║  ███╗█████╗  ██╔████╔██║██║██╔██╗ ██║██║          ║
+║  ██║   ██║██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║██║          ║
+║  ╚██████╔╝███████╗██║ ╚═╝ ██║██║██║ ╚████║██║          ║
+║   ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝          ║
+║                                                          ║
+║          🚀 Advanced Chat Interface v1.0 🚀              ║
+║          💬 Powered by Gemini 2.5 Flash                 ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+        `;
+
+        console.log('%c' + banner, 'color: #667eea; font-weight: bold;');
+
+        // Styled console log helpers
+        const log = {
+            system: (msg, data) => {
+                console.log(
+                    '%c🔧 SYSTEM %c' + msg,
+                    'background: #667eea; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;',
+                    'color: #667eea; font-weight: bold;',
+                    data || ''
+                );
+            },
+            api: (msg, data) => {
+                console.log(
+                    '%c🌐 API %c' + msg,
+                    'background: #51cf66; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;',
+                    'color: #51cf66; font-weight: bold;',
+                    data || ''
+                );
+            },
+            user: (msg, data) => {
+                console.log(
+                    '%c👤 USER %c' + msg,
+                    'background: #764ba2; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;',
+                    'color: #764ba2; font-weight: bold;',
+                    data || ''
+                );
+            },
+            ai: (msg, data) => {
+                console.log(
+                    '%c🤖 AI %c' + msg,
+                    'background: #ff6b6b; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;',
+                    'color: #ff6b6b; font-weight: bold;',
+                    data || ''
+                );
+            },
+            token: (msg, data) => {
+                console.log(
+                    '%c🎯 TOKEN %c' + msg,
+                    'background: #ffd93d; color: black; padding: 2px 6px; border-radius: 3px; font-weight: bold;',
+                    'color: #ffd93d; font-weight: bold;',
+                    data || ''
+                );
+            },
+            cache: (msg, data) => {
+                console.log(
+                    '%c💾 CACHE %c' + msg,
+                    'background: #6bcf7f; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;',
+                    'color: #6bcf7f; font-weight: bold;',
+                    data || ''
+                );
+            },
+            perf: (msg, data) => {
+                console.log(
+                    '%c⚡ PERF %c' + msg,
+                    'background: #ff9f1c; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;',
+                    'color: #ff9f1c; font-weight: bold;',
+                    data || ''
+                );
+            },
+            error: (msg, error) => {
+                console.log(
+                    '%c❌ ERROR %c' + msg,
+                    'background: #d32f2f; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;',
+                    'color: #d32f2f; font-weight: bold;',
+                    error || ''
+                );
+            }
+        };
+
+        // Display session stats as a table
+        function logSessionStats() {
+            console.groupCollapsed('📊 Session Statistics');
+            console.table({
+                'Messages Sent': sessionStats.messagesCount,
+                'API Calls': sessionStats.apiCalls,
+                'Total Tokens': sessionStats.totalTokens,
+                'Cached Tokens': sessionStats.cachedTokens,
+                'Input Tokens': sessionStats.inputTokens,
+                'Output Tokens': sessionStats.outputTokens,
+                'Errors': sessionStats.errors,
+                'Uptime (seconds)': ((Date.now() - sessionStats.startTime) / 1000).toFixed(2),
+                'Cache Hit Rate': sessionStats.totalTokens > 0
+                    ? ((sessionStats.cachedTokens / sessionStats.totalTokens * 100).toFixed(2) + '%')
+                    : '0%'
+            });
+            console.groupEnd();
+        }
+
+        // Memory usage logging
+        function logMemoryUsage() {
+            if (performance.memory) {
+                console.groupCollapsed('💾 Memory Usage');
+                const used = (performance.memory.usedJSHeapSize / 1048576).toFixed(2);
+                const total = (performance.memory.totalJSHeapSize / 1048576).toFixed(2);
+                const limit = (performance.memory.jsHeapSizeLimit / 1048576).toFixed(2);
+
+                console.log(`Used: ${used} MB / ${total} MB (Limit: ${limit} MB)`);
+                console.log(`Usage: ${((used / limit) * 100).toFixed(2)}%`);
+
+                // Visual bar
+                const barLength = 50;
+                const filledLength = Math.round((used / limit) * barLength);
+                const bar = '█'.repeat(filledLength) + '░'.repeat(barLength - filledLength);
+                console.log(`[${bar}]`);
+                console.groupEnd();
+            }
+        }
+
+        // Initialize console counter
+        console.count('🔄 App Initialization');
+
+        // ============================================
+        // 🎨 THEME SYSTEM FUNCTIONS
+        // ============================================
+
+        function toggleThemeMenu() {
+            const menu = document.getElementById('themeMenu');
+            menu.classList.toggle('show');
+            log.system('Theme menu toggled');
+        }
+
+        function setTheme(themeName) {
+            console.group('🎨 Theme Change');
+            log.system(`Changing theme to: ${themeName}`);
+
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme') || 'default';
+
+            if (themeName === 'default') {
+                body.removeAttribute('data-theme');
+            } else {
+                body.setAttribute('data-theme', themeName);
+            }
+
+            // Save to localStorage
+            localStorage.setItem('preferred-theme', themeName);
+            log.system(`Theme saved to localStorage: ${themeName}`);
+
+            // Update active state in menu
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.remove('active');
+                if (option.getAttribute('data-theme') === themeName) {
+                    option.classList.add('active');
+                }
+            });
+
+            // Close menu
+            toggleThemeMenu();
+
+            console.log('Theme applied:', {
+                previous: currentTheme,
+                current: themeName,
+                timestamp: new Date().toISOString()
+            });
+            console.groupEnd();
+        }
+
+        // Load saved theme on startup
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('preferred-theme');
+            if (savedTheme && savedTheme !== 'default') {
+                log.system(`Loading saved theme: ${savedTheme}`);
+                document.body.setAttribute('data-theme', savedTheme);
+
+                // Update active state in menu
+                document.querySelectorAll('.theme-option').forEach(option => {
+                    option.classList.remove('active');
+                    if (option.getAttribute('data-theme') === savedTheme) {
+                        option.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        // Close theme menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('themeMenu');
+            const button = document.querySelector('.theme-button');
+            if (menu && !menu.contains(e.target) && !button.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // Load theme on startup
+        loadSavedTheme();
+
+        // Make functions available globally
+        window.setApiKey = setApiKey;
+        window.sendMessage = sendMessage;
+        window.handleKeyDown = handleKeyDown;
+        window.toggleThemeMenu = toggleThemeMenu;
+        window.setTheme = setTheme;
+
+        // Add debug helpers to window
+        window.getSessionStats = () => {
+            logSessionStats();
+            return sessionStats;
+        };
+        window.getConversationHistory = () => {
+            console.log('%c📝 Conversation History', 'font-size: 16px; font-weight: bold;');
+            console.table(conversationHistory.map((msg, i) => ({
+                index: i,
+                role: msg.role,
+                text: msg.parts[0].text.substring(0, 50) + '...',
+                length: msg.parts[0].text.length
+            })));
+            return conversationHistory;
+        };
+        window.clearHistory = () => {
+            conversationHistory = [];
+            log.system('Conversation history cleared');
+        };
+        window.showMemory = logMemoryUsage;
+
+        log.system('Application initialized');
+        console.log('%c💡 TIP: Type getSessionStats() to see statistics', 'color: #888; font-style: italic;');
+        console.log('%c💡 TIP: Type getConversationHistory() to see chat history', 'color: #888; font-style: italic;');
+        console.log('%c💡 TIP: Type showMemory() to check memory usage', 'color: #888; font-style: italic;');
+
+        // Try to get API key from environment
+        const envApiKey = localStorage.getItem('GEMINI_API_KEY');
+        if (envApiKey) {
+            log.system('Found API key in localStorage');
+            initializeClient(envApiKey);
+        } else {
+            log.system('No API key found, awaiting user input');
+        }
+
+        async function setApiKey() {
+            console.group('🔑 API Key Configuration');
+            console.time('⏱️ API Key Setup Duration');
+
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+
+            console.assert(apiKey.length > 0, 'API key cannot be empty');
+
+            if (!apiKey) {
+                log.error('No API key provided');
+                console.trace('Stack trace for missing API key');
+                addMessage('error', 'Please enter a valid API key');
+                console.timeEnd('⏱️ API Key Setup Duration');
+                console.groupEnd();
+                return;
+            }
+
+            log.user('API key entered', `Length: ${apiKey.length} characters`);
+            console.log('Masked API key:', apiKey.substring(0, 8) + '...' + apiKey.substring(apiKey.length - 4));
+
+            try {
+                // Save to localStorage for persistence
+                localStorage.setItem('GEMINI_API_KEY', apiKey);
+                log.system('API key saved to localStorage');
+                console.dir({ storage: 'localStorage', key: 'GEMINI_API_KEY', saved: true });
+
+                initializeClient(apiKey);
+                console.timeEnd('⏱️ API Key Setup Duration');
+            } catch (error) {
+                sessionStats.errors++;
+                log.error('Failed to initialize client', error);
+                console.error('Full error object:', error);
+                console.trace();
+                addMessage('error', 'Failed to initialize client: ' + error.message);
+                console.timeEnd('⏱️ API Key Setup Duration');
+            }
+
+            console.groupEnd();
+        }
+
+        function initializeClient(apiKey) {
+            console.groupCollapsed('🚀 Client Initialization');
+            console.time('⏱️ Client Init Duration');
+
+            try {
+                log.system('Creating GoogleGenAI client instance');
+                client = new GoogleGenAI({ apiKey });
+
+                console.dir(client, { depth: 2 });
+                log.system('✅ Client instance created successfully');
+
+                // Hide API key setup and enable chat
+                document.getElementById('apiKeySetup').classList.add('hidden');
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('sendButton').disabled = false;
+                document.getElementById('statusIndicator').classList.remove('disconnected');
+                document.getElementById('statusIndicator').classList.add('connected');
+
+                log.system('UI updated: Chat enabled');
+                console.log('UI State:', {
+                    apiKeySetup: 'hidden',
+                    messageInput: 'enabled',
+                    sendButton: 'enabled',
+                    statusIndicator: 'connected'
+                });
+
+                // Clear welcome message
+                document.getElementById('messagesContainer').innerHTML = '';
+
+                addMessage('assistant', 'Hi! I\'m Gemini 2.5 Flash. How can I help you today?');
+                log.ai('Initial greeting sent');
+
+                console.timeEnd('⏱️ Client Init Duration');
+                console.count('✅ Successful Initializations');
+
+            } catch (error) {
+                sessionStats.errors++;
+                log.error('Failed to initialize client', error);
+                console.error('Initialization error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                console.trace();
+                addMessage('error', 'Failed to initialize: ' + error.message);
+                console.timeEnd('⏱️ Client Init Duration');
+                console.count('❌ Failed Initializations');
+            }
+
+            console.groupEnd();
+        }
+
+        async function sendMessage() {
+            console.group('%c💬 Message Send Operation', 'font-size: 14px; font-weight: bold; color: #667eea;');
+            console.time('⏱️ Total Request Duration');
+            console.time('⏱️ API Response Time');
+
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            const messageId = Date.now();
+
+            console.log('Message ID:', messageId);
+            log.user('New message', `"${message}"`);
+            console.log('Message length:', message.length, 'characters');
+            console.log('Estimated tokens:', Math.ceil(message.length / 4));
+
+            if (!message) {
+                log.error('Empty message submitted');
+                console.groupEnd();
+                return;
+            }
+
+            if (!client) {
+                log.error('Client not initialized');
+                console.assert(client !== null, 'Client must be initialized before sending messages');
+                addMessage('error', 'Please set your API key first');
+                console.groupEnd();
+                return;
+            }
+
+            sessionStats.messagesCount++;
+            console.count('📨 Messages Sent');
+
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+
+            // Disable input while processing
+            input.disabled = true;
+            document.getElementById('sendButton').disabled = true;
+            log.system('Input disabled during API call');
+
+            // Show loading indicator
+            const loadingId = addLoadingIndicator();
+            log.system('Loading indicator displayed');
+
+            try {
+                // Add to conversation history
+                conversationHistory.push({
+                    role: 'user',
+                    parts: [{ text: message }]
+                });
+
+                log.system('Message added to conversation history');
+                console.log('Conversation history length:', conversationHistory.length);
+                console.table(conversationHistory.map((msg, i) => ({
+                    index: i,
+                    role: msg.role,
+                    preview: msg.parts[0].text.substring(0, 30) + '...'
+                })));
+
+                // Generate response
+                log.api('🚀 Sending request to Gemini API...');
+                console.log('Model:', 'gemini-2.5-flash');
+                console.log('History items:', conversationHistory.length);
+
+                sessionStats.apiCalls++;
+                console.count('🌐 API Calls Made');
+
+                const requestStartTime = performance.now();
+
+                const response = await client.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: conversationHistory
+                });
+
+                const requestEndTime = performance.now();
+                const requestDuration = (requestEndTime - requestStartTime).toFixed(2);
+
+                console.timeEnd('⏱️ API Response Time');
+                log.perf(`API responded in ${requestDuration}ms`);
+
+                // Remove loading indicator
+                removeLoadingIndicator(loadingId);
+
+                // ==========================================
+                // 🎯 DETAILED RESPONSE ANALYSIS
+                // ==========================================
+                console.groupCollapsed('📦 API Response Details');
+                console.log('Full Response Object:');
+                console.dir(response, { depth: 5 });
+
+                // Token usage analysis
+                if (response.usage_metadata || response.usageMetadata) {
+                    const usage = response.usage_metadata || response.usageMetadata;
+
+                    console.group('🎯 Token Usage Analysis');
+                    log.token('Token breakdown received');
+
+                    const tokenData = {
+                        'Prompt Tokens': usage.promptTokenCount || usage.prompt_token_count || 0,
+                        'Cached Tokens': usage.cachedContentTokenCount || usage.cached_content_token_count || 0,
+                        'Candidates Tokens': usage.candidatesTokenCount || usage.candidates_token_count || 0,
+                        'Total Tokens': usage.totalTokenCount || usage.total_token_count || 0
+                    };
+
+                    console.table(tokenData);
+
+                    // Update session stats
+                    sessionStats.inputTokens += tokenData['Prompt Tokens'];
+                    sessionStats.outputTokens += tokenData['Candidates Tokens'];
+                    sessionStats.cachedTokens += tokenData['Cached Tokens'];
+                    sessionStats.totalTokens += tokenData['Total Tokens'];
+
+                    // Cache efficiency
+                    const cacheHitRate = tokenData['Total Tokens'] > 0
+                        ? (tokenData['Cached Tokens'] / tokenData['Total Tokens'] * 100).toFixed(2)
+                        : 0;
+
+                    log.cache(`Cache hit rate: ${cacheHitRate}%`);
+
+                    if (tokenData['Cached Tokens'] > 0) {
+                        log.cache(`💚 ${tokenData['Cached Tokens']} tokens served from cache!`);
+                        console.log('Cache savings:', {
+                            'Tokens from cache': tokenData['Cached Tokens'],
+                            'Percentage': cacheHitRate + '%',
+                            'Cost savings': 'Significant!'
+                        });
+                    }
+
+                    // Visual token breakdown
+                    const total = tokenData['Total Tokens'];
+                    const cached = tokenData['Cached Tokens'];
+                    const prompt = tokenData['Prompt Tokens'] - cached;
+                    const output = tokenData['Candidates Tokens'];
+
+                    const barLength = 50;
+                    const cachedBar = Math.round((cached / total) * barLength);
+                    const promptBar = Math.round((prompt / total) * barLength);
+                    const outputBar = barLength - cachedBar - promptBar;
+
+                    console.log('Token Distribution:');
+                    console.log('[' +
+                        '█'.repeat(cachedBar) +
+                        '▓'.repeat(promptBar) +
+                        '░'.repeat(outputBar) +
+                        ']'
+                    );
+                    console.log('█ = Cached | ▓ = Prompt | ░ = Output');
+
+                    console.groupEnd();
+                }
+
+                // Response text analysis
+                const responseText = response.text;
+                log.ai('Response received', `Length: ${responseText.length} chars`);
+                console.log('Response preview:', responseText.substring(0, 100) + '...');
+                console.log('Response stats:', {
+                    'Characters': responseText.length,
+                    'Words': responseText.split(/\s+/).length,
+                    'Lines': responseText.split('\n').length,
+                    'Estimated tokens': Math.ceil(responseText.length / 4)
+                });
+
+                // Performance metrics
+                console.log('Performance Metrics:', {
+                    'API Response Time': requestDuration + 'ms',
+                    'Characters per second': (responseText.length / (requestDuration / 1000)).toFixed(0),
+                    'Tokens per second': (Math.ceil(responseText.length / 4) / (requestDuration / 1000)).toFixed(0)
+                });
+
+                console.groupEnd(); // End API Response Details
+
+                addMessage('assistant', responseText);
+
+                // Add to conversation history
+                conversationHistory.push({
+                    role: 'model',
+                    parts: [{ text: responseText }]
+                });
+
+                log.system('Response added to conversation history');
+
+                // Memory check after response
+                if (conversationHistory.length % 5 === 0) {
+                    logMemoryUsage();
+                }
+
+            } catch (error) {
+                sessionStats.errors++;
+                removeLoadingIndicator(loadingId);
+
+                console.group('❌ ERROR DETAILS');
+                log.error('API request failed', error);
+                console.error('Error name:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                console.table({
+                    'Error Type': error.name,
+                    'Message': error.message,
+                    'When': new Date().toISOString()
+                });
+                console.trace();
+                console.groupEnd();
+
+                addMessage('error', 'Error: ' + error.message);
+                console.count('❌ Failed Requests');
+            } finally {
+                // Re-enable input
+                input.disabled = false;
+                document.getElementById('sendButton').disabled = false;
+                input.focus();
+                log.system('Input re-enabled');
+
+                console.timeEnd('⏱️ Total Request Duration');
+
+                // Show updated session stats
+                logSessionStats();
+
+                console.groupEnd(); // End Message Send Operation
+            }
+        }
+
+        function addMessage(type, content) {
+            console.groupCollapsed(`💬 ${type.toUpperCase()} Message Added`);
+
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+
+            messageDiv.appendChild(contentDiv);
+            container.appendChild(messageDiv);
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+
+            console.log('Message type:', type);
+            console.log('Content length:', content.length);
+            console.log('Content preview:', content.substring(0, 50) + '...');
+            console.log('DOM element created:', messageDiv);
+            console.log('Container scroll position:', container.scrollTop);
+
+            console.groupEnd();
+        }
+
+        function addLoadingIndicator() {
+            const container = document.getElementById('messagesContainer');
+            const loadingDiv = document.createElement('div');
+            const loadingId = 'loading-' + Date.now();
+            loadingDiv.id = loadingId;
+            loadingDiv.className = 'message assistant';
+            loadingDiv.innerHTML = `
+                <div class="message-content loading">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+            container.appendChild(loadingDiv);
+            container.scrollTop = container.scrollHeight;
+
+            log.system('Loading indicator added', loadingId);
+            console.count('⏳ Loading Indicators Created');
+
+            return loadingId;
+        }
+
+        function removeLoadingIndicator(loadingId) {
+            const loadingDiv = document.getElementById(loadingId);
+            if (loadingDiv) {
+                loadingDiv.remove();
+                log.system('Loading indicator removed', loadingId);
+                console.count('✅ Loading Indicators Removed');
+            } else {
+                log.error('Loading indicator not found', loadingId);
+            }
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                log.user('Enter key pressed - sending message');
+                console.log('Keyboard shortcut:', 'Enter (without Shift)');
+                sendMessage();
+            } else if (event.key === 'Enter' && event.shiftKey) {
+                console.log('Keyboard shortcut:', 'Shift+Enter (new line)');
+            }
+        }
+
+        // ============================================
+        // 🛠️ DEVELOPER UTILITIES
+        // ============================================
+
+        // Clear API key button (for development/testing)
+        window.clearApiKey = function() {
+            console.warn('🧹 Clearing API key from localStorage');
+            localStorage.removeItem('GEMINI_API_KEY');
+            log.system('API key cleared');
+            console.log('Reloading page...');
+            location.reload();
+        };
+
+        // Export conversation to JSON
+        window.exportConversation = function() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                stats: sessionStats,
+                conversation: conversationHistory
+            };
+            console.log('📤 Conversation Export:');
+            console.log(JSON.stringify(data, null, 2));
+            return data;
+        };
+
+        // Performance profiling
+        window.startProfiling = function() {
+            console.profile('Gemini Chat Performance');
+            log.perf('Profiling started');
+        };
+
+        window.stopProfiling = function() {
+            console.profileEnd('Gemini Chat Performance');
+            log.perf('Profiling stopped');
+        };
+
+        // ============================================
+        // 📊 AUTO-LOGGING INTERVALS
+        // ============================================
+
+        // Log memory usage every 30 seconds
+        setInterval(() => {
+            if (client && conversationHistory.length > 0) {
+                console.groupCollapsed('⏰ Periodic Memory Check');
+                logMemoryUsage();
+                console.log('Current time:', new Date().toLocaleTimeString());
+                console.groupEnd();
+            }
+        }, 30000);
+
+        // Log session stats every minute
+        setInterval(() => {
+            if (client && sessionStats.messagesCount > 0) {
+                console.groupCollapsed('⏰ Periodic Stats Update');
+                logSessionStats();
+                console.log('Current time:', new Date().toLocaleTimeString());
+                console.groupEnd();
+            }
+        }, 60000);
+
+        // ============================================
+        // 🎉 INITIALIZATION COMPLETE
+        // ============================================
+
+        console.log('%c' + '═'.repeat(60), 'color: #667eea;');
+        console.log('%c✨ Console Logging System Initialized ✨', 'font-size: 16px; font-weight: bold; color: #51cf66;');
+        console.log('%c' + '═'.repeat(60), 'color: #667eea;');
+        console.log('');
+        console.log('%c📚 Available Commands:', 'font-weight: bold; font-size: 14px;');
+        console.log('');
+        console.table({
+            'getSessionStats()': 'View current session statistics',
+            'getConversationHistory()': 'View conversation history',
+            'showMemory()': 'Check memory usage',
+            'clearHistory()': 'Clear conversation history',
+            'clearApiKey()': 'Clear API key and reload',
+            'exportConversation()': 'Export conversation to JSON',
+            'startProfiling()': 'Start performance profiling',
+            'stopProfiling()': 'Stop performance profiling'
+        });
+        console.log('');
+        console.log('%c🎨 Console Features Used:', 'font-weight: bold; font-size: 14px;');
+        console.log('✓ Styled logs with CSS');
+        console.log('✓ console.table() for data visualization');
+        console.log('✓ console.group() / console.groupCollapsed()');
+        console.log('✓ console.time() / console.timeEnd()');
+        console.log('✓ console.count()');
+        console.log('✓ console.trace()');
+        console.log('✓ console.assert()');
+        console.log('✓ console.dir() for object inspection');
+        console.log('✓ console.profile() for performance');
+        console.log('✓ performance.memory for memory tracking');
+        console.log('✓ ASCII art banners');
+        console.log('✓ Visual progress bars');
+        console.log('✓ Automatic periodic logging');
+        console.log('');
+        console.log('%c🚀 Ready to chat! Type your message above.', 'color: #667eea; font-weight: bold; font-size: 14px;');
+        console.log('');
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,111 @@
+{
+  "endpoint": "character_generation",
+  "description": "Test character generation with various prompts and settings",
+  "test_cases": [
+    {
+      "id": "knight_basic",
+      "name": "Basic Knight - 64x64",
+      "inputs": {
+        "prompt": "heroic knight with sword",
+        "width": 64,
+        "height": 64,
+        "seed": 12345
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [64, 64],
+        "min_duration": 5.0,
+        "max_duration": 30.0
+      },
+      "baseline": "baselines/character_generation/knight_basic.png"
+    },
+    {
+      "id": "mage_detailed",
+      "name": "Detailed Mage - 128x128",
+      "inputs": {
+        "prompt": "powerful mage with glowing staff, purple robes, lightning effects",
+        "width": 128,
+        "height": 128,
+        "detail": "highly detailed",
+        "shading": "detailed shading",
+        "seed": 67890
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [128, 128],
+        "min_duration": 10.0,
+        "max_duration": 45.0
+      },
+      "baseline": "baselines/character_generation/mage_detailed.png"
+    },
+    {
+      "id": "dragon_sprite",
+      "name": "Dragon Sprite - No Background",
+      "inputs": {
+        "prompt": "red dragon breathing fire, wings spread",
+        "width": 64,
+        "height": 64,
+        "no_background": true,
+        "outline": "selective outline",
+        "seed": 11111
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [64, 64],
+        "has_transparency": true
+      },
+      "baseline": "baselines/character_generation/dragon_sprite.png"
+    },
+    {
+      "id": "warrior_flat",
+      "name": "Warrior - Flat Shading",
+      "inputs": {
+        "prompt": "warrior with shield and axe",
+        "width": 64,
+        "height": 64,
+        "shading": "flat shading",
+        "outline": "single color black outline",
+        "seed": 22222
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [64, 64]
+      },
+      "baseline": "baselines/character_generation/warrior_flat.png"
+    },
+    {
+      "id": "rogue_lineless",
+      "name": "Rogue - Lineless Style",
+      "inputs": {
+        "prompt": "stealthy rogue with daggers, dark cloak",
+        "width": 64,
+        "height": 64,
+        "outline": "lineless",
+        "shading": "medium shading",
+        "seed": 33333
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [64, 64]
+      },
+      "baseline": "baselines/character_generation/rogue_lineless.png"
+    },
+    {
+      "id": "negative_prompt_test",
+      "name": "Test Negative Prompt",
+      "inputs": {
+        "prompt": "clean simple warrior",
+        "negative_description": "complex, detailed, ornate, busy",
+        "width": 64,
+        "height": 64,
+        "seed": 44444
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [64, 64]
+      },
+      "baseline": "baselines/character_generation/negative_prompt.png"
+    }
+  ]
+}
+

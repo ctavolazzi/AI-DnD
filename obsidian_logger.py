@@ -1017,3 +1017,253 @@ This is the central reference file for all {entity_type} in the game. This file 
         }
 
         event_manager.publish("quest_updated", quest_data)
+
+    # ===== BIDIRECTIONAL SYNC METHODS =====
+
+    def read_character_from_vault(self, character_name: str) -> Optional[Dict[str, Any]]:
+        """
+        Read character data from Obsidian vault.
+
+        Args:
+            character_name: Name of the character to read
+
+        Returns:
+            Dictionary with character data, or None if not found
+        """
+        file_name = self._sanitize_filename(character_name)
+        file_path = os.path.join(self.directories["characters"], f"{file_name}.md")
+
+        if not os.path.exists(file_path):
+            self.logger.warning(f"Character file not found: {file_path}")
+            return None
+
+        try:
+            with open(file_path, 'r') as f:
+                content = f.read()
+
+            # Extract YAML frontmatter
+            frontmatter_match = re.search(r'---\n(.*?)\n---', content, re.DOTALL)
+            if not frontmatter_match:
+                self.logger.error(f"No frontmatter found in character file: {file_path}")
+                return None
+
+            # Parse frontmatter
+            character_data = {}
+            for line in frontmatter_match.group(1).split('\n'):
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    key = key.strip()
+                    value = value.strip().strip('"\'')
+
+                    # Convert numeric values
+                    if value.isdigit():
+                        character_data[key] = int(value)
+                    elif value.lower() in ['true', 'false']:
+                        character_data[key] = value.lower() == 'true'
+                    else:
+                        character_data[key] = value
+
+            # Extract additional data from content
+            character_data["name"] = character_name
+
+            # Map template field names to expected field names
+            if "class" in character_data:
+                character_data["char_class"] = character_data["class"]
+
+            # Extract HP from status_summary if available
+            if "status_summary" in character_data:
+                hp_match = re.search(r'HP: (\d+)/(\d+)', character_data["status_summary"])
+                if hp_match:
+                    character_data["hp"] = int(hp_match.group(1))
+                    character_data["max_hp"] = int(hp_match.group(2))
+
+            self.logger.info(f"Successfully read character from vault: {character_name}")
+            return character_data
+
+        except Exception as e:
+            self.logger.error(f"Error reading character from vault: {e}")
+            return None
+
+    def read_quest_from_vault(self, quest_name: str) -> Optional[Dict[str, Any]]:
+        """
+        Read quest data from Obsidian vault.
+
+        Args:
+            quest_name: Name of the quest to read
+
+        Returns:
+            Dictionary with quest data, or None if not found
+        """
+        file_name = self._sanitize_filename(quest_name)
+        file_path = os.path.join(self.directories["quests"], f"{file_name}.md")
+
+        if not os.path.exists(file_path):
+            self.logger.warning(f"Quest file not found: {file_path}")
+            return None
+
+        try:
+            with open(file_path, 'r') as f:
+                content = f.read()
+
+            # Extract YAML frontmatter
+            frontmatter_match = re.search(r'---\n(.*?)\n---', content, re.DOTALL)
+            if not frontmatter_match:
+                self.logger.error(f"No frontmatter found in quest file: {file_path}")
+                return None
+
+            # Parse frontmatter
+            quest_data = {}
+            for line in frontmatter_match.group(1).split('\n'):
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    key = key.strip()
+                    value = value.strip().strip('"\'')
+
+                    # Convert numeric values
+                    if value.isdigit():
+                        quest_data[key] = int(value)
+                    elif value.lower() in ['true', 'false']:
+                        quest_data[key] = value.lower() == 'true'
+                    else:
+                        quest_data[key] = value
+
+            # Extract objectives from content
+            objectives_match = re.search(r'## Objectives\n(.*?)(?=\n##|\Z)', content, re.DOTALL)
+            if objectives_match:
+                objectives_text = objectives_match.group(1)
+                objectives = []
+                for line in objectives_text.strip().split('\n'):
+                    if line.startswith('- '):
+                        if '✅' in line or '⬜' in line:
+                            # Extract text after the checkbox
+                            obj_text = line[line.find('✅') + 1:].strip() if '✅' in line else line[line.find('⬜') + 1:].strip()
+                            obj_completed = '✅' in line
+                            objectives.append({"description": obj_text, "completed": obj_completed})
+                quest_data["objectives"] = objectives
+
+            quest_data["name"] = quest_name
+            self.logger.info(f"Successfully read quest from vault: {quest_name}")
+            return quest_data
+
+        except Exception as e:
+            self.logger.error(f"Error reading quest from vault: {e}")
+            return None
+
+    def sync_character_to_game(self, character_name: str, game_character) -> bool:
+        """
+        Sync character data from Obsidian vault to game character object.
+
+        Args:
+            character_name: Name of the character to sync
+            game_character: Game character object to update
+
+        Returns:
+            True if sync was successful, False otherwise
+        """
+        vault_data = self.read_character_from_vault(character_name)
+        if not vault_data:
+            return False
+
+        try:
+            # Update game character with vault data
+            if "hp" in vault_data:
+                game_character.hp = vault_data["hp"]
+            if "max_hp" in vault_data:
+                game_character.max_hp = vault_data["max_hp"]
+            if "attack" in vault_data:
+                game_character.attack = vault_data["attack"]
+            if "defense" in vault_data:
+                game_character.defense = vault_data["defense"]
+            if "alive" in vault_data:
+                game_character.alive = vault_data["alive"]
+            if "status_effects" in vault_data:
+                game_character.status_effects = vault_data["status_effects"]
+
+            self.logger.info(f"Successfully synced character {character_name} from vault to game")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Error syncing character to game: {e}")
+            return False
+
+    def sync_game_to_vault(self, game_character) -> bool:
+        """
+        Sync game character data to Obsidian vault.
+
+        Args:
+            game_character: Game character object to sync
+
+        Returns:
+            True if sync was successful, False otherwise
+        """
+        try:
+            character_data = {
+                "name": game_character.name,
+                "char_class": game_character.char_class,
+                "hp": game_character.hp,
+                "max_hp": game_character.max_hp,
+                "attack": game_character.attack,
+                "defense": game_character.defense,
+                "alive": game_character.alive,
+                "status_effects": getattr(game_character, 'status_effects', []),
+                "status": "Active" if game_character.alive else "Dead",
+                "status_summary": f"{'Active' if game_character.alive else 'Dead'} - HP: {game_character.hp}/{game_character.max_hp}"
+            }
+
+            # Update the character in the vault
+            self.log_character(character_data)
+
+            self.logger.info(f"Successfully synced character {game_character.name} from game to vault")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Error syncing character to vault: {e}")
+            return False
+
+    def get_vault_status(self) -> Dict[str, Any]:
+        """
+        Get current status of the Obsidian vault.
+
+        Returns:
+            Dictionary with vault statistics and status
+        """
+        status = {
+            "vault_path": self.vault_path,
+            "characters": 0,
+            "locations": 0,
+            "events": 0,
+            "quests": 0,
+            "items": 0,
+            "sessions": 0,
+            "last_updated": None,
+            "total_files": 0
+        }
+
+        try:
+            # Count files in each directory
+            for entity_type, directory in self.directories.items():
+                if os.path.exists(directory):
+                    files = [f for f in os.listdir(directory) if f.endswith('.md')]
+                    status[entity_type] = len(files)
+                    status["total_files"] += len(files)
+
+            # Find most recently modified file
+            latest_time = 0
+            for directory in self.directories.values():
+                if os.path.exists(directory):
+                    for file in os.listdir(directory):
+                        if file.endswith('.md'):
+                            file_path = os.path.join(directory, file)
+                            mod_time = os.path.getmtime(file_path)
+                            if mod_time > latest_time:
+                                latest_time = mod_time
+
+            if latest_time > 0:
+                status["last_updated"] = datetime.datetime.fromtimestamp(latest_time).strftime("%Y-%m-%d %H:%M:%S")
+
+            self.logger.info(f"Vault status retrieved: {status['total_files']} total files")
+            return status
+
+        except Exception as e:
+            self.logger.error(f"Error getting vault status: {e}")
+            return status

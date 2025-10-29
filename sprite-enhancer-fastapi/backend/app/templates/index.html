@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚔️ THE SPRITE TAVERN 🍺</h1>
+            <p class="subtitle">Where Pixel Art Meets Magic • FastAPI + PostgreSQL</p>
+        </header>
+
+        <main>
+            <!-- Authentication -->
+            <section id="auth-section" class="panel">
+                <h2>Login / Register</h2>
+                <div id="auth-forms">
+                    <!-- Login/Register forms here -->
+                    <p>Authentication forms to be implemented with HTMX</p>
+                </div>
+            </section>
+
+            <!-- Sprite Generation -->
+            <section id="generate-section" class="panel">
+                <h2>🎨 Generate Sprite</h2>
+                <form hx-post="/api/sprites/generate"
+                      hx-target="#sprite-result"
+                      hx-indicator="#loading"
+                      hx-headers='{"Authorization": "Bearer YOUR_TOKEN"}'>
+
+                    <div class="form-group">
+                        <label for="prompt">Sprite Description:</label>
+                        <textarea name="prompt"
+                                  id="prompt"
+                                  placeholder="Describe your sprite..."
+                                  rows="3"
+                                  required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="size">Size:</label>
+                        <select name="size" id="size">
+                            <option value="64">64x64 (Standard)</option>
+                            <option value="128">128x128 (Large)</option>
+                            <option value="256">256x256 (XL)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Generate Sprite</button>
+                </form>
+
+                <div id="loading" class="htmx-indicator">
+                    Generating...
+                </div>
+
+                <div id="sprite-result"></div>
+            </section>
+
+            <!-- History -->
+            <section id="history-section" class="panel">
+                <h2>📜 Your History</h2>
+                <div hx-get="/api/history"
+                     hx-trigger="load"
+                     hx-target="#history-list"
+                     hx-headers='{"Authorization": "Bearer YOUR_TOKEN"}'>
+                    <div id="history-list">
+                        Loading history...
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Built with FastAPI + PostgreSQL + HTMX</p>
+        </footer>
+    </div>
+
+    <script>
+        // Add authentication token to HTMX requests
+        document.body.addEventListener('htmx:configRequest', function(event) {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                event.detail.headers['Authorization'] = `Bearer ${token}`;
+            }
+        });
+    </script>
+</body>
+</html>
+

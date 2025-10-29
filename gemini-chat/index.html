@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chat</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-left">
+                <span class="status-indicator disconnected" id="statusIndicator"></span>
+                Gemini Chat
+            </div>
+            <div class="header-right">
+                <button class="header-button" onclick="showAnalytics()" title="View Analytics (Cmd+.)">
+                    <span>📊</span>
+                </button>
+                <button class="header-button" onclick="showShortcutsModal()" title="Keyboard Shortcuts (Cmd+/)">
+                    <span>⌨️</span>
+                </button>
+            <div class="theme-switcher">
+                <button class="theme-button" onclick="toggleThemeMenu()">
+                    <span>🎨</span>
+                    <span>Theme</span>
+                </button>
+                <div class="theme-menu" id="themeMenu">
+                    <div class="theme-option active" data-theme="default" onclick="setTheme('default')">
+                        <div class="theme-preview purple"></div>
+                        <span>Purple</span>
+                    </div>
+                    <div class="theme-option" data-theme="ocean" onclick="setTheme('ocean')">
+                        <div class="theme-preview ocean"></div>
+                        <span>Ocean</span>
+                    </div>
+                    <div class="theme-option" data-theme="sunset" onclick="setTheme('sunset')">
+                        <div class="theme-preview sunset"></div>
+                        <span>Sunset</span>
+                    </div>
+                    <div class="theme-option" data-theme="forest" onclick="setTheme('forest')">
+                        <div class="theme-preview forest"></div>
+                        <span>Forest</span>
+                    </div>
+                    <div class="theme-option" data-theme="dark" onclick="setTheme('dark')">
+                        <div class="theme-preview dark"></div>
+                        <span>Dark</span>
+                    </div>
+                    <div class="theme-option" data-theme="fire" onclick="setTheme('fire')">
+                        <div class="theme-preview fire"></div>
+                        <span>Fire</span>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div class="api-key-setup" id="apiKeySetup">
+            <input
+                type="password"
+                id="apiKeyInput"
+                placeholder="Enter your Gemini API key (or set GEMINI_API_KEY environment variable)"
+            >
+            <button onclick="setApiKey()">Connect</button>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+            <div class="welcome-message">
+                <h2>Welcome to Gemini Chat</h2>
+                <p>Enter your API key to start chatting with Gemini 2.5 Flash</p>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <textarea
+                id="messageInput"
+                placeholder="Type your message..."
+                disabled
+                onkeydown="handleKeyDown(event)"
+            ></textarea>
+            <button onclick="sendMessage()" id="sendButton" disabled>Send</button>
+        </div>
+    </div>
+
+    <!-- Main application script -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
+

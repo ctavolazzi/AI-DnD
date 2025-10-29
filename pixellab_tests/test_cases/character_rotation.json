@@ -1,0 +1,101 @@
+{
+  "endpoint": "character_rotation",
+  "description": "Test character rotation to all 8 directions",
+  "test_cases": [
+    {
+      "id": "knight_rotation_4dir",
+      "name": "Knight - 4 Cardinal Directions",
+      "inputs": {
+        "base_character": {
+          "prompt": "heroic knight with sword",
+          "width": 64,
+          "height": 64,
+          "seed": 12345
+        },
+        "rotations": [
+          {"to_direction": "north", "from_direction": "south"},
+          {"to_direction": "east", "from_direction": "south"},
+          {"to_direction": "west", "from_direction": "south"}
+        ]
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [64, 64],
+        "min_duration": 5.0,
+        "max_duration": 20.0
+      },
+      "baseline": "baselines/character_rotation/knight_4dir/"
+    },
+    {
+      "id": "knight_rotation_8dir",
+      "name": "Knight - All 8 Directions (Sprite Sheet)",
+      "inputs": {
+        "base_character": {
+          "prompt": "heroic knight with sword",
+          "width": 64,
+          "height": 64,
+          "seed": 12345
+        },
+        "rotations": [
+          {"to_direction": "north"},
+          {"to_direction": "north-east"},
+          {"to_direction": "east"},
+          {"to_direction": "south-east"},
+          {"to_direction": "south"},
+          {"to_direction": "south-west"},
+          {"to_direction": "west"},
+          {"to_direction": "north-west"}
+        ]
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [64, 64],
+        "sprite_sheet": true
+      },
+      "baseline": "baselines/character_rotation/knight_8dir/"
+    },
+    {
+      "id": "mage_rotation_unknown_source",
+      "name": "Mage - Unknown Source Direction",
+      "inputs": {
+        "base_character": {
+          "prompt": "mage with staff",
+          "width": 64,
+          "height": 64,
+          "seed": 67890
+        },
+        "rotations": [
+          {"to_direction": "north"},
+          {"to_direction": "east"},
+          {"to_direction": "west"}
+        ]
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [64, 64]
+      },
+      "baseline": "baselines/character_rotation/mage_unknown/"
+    },
+    {
+      "id": "dragon_rotation_large",
+      "name": "Dragon - Large Size (128x128)",
+      "inputs": {
+        "base_character": {
+          "prompt": "dragon with wings",
+          "width": 128,
+          "height": 128,
+          "seed": 11111
+        },
+        "rotations": [
+          {"to_direction": "east", "from_direction": "south"}
+        ]
+      },
+      "expected": {
+        "status": "success",
+        "image_size": [128, 128]
+      },
+      "baseline": "baselines/character_rotation/dragon_large/"
+    }
+  ]
+}
+

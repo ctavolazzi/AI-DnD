@@ -556,11 +556,19 @@ def write_history_index() -> Path:
         "runs": runs,
     }
 
+    history_json = json.dumps(history_payload, indent=2)
+
     history_file = DASHBOARDS_DIR / "history.json"
     with open(history_file, "w") as fp:
-        json.dump(history_payload, fp, indent=2)
+        fp.write(history_json)
 
-    return history_file
+    history_js_file = DASHBOARDS_DIR / "history.js"
+    with open(history_js_file, "w") as fp:
+        fp.write("window.PIXELLAB_HISTORY = ")
+        fp.write(history_json)
+        fp.write(";\n")
+
+    return history_file, history_js_file
 
 
 def main():
@@ -603,10 +611,11 @@ def main():
 
     # Generate enhanced HTML report
     enhanced_file = generate_enhanced_html_report(results_dir, json_file)
-    history_file = write_history_index()
+    history_file, history_js_file = write_history_index()
 
     print(f"✅ Enhanced HTML report generated: {enhanced_file}")
     print(f"🗂  History index updated: {history_file}")
+    print(f"📜 History script updated: {history_js_file}")
     print(f"🌐 Open in browser: {enhanced_file.absolute()}")
 
     return enhanced_file

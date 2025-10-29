@@ -1,0 +1,74 @@
+{
+  "title": "Character Asset Generation Workflow Decision",
+  "criteria": [
+    {
+      "name": "User Value",
+      "weight": 0.25,
+      "description": "How much immediate value the workflow delivers to storytellers and designers"
+    },
+    {
+      "name": "Implementation Speed",
+      "weight": 0.15,
+      "description": "How quickly we can deliver a reliable first version using existing components"
+    },
+    {
+      "name": "Technical Confidence",
+      "weight": 0.15,
+      "description": "Likelihood of success without major unknowns or blockers"
+    },
+    {
+      "name": "Asset Quality",
+      "weight": 0.20,
+      "description": "Consistency and fidelity of generated sprites and portrait art"
+    },
+    {
+      "name": "Integration Effort",
+      "weight": 0.10,
+      "description": "Effort required to connect with the current MCP/Gemini tooling"
+    },
+    {
+      "name": "Future Flexibility",
+      "weight": 0.15,
+      "description": "How well the approach supports future automation and feature growth"
+    }
+  ],
+  "options": [
+    {
+      "name": "CLI Orchestrated Pipeline",
+      "description": "Build a Python CLI script that chains Gemini narrative generation with PixelLab sprite creation and nano banana portrait output, writing assets to disk",
+      "scores": {
+        "User Value": 8.5,
+        "Implementation Speed": 9.0,
+        "Technical Confidence": 9.0,
+        "Asset Quality": 8.0,
+        "Integration Effort": 7.5,
+        "Future Flexibility": 7.0
+      }
+    },
+    {
+      "name": "UI Integrated Workflow",
+      "description": "Extend the MCP-integrated D&D interface with controls to request Gemini-backed character packets and inline asset previews",
+      "scores": {
+        "User Value": 9.0,
+        "Implementation Speed": 6.0,
+        "Technical Confidence": 7.0,
+        "Asset Quality": 8.5,
+        "Integration Effort": 6.0,
+        "Future Flexibility": 8.0
+      }
+    },
+    {
+      "name": "Automated Asset Service",
+      "description": "Stand up a service layer that queues character requests, renders sprites and portraits in the background, and stores assets with metadata",
+      "scores": {
+        "User Value": 7.5,
+        "Implementation Speed": 4.0,
+        "Technical Confidence": 6.0,
+        "Asset Quality": 9.0,
+        "Integration Effort": 5.0,
+        "Future Flexibility": 9.5
+      }
+    }
+  ]
+}
+

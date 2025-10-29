@@ -2,7 +2,16 @@
 """
 Task Prioritization Algorithm
 Impact/Energy Decision Matrix System
+
+Usage:
+    python3 task_prioritization.py [config_file.json]
+
+If no config file is provided, uses tasks_config.json by default.
 """
+
+import json
+import sys
+from pathlib import Path
 
 def calculate_priority_score(
     short_term_impact: int,      # 1-5 stars
@@ -63,82 +72,50 @@ def calculate_priority_score(
     }
 
 
-# Define all tasks
-tasks = [
-    {
-        'id': 1,
-        'name': 'Code Review & Quality',
-        'short_term': 2,
-        'long_term': 4,
-        'energy': 3,
-        'description': 'Review recent changes, run tests, check code quality'
-    },
-    {
-        'id': 2,
-        'name': 'Development & Features',
-        'short_term': 2,
-        'long_term': 5,
-        'energy': 5,
-        'description': 'Add new game features or mechanics'
-    },
-    {
-        'id': 3,
-        'name': 'Documentation',
-        'short_term': 3,
-        'long_term': 4,
-        'energy': 2,
-        'description': 'Update or expand existing documentation'
-    },
-    {
-        'id': 4,
-        'name': 'Git & Branch Management',
-        'short_term': 5,
-        'long_term': 2,
-        'energy': 1,
-        'description': 'Create PR, merge branches, cleanup'
-    },
-    {
-        'id': 5,
-        'name': 'Testing & Validation',
-        'short_term': 4,
-        'long_term': 3,
-        'energy': 2,
-        'description': 'Run test suites, validate features'
-    },
-    {
-        'id': 6,
-        'name': 'PixelLab Specific',
-        'short_term': 2,
-        'long_term': 3,
-        'energy': 3,
-        'description': 'Generate sprites, create tilesets'
-    },
-    {
-        'id': 7,
-        'name': 'Deployment & Setup',
-        'short_term': 3,
-        'long_term': 4,
-        'energy': 3,
-        'description': 'Improve installation, deployment readiness'
-    },
-    {
-        'id': 8,
-        'name': 'Investigation',
-        'short_term': 1,
-        'long_term': 3,
-        'energy': 4,
-        'description': 'Explore codebase, analyze architecture'
-    }
-]
+def load_config(config_path: str = None) -> dict:
+    """Load task configuration from JSON file."""
+    if config_path is None:
+        # Default to tasks_config.json in same directory as script
+        script_dir = Path(__file__).parent
+        config_path = script_dir / 'tasks_config.json'
+    else:
+        config_path = Path(config_path)
 
-# Current energy level
-AVAILABLE_ENERGY = 4  # out of 5
+    if not config_path.exists():
+        print(f"Error: Config file not found: {config_path}")
+        print(f"Please create {config_path} or provide a valid config file path.")
+        sys.exit(1)
 
-def main():
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        return config
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in {config_path}")
+        print(f"Details: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error loading config: {e}")
+        sys.exit(1)
+
+def main(config_path: str = None):
+    # Load configuration
+    config = load_config(config_path)
+
+    tasks = config.get('tasks', [])
+    AVAILABLE_ENERGY = config.get('available_energy', 4)
+    long_term_weight = config.get('long_term_weight', 1.5)
+
+    if not tasks:
+        print("Error: No tasks defined in configuration")
+        sys.exit(1)
+
     print("=" * 80)
     print("TASK PRIORITIZATION ANALYSIS")
     print("=" * 80)
     print(f"\nCurrent Energy Level: {AVAILABLE_ENERGY}❤️ / 5❤️")
+    if config_path:
+        print(f"Config File: {config_path}")
     print("\n" + "=" * 80)
 
     # Calculate scores for all tasks
@@ -148,7 +125,8 @@ def main():
             short_term_impact=task['short_term'],
             long_term_impact=task['long_term'],
             energy_cost=task['energy'],
-            available_energy=AVAILABLE_ENERGY
+            available_energy=AVAILABLE_ENERGY,
+            long_term_weight=long_term_weight
         )
         results.append({
             **task,
@@ -222,4 +200,5 @@ def main():
     print("\n" + "=" * 80)
 
 if __name__ == "__main__":
-    main()
+    config_file = sys.argv[1] if len(sys.argv) > 1 else None
+    main(config_file)

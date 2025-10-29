@@ -1,0 +1,71 @@
+{
+  "available_energy": 4,
+  "long_term_weight": 1.5,
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Code Review & Quality",
+      "short_term": 2,
+      "long_term": 4,
+      "energy": 3,
+      "description": "Review recent changes, run tests, check code quality"
+    },
+    {
+      "id": 2,
+      "name": "Development & Features",
+      "short_term": 2,
+      "long_term": 5,
+      "energy": 5,
+      "description": "Add new game features or mechanics"
+    },
+    {
+      "id": 3,
+      "name": "Documentation",
+      "short_term": 3,
+      "long_term": 4,
+      "energy": 2,
+      "description": "Update or expand existing documentation"
+    },
+    {
+      "id": 4,
+      "name": "Git & Branch Management",
+      "short_term": 5,
+      "long_term": 2,
+      "energy": 1,
+      "description": "Create PR, merge branches, cleanup"
+    },
+    {
+      "id": 5,
+      "name": "Testing & Validation",
+      "short_term": 4,
+      "long_term": 3,
+      "energy": 2,
+      "description": "Run test suites, validate features"
+    },
+    {
+      "id": 6,
+      "name": "PixelLab Specific",
+      "short_term": 2,
+      "long_term": 3,
+      "energy": 3,
+      "description": "Generate sprites, create tilesets"
+    },
+    {
+      "id": 7,
+      "name": "Deployment & Setup",
+      "short_term": 3,
+      "long_term": 4,
+      "energy": 3,
+      "description": "Improve installation, deployment readiness"
+    },
+    {
+      "id": 8,
+      "name": "Investigation",
+      "short_term": 1,
+      "long_term": 3,
+      "energy": 4,
+      "description": "Explore codebase, analyze architecture"
+    }
+  ]
+}
+

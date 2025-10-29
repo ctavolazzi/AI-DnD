@@ -137,16 +137,10 @@ def generate_image():
         # Start timing
         start_time = time.time()
 
-        # Generate image
+        # Generate image using Gemini 2.5 Flash Image Preview
         response = client.models.generate_content(
-            model='gemini-2.5-flash-image',
-            contents=[prompt],
-            config=types.GenerateContentConfig(
-                response_modalities=response_modalities,
-                image_config=types.ImageConfig(
-                    aspect_ratio=aspect_ratio,
-                )
-            )
+            model='gemini-2.5-flash-image-preview',
+            contents=[prompt]
         )
 
         # Extract results
@@ -184,15 +178,14 @@ def generate_image():
 @rate_limit
 def generate_scene():
     """
-    Generate a D&D scene image with sensible defaults.
+    Generate or enhance an image using Gemini's image generation.
 
     Request body:
     {
-        "description": "The entrance to Emberpeak village at dawn",
-        "style": "photorealistic" (optional: photorealistic, fantasy_art, comic, pixel_art),
-        "aspect_ratio": "16:9" (optional),
-        "item_name": "Dagger" (optional: for item generation validation),
-        "custom_prompt": "glowing with blue runes" (optional: user's custom text)
+        "description": "fantasy knight with sword and shield, cinematic lighting",
+        "base_sprite": "base64_image_data" (optional - if provided, will enhance this image),
+        "style": "photorealistic" (optional),
+        "aspect_ratio": "1:1" (optional)
     }
     """
     if not client:
@@ -206,32 +199,67 @@ def generate_scene():
             return jsonify({'error': 'Missing required field: description'}), 400
 
         description = data['description']
+        base_sprite = data.get('baseSprite')  # Base64 encoded sprite image
         style = data.get('style', 'photorealistic')
-        aspect_ratio = data.get('aspect_ratio', '16:9')
-        item_name = data.get('item_name', '')
-        custom_prompt = data.get('custom_prompt', '')
 
-        # Validate custom prompt if provided
-        if custom_prompt:
-            validation_error = validate_custom_prompt(custom_prompt, item_name, description)
-            if validation_error:
-                return jsonify({'error': validation_error}), 400
+        # Start timing
+        start_time = time.time()
 
-        # Build enhanced prompt based on style
+        # Build the prompt
         style_prompts = {
-            'photorealistic': 'A photorealistic, high-quality scene of',
-            'fantasy_art': 'A detailed fantasy artwork depicting',
-            'comic': 'A comic book style illustration of',
-            'pixel_art': 'A pixel art scene showing'
+            'photorealistic': 'Transform this into a photorealistic, highly detailed image:',
+            'fantasy_art': 'Transform this into detailed fantasy artwork:',
+            'comic': 'Transform this into comic book style illustration:',
+            'cyberpunk': 'Transform this into a cyberpunk style image:',
+            'medieval': 'Transform this into a medieval fantasy style:',
         }
 
         style_prefix = style_prompts.get(style, style_prompts['photorealistic'])
+        prompt = f"{style_prefix} {description}"
 
-        # Construct full prompt
-        prompt = f"{style_prefix} {description}. Fantasy RPG setting, cinematic lighting, detailed environment, atmospheric."
+        # Prepare contents for Gemini
+        contents = []
 
-        # Generate using the main endpoint logic
-        return generate_image_internal(prompt, aspect_ratio)
+        # If base sprite provided, include it for image-to-image enhancement
+        if base_sprite:
+            # Remove data URL prefix if present
+            if base_sprite.startswith('data:image'):
+                base_sprite = base_sprite.split(',')[1]
+
+            # Decode base64 to bytes
+            image_bytes = base64.b64decode(base_sprite)
+
+            # Add image first, then prompt (order matters for image editing)
+            from google.genai import types
+            contents.append(types.Part.from_bytes(data=image_bytes, mime_type='image/png'))
+
+        # Add text prompt
+        contents.append(prompt)
+
+        # Generate image using Gemini 2.5 Flash Image Preview
+        response = client.models.generate_content(
+            model='gemini-2.5-flash-image-preview',
+            contents=contents
+        )
+
+        # Extract image from response
+        for part in response.candidates[0].content.parts:
+            if part.inline_data is not None:
+                image = Image.open(BytesIO(part.inline_data.data))
+                buffered = BytesIO()
+                image.save(buffered, format='PNG')
+                img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+                return jsonify({
+                    'success': True,
+                    'image': img_base64,
+                    'generation_time': round(time.time() - start_time, 2),
+                    'prompt': prompt
+                })
+
+        return jsonify({
+            'error': 'No image data in response'
+        }), 500
 
     except Exception as e:
         print(f"Error generating scene: {str(e)}")
@@ -240,21 +268,16 @@ def generate_scene():
         }), 500
 
 def generate_image_internal(prompt, aspect_ratio='1:1'):
-    """Internal helper for image generation"""
+    """Internal helper for image generation using Gemini 2.5 Flash Image Preview"""
     start_time = time.time()
 
+    # Generate image using Gemini's native image generation
     response = client.models.generate_content(
-        model='gemini-2.5-flash-image',
-        contents=[prompt],
-        config=types.GenerateContentConfig(
-            response_modalities=['Image'],
-            image_config=types.ImageConfig(
-                aspect_ratio=aspect_ratio,
-            )
-        )
+        model='gemini-2.5-flash-image-preview',
+        contents=[prompt]
     )
 
-    # Extract image
+    # Extract image from response
     for part in response.candidates[0].content.parts:
         if part.inline_data is not None:
             image = Image.open(BytesIO(part.inline_data.data))

@@ -1,0 +1,31 @@
+{
+  "available_energy": 4,
+  "long_term_weight": 1.5,
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Build FastAPI Test Suite",
+      "short_term": 2,
+      "long_term": 5,
+      "energy": 5,
+      "description": "Complete test infrastructure with FastAPI, SQLite, pytest"
+    },
+    {
+      "id": 2,
+      "name": "Extend Current Server",
+      "short_term": 4,
+      "long_term": 3,
+      "energy": 2,
+      "description": "Add test endpoints to existing Python server"
+    },
+    {
+      "id": 3,
+      "name": "Documentation Only",
+      "short_term": 3,
+      "long_term": 4,
+      "energy": 1,
+      "description": "Create test structure, templates, and docs"
+    }
+  ]
+}
+

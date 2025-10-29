@@ -1,5 +1,6 @@
 import subprocess
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +183,23 @@ class NarrativeEngine:
                 prompt = f"{player_name} successfully {choice_text}. Describe the positive outcome in 15 words."
             else:
                 prompt = f"{player_name} attempts to {choice_text} but fails. Describe the setback in 15 words."
-        else:
-            prompt = f"{player_name} {choice_text}. Describe what happens in 15 words."
-
         return self._call_ollama(prompt)
+
+def create_narrative_engine(model="gemini"):
+    """Create a narrative engine instance with the specified model"""
+    if model == "gemini":
+        try:
+            from gemini_narrative_engine import get_narrative_engine
+            engine = get_narrative_engine()
+            if engine.is_available():
+                logger.info("✅ Using Gemini Narrative Engine")
+                return engine
+            else:
+                logger.warning("⚠️ Gemini not available, falling back to Ollama")
+                return NarrativeEngine("mistral")
+        except ImportError:
+            logger.warning("⚠️ Gemini engine not available, falling back to Ollama")
+            return NarrativeEngine("mistral")
+    else:
+        logger.info(f"Using Ollama model: {model}")
+        return NarrativeEngine(model)

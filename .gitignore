@@ -248,6 +248,13 @@ test_results_*/
 game_assets/
 dashboards/generated/
 dashboards/history.json
+dashboards/job_history.json
+dashboards/job_history.json.backup
+
+# PixelLab test results
+pixellab_tests/results/
+pixellab_tests/baselines/
+!pixellab_tests/baselines/.gitkeep
 
 # Standalone builds
 *-standalone.html
