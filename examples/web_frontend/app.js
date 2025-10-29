@@ -1095,3 +1095,178 @@ async function handleKeydown(event) {
     setTurn(state.payload.frames.length - 1, { skipFocus: true });
   }
 }
+
+let storyWindowInstance = null;
+let storyWindowState = {
+  currentRound: 0,
+  history: [],
+  onChoiceCallback: null,
+};
+
+function initializeStoryWindow() {
+  if (storyWindowInstance) {
+    return storyWindowInstance;
+  }
+
+  const template = document.getElementById("story-window");
+  if (!template) {
+    console.error("Story window template not found");
+    return null;
+  }
+
+  const fragment = template.content.cloneNode(true);
+  const overlay = fragment.querySelector(".story-window-overlay");
+
+  if (!overlay) {
+    console.error("Story window overlay not found in template");
+    return null;
+  }
+
+  document.body.appendChild(fragment);
+  storyWindowInstance = document.querySelector(".story-window-overlay");
+
+  const buttons = storyWindowInstance.querySelectorAll(".story-button");
+  buttons.forEach((button, index) => {
+    button.addEventListener("click", () => {
+      handleStoryChoice(index);
+    });
+  });
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeStoryWindow();
+    }
+  });
+
+  return storyWindowInstance;
+}
+
+function showStoryWindow(options = {}) {
+  const {
+    image = "",
+    text = "",
+    buttons = ["Continue", "Back", "Skip", "Close"],
+    onChoice = null,
+    allowDismiss = true,
+  } = options;
+
+  const overlay = initializeStoryWindow();
+  if (!overlay) {
+    console.error("Failed to initialize story window");
+    return;
+  }
+
+  const imageEl = overlay.querySelector(".story-image");
+  const textEl = overlay.querySelector(".story-text");
+  const buttonEls = overlay.querySelectorAll(".story-button");
+
+  if (imageEl && image) {
+    imageEl.src = image;
+    imageEl.style.display = "block";
+  } else if (imageEl) {
+    imageEl.style.display = "none";
+  }
+
+  if (textEl) {
+    textEl.textContent = text;
+  }
+
+  buttonEls.forEach((button, index) => {
+    if (buttons[index]) {
+      button.textContent = buttons[index];
+      button.style.display = "inline-flex";
+    } else {
+      button.style.display = "none";
+    }
+  });
+
+  storyWindowState.onChoiceCallback = onChoice;
+  storyWindowState.history.push({ image, text, buttons, timestamp: Date.now() });
+  storyWindowState.currentRound = storyWindowState.history.length - 1;
+
+  overlay.classList.remove("hidden");
+
+  if (!allowDismiss) {
+    overlay.style.pointerEvents = "none";
+    overlay.querySelector(".story-window").style.pointerEvents = "auto";
+  }
+}
+
+function handleStoryChoice(choiceIndex) {
+  const callback = storyWindowState.onChoiceCallback;
+  const currentRound = storyWindowState.currentRound;
+  const historyEntry = storyWindowState.history[currentRound];
+
+  if (callback && typeof callback === "function") {
+    callback(choiceIndex, historyEntry);
+  }
+}
+
+function updateStoryWindow(options = {}) {
+  const { image, text, buttons } = options;
+
+  if (!storyWindowInstance) {
+    console.warn("Story window not initialized");
+    return;
+  }
+
+  const imageEl = storyWindowInstance.querySelector(".story-image");
+  const textEl = storyWindowInstance.querySelector(".story-text");
+  const buttonEls = storyWindowInstance.querySelectorAll(".story-button");
+
+  if (image !== undefined && imageEl) {
+    if (image) {
+      imageEl.src = image;
+      imageEl.style.display = "block";
+    } else {
+      imageEl.style.display = "none";
+    }
+  }
+
+  if (text !== undefined && textEl) {
+    textEl.textContent = text;
+  }
+
+  if (buttons && Array.isArray(buttons) && buttonEls) {
+    buttonEls.forEach((button, index) => {
+      if (buttons[index]) {
+        button.textContent = buttons[index];
+        button.style.display = "inline-flex";
+      } else {
+        button.style.display = "none";
+      }
+    });
+  }
+
+  storyWindowState.history.push({
+    image: image || storyWindowState.history[storyWindowState.currentRound]?.image,
+    text: text || storyWindowState.history[storyWindowState.currentRound]?.text,
+    buttons: buttons || storyWindowState.history[storyWindowState.currentRound]?.buttons,
+    timestamp: Date.now(),
+  });
+  storyWindowState.currentRound = storyWindowState.history.length - 1;
+}
+
+function closeStoryWindow() {
+  if (storyWindowInstance) {
+    storyWindowInstance.classList.add("hidden");
+  }
+}
+
+function clearStoryHistory() {
+  storyWindowState.history = [];
+  storyWindowState.currentRound = 0;
+  storyWindowState.onChoiceCallback = null;
+}
+
+function getStoryHistory() {
+  return [...storyWindowState.history];
+}
+
+window.StoryWindow = {
+  show: showStoryWindow,
+  update: updateStoryWindow,
+  close: closeStoryWindow,
+  clearHistory: clearStoryHistory,
+  getHistory: getStoryHistory,
+};

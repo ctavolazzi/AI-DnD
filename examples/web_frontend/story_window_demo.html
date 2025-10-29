@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Story Window Component Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .demo-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .demo-section {
+        background: rgba(34, 48, 92, 0.6);
+        border: 2px solid rgba(120, 182, 250, 0.3);
+        border-radius: 10px;
+        padding: 1.5rem;
+      }
+
+      .demo-section h2 {
+        margin-top: 0;
+        color: var(--accent-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 1.2rem;
+      }
+
+      .demo-section p {
+        margin: 0.5rem 0;
+        color: var(--text-muted);
+      }
+
+      .demo-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-top: 1rem;
+      }
+
+      .demo-title {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .demo-title h1 {
+        color: var(--accent-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        text-shadow: 0 0 10px rgba(249, 244, 125, 0.55);
+      }
+
+      code {
+        background: rgba(10, 18, 34, 0.7);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        color: var(--accent-secondary);
+        font-family: 'Courier New', monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="console-shell">
+      <div class="demo-container">
+        <div class="demo-title">
+          <h1>Story Window Component Demo</h1>
+          <p>Interactive storytelling window for character encounters and narrative sequences</p>
+        </div>
+
+        <div class="demo-section">
+          <h2>Basic Examples</h2>
+          <p>Click the buttons below to test different story window configurations:</p>
+          <div class="demo-buttons">
+            <button class="glyph-button" onclick="demoBasic()">
+              Basic Story
+            </button>
+            <button class="glyph-button" onclick="demoWithImage()">
+              Story with Image
+            </button>
+            <button class="glyph-button" onclick="demoCustomButtons()">
+              Custom Buttons
+            </button>
+            <button class="glyph-button" onclick="demoInteractive()">
+              Interactive Story
+            </button>
+          </div>
+        </div>
+
+        <div class="demo-section">
+          <h2>API Usage</h2>
+          <p><strong>Show a story window:</strong></p>
+          <pre><code>window.StoryWindow.show({
+  image: 'path/to/image.jpg',
+  text: 'Your story text here...',
+  buttons: ['Choice 1', 'Choice 2', 'Choice 3', 'Choice 4'],
+  onChoice: (index, history) => {
+    console.log('User chose option', index);
+  }
+});</code></pre>
+
+          <p><strong>Update current window:</strong></p>
+          <pre><code>window.StoryWindow.update({
+  text: 'New text...',
+  buttons: ['New', 'Options']
+});</code></pre>
+
+          <p><strong>Close window:</strong></p>
+          <pre><code>window.StoryWindow.close();</code></pre>
+
+          <p><strong>Clear history:</strong></p>
+          <pre><code>window.StoryWindow.clearHistory();</code></pre>
+
+          <p><strong>Get history:</strong></p>
+          <pre><code>const history = window.StoryWindow.getHistory();</code></pre>
+        </div>
+
+        <div class="demo-section">
+          <h2>Features</h2>
+          <ul style="color: var(--text-muted);">
+            <li>Display images and text in an attractive modal window</li>
+            <li>Four customizable buttons with variable text</li>
+            <li>Support for multiple rounds of dialogue (history tracking)</li>
+            <li>Click outside to dismiss (configurable)</li>
+            <li>Callback function for handling player choices</li>
+            <li>Smooth animations and transitions</li>
+            <li>Responsive design that works on mobile devices</li>
+            <li>Matches the retro cyberpunk aesthetic of the console</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Include templates from main page -->
+    <template id="story-window">
+      <div class="story-window-overlay hidden">
+        <div class="story-window">
+          <div class="story-window-content">
+            <div class="story-image-container">
+              <img class="story-image" src="" alt="Story scene" />
+            </div>
+            <div class="story-text-container">
+              <p class="story-text"></p>
+            </div>
+            <div class="story-button-row">
+              <button class="story-button" type="button" data-choice="0"></button>
+              <button class="story-button" type="button" data-choice="1"></button>
+              <button class="story-button" type="button" data-choice="2"></button>
+              <button class="story-button" type="button" data-choice="3"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <script src="app.js" type="module"></script>
+    <script>
+      // Demo functions
+      function demoBasic() {
+        window.StoryWindow.show({
+          text: 'You enter a dimly lit tavern. The air is thick with smoke and the sound of laughter fills your ears. A mysterious figure in the corner catches your eye.',
+          buttons: ['Approach', 'Ignore', 'Leave', 'Order drink']
+        });
+      }
+
+      function demoWithImage() {
+        window.StoryWindow.show({
+          image: 'https://picsum.photos/800/400',
+          text: 'A majestic dragon perches atop the mountain peak, its scales glimmering in the sunset. It regards you with ancient, knowing eyes.',
+          buttons: ['Talk', 'Attack', 'Flee', 'Negotiate'],
+          onChoice: (index) => {
+            const actions = ['talk to', 'attack', 'flee from', 'negotiate with'];
+            alert(`You chose to ${actions[index]} the dragon!`);
+          }
+        });
+      }
+
+      function demoCustomButtons() {
+        window.StoryWindow.show({
+          text: 'You find yourself at a crossroads. Three paths stretch before you: one leads into a dark forest, another climbs toward snowy peaks, and the third descends into a mysterious valley.',
+          buttons: ['Forest', 'Mountains', 'Valley']
+        });
+      }
+
+      function demoInteractive() {
+        let round = 0;
+        const story = [
+          {
+            text: 'Chapter 1: The Beginning\n\nYou wake in an unfamiliar place. The last thing you remember is... darkness.',
+            buttons: ['Stand up', 'Look around', 'Call out', 'Rest more']
+          },
+          {
+            text: 'Chapter 2: First Steps\n\nYou rise to your feet. Your surroundings slowly come into focus - an ancient stone chamber with strange glowing runes on the walls.',
+            buttons: ['Examine runes', 'Find exit', 'Search room', 'Touch rune']
+          },
+          {
+            text: 'Chapter 3: Discovery\n\nThe runes pulse with otherworldly energy as you study them. You feel drawn to their power, sensing they hold the key to your escape.',
+            buttons: ['Continue', 'Start over', 'Close']
+          }
+        ];
+
+        function showRound(index) {
+          if (index < story.length) {
+            const isLastRound = index === story.length - 1;
+            window.StoryWindow.show({
+              image: index === 0 ? 'https://picsum.photos/800/400?random=1' :
+                     index === 1 ? 'https://picsum.photos/800/400?random=2' :
+                     'https://picsum.photos/800/400?random=3',
+              text: story[index].text,
+              buttons: story[index].buttons,
+              onChoice: (choice) => {
+                if (isLastRound) {
+                  if (choice === 0) showRound(0);
+                  else if (choice === 1) {
+                    round = 0;
+                    showRound(0);
+                  }
+                  else window.StoryWindow.close();
+                } else {
+                  showRound(index + 1);
+                }
+              }
+            });
+          }
+        }
+
+        showRound(0);
+      }
+    </script>
+  </body>
+</html>
