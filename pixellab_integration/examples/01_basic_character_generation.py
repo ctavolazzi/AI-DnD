@@ -35,7 +35,7 @@ def main():
 
     # Check API balance
     balance = client.get_balance()
-    print(f"\nAPI Credits: {balance['credits']}")
+    print(f"\nAPI Balance: ${balance['usd']} USD")
 
     # Example 1: Simple wizard
     print("\n1. Generating wizard character...")
@@ -52,9 +52,9 @@ def main():
         description="medieval knight with sword and shield",
         width=64,
         height=64,
-        outline='thick',  # Thick outline
-        shading='smooth',  # Smooth shading
-        detail='high',  # High detail
+        outline='single color outline',  # Single color outline
+        shading='detailed shading',  # Detailed shading
+        detail='highly detailed',  # Highly detailed
         view='side',  # Side view
         direction='east'  # Facing east
     )

@@ -50,7 +50,8 @@ class PixelLabClient:
         """
         response = self.client.get_balance()
         return {
-            "credits": response.credits,
+            "usd": response.usd,
+            "type": response.type,
             "status": "success"
         }
 
@@ -73,9 +74,9 @@ class PixelLabClient:
             **kwargs: Additional parameters:
                 - negative_description: What to avoid in the generation
                 - text_guidance_scale: How closely to follow the text (default: 8)
-                - outline: Outline style (None, 'thin', 'thick')
-                - shading: Shading style (None, 'flat', 'smooth')
-                - detail: Detail level (None, 'low', 'medium', 'high')
+                - outline: Outline style ('single color black outline', 'single color outline', 'selective outline', 'lineless')
+                - shading: Shading style ('flat shading', 'basic shading', 'medium shading', 'detailed shading', 'highly detailed shading')
+                - detail: Detail level ('low detail', 'medium detail', 'highly detailed')
                 - view: Camera view ('side', 'front', 'back', '3/4')
                 - direction: Direction facing ('north', 'south', 'east', 'west')
                 - isometric: Use isometric projection

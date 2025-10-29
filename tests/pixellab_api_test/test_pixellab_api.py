@@ -5,9 +5,9 @@ Comprehensive testing of PixelLab API integration with detailed logging and erro
 """
 
 import logging
+import os
 import sys
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
