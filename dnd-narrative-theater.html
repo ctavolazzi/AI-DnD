@@ -249,6 +249,37 @@
             animation: spin 1s linear infinite;
         }
 
+        /* Portrait loading spinner (small, inside portrait box) */
+        .portrait-spinner {
+            border: 4px solid rgba(255, 215, 0, 0.2);
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Scene image loading spinner (large) */
+        .scene-image-spinner {
+            border: 12px solid rgba(255, 215, 0, 0.2);
+            border-top: 12px solid #FFD700;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+
+        .image-loading-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -278,7 +309,7 @@
 </head>
 <body>
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay hidden">
+    <div id="loading-overlay" class="loading-overlay hidden" style="display: none !important;">
         <div class="loading-spinner"></div>
         <div class="loading-text" id="loading-text">✨ Generating your adventure artwork...</div>
     </div>
@@ -307,22 +338,65 @@
                 <label for="characterName">⚔️ Your Character Name:</label>
                 <input type="text" id="characterName" placeholder="Enter your hero's name..." value="Thorin">
 
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label for="storyPrompt" style="margin-bottom: 0;">📖 What is our story about today?</label>
+                    <button onclick="randomizeStory(event)"
+                        style="padding: 5px 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s ease;"
+                        onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.3)';"
+                        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.2)';"
+                        title="Generate random story prompt">
+                        🎲 Randomize
+                    </button>
+                </div>
+                <textarea id="storyPrompt"
+                    placeholder="Describe the adventure... (e.g., 'A quest to find a lost artifact in an ancient temple' or 'Defending a village from a dragon attack')"
+                    rows="3"
+                    style="resize: vertical; font-family: Georgia, serif; line-height: 1.5;"></textarea>
+
                 <button onclick="startAdventure()">🎲 Start Your Adventure</button>
-            </div>
+                </div>
 
             <div id="start-status" class="status hidden">
                 <h3>Status:</h3>
                 <div id="status-content">Ready to begin...</div>
-            </div>
-        </div>
+                </div>
+                </div>
 
         <div id="story-screen" class="story-content hidden">
             <h2>📖 Your Adventure</h2>
 
-            <!-- Image container for generated artwork -->
-            <div id="scene-image-container" class="hidden" style="text-align: center; margin: 20px 0;">
-                <img id="scene-image" style="max-width: 100%; border-radius: 10px; border: 3px solid #8B4513;" alt="Scene artwork">
-            </div>
+            <!-- Image Gallery - Multiple generated images -->
+            <div id="scene-image-container" class="hidden" style="margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #1a0f08 0%, #2c1810 100%); border-radius: 15px; border: 3px solid #8B4513;">
+                <h3 style="color: #FFD700; margin: 0 0 20px 0; text-align: center;">🖼️ Scene Artwork Gallery</h3>
+
+                <!-- PixelLab Sprite (small pixel art) -->
+                <div style="margin-bottom: 25px;">
+                    <h4 style="color: #FFA500; margin: 0 0 10px 0;">🎮 Pixel Art Scene (PixelLab)</h4>
+                    <div style="text-align: center; background: #000; padding: 20px; border-radius: 10px; border: 2px solid #444;">
+                        <div id="sprite-loading" class="scene-image-spinner"></div>
+                        <img id="sprite-image" style="width: auto; height: 256px; image-rendering: pixelated; border-radius: 8px; display: none; margin: 0 auto;" alt="Pixel art scene">
+                        </div>
+                        </div>
+
+                <!-- Nano Banana Landscape (large high-res) -->
+                <div style="margin-bottom: 25px;">
+                    <h4 style="color: #FFA500; margin: 0 0 10px 0;">🎨 AI-Enhanced Landscape (Nano Banana 16:9)</h4>
+                    <div style="text-align: center; background: #000; padding: 20px; border-radius: 10px; border: 2px solid #444;">
+                        <div id="landscape-loading" class="scene-image-spinner"></div>
+                        <img id="landscape-image" style="width: 100%; max-width: 1200px; height: auto; border-radius: 12px; border: 4px solid #FFD700; box-shadow: 0 8px 20px rgba(0,0,0,0.6); display: none;" alt="Landscape scene">
+                    </div>
+                        </div>
+
+                <!-- Enhanced Sprite-to-Art Pipeline -->
+                <div>
+                    <h4 style="color: #FFA500; margin: 0 0 10px 0;">✨ Enhanced Pipeline (Sprite → Nano Banana)</h4>
+                    <div style="text-align: center; background: #000; padding: 20px; border-radius: 10px; border: 2px solid #444;">
+                        <div id="enhanced-loading" class="scene-image-spinner"></div>
+                        <img id="enhanced-image" style="width: 100%; max-width: 1200px; height: auto; border-radius: 12px; border: 4px solid #9B59B6; box-shadow: 0 8px 20px rgba(0,0,0,0.6); display: none;" alt="Enhanced artwork">
+                        <p id="enhanced-status" style="color: #9B59B6; margin-top: 10px; font-size: 14px;"></p>
+                        </div>
+                    </div>
+                </div>
 
             <div id="story-display">
                 <p>Loading your adventure...</p>
@@ -332,7 +406,7 @@
                 <button onclick="nextScene()" style="flex: 1;">▶️ Continue</button>
                 <button onclick="generateSceneImage()" style="flex: 1; background: #7B3F00;">🎨 Generate Scene Art</button>
                 <button onclick="downloadAsPDF()" style="flex: 1; background: #654321;">📄 Download PDF</button>
-            </div>
+                </div>
         </div>
     </div>
 
@@ -385,6 +459,109 @@
         // Backend configuration
         const BACKEND_URL = 'http://localhost:5002';
         let sessionId = null;
+
+        // Story prompt templates for randomization
+        const STORY_PROMPTS = [
+            // Classic Quests
+            "Retrieve a legendary artifact from an ancient temple guarded by deadly traps",
+            "Find and return the stolen crown of a fallen kingdom before war breaks out",
+            "Discover the source of mysterious disappearances in a cursed forest",
+            "Rescue the princess from a dragon's lair high in the mountains",
+            "Uncover the secret behind strange magical disturbances in the city",
+
+            // Dark & Mysterious
+            "Investigate a haunted mansion where guests have vanished without a trace",
+            "Solve murders in a city where the dead are rising from their graves",
+            "Stop a dark ritual that threatens to summon an ancient evil",
+            "Explore cursed ruins where shadows seem to have minds of their own",
+            "Track down a vampire lord terrorizing villages under the full moon",
+
+            // Epic Adventures
+            "Defend the last standing fortress against an invading army of orcs",
+            "Unite the scattered clans to fight against a demon invasion",
+            "Journey to the underworld to retrieve a soul wrongly taken",
+            "Prevent the awakening of a sleeping titan that will destroy the world",
+            "Find the legendary sword that can seal away the darkness forever",
+
+            // Exploration & Discovery
+            "Chart unknown waters to discover the mythical Sunken City of Azmar",
+            "Explore floating islands in the sky searching for ancient technology",
+            "Venture into the Underdark to find a rare healing herb for a plague",
+            "Discover what lies beyond the forbidden portal in the wizard's tower",
+            "Map the labyrinthine caves rumored to hold a dragon's treasure hoard",
+
+            // Political Intrigue
+            "Uncover a conspiracy to assassinate the king during the royal ball",
+            "Navigate deadly court politics to become the new guild master",
+            "Mediate peace between two warring factions before total war erupts",
+            "Expose corruption in the city guard before the innocent are executed",
+            "Infiltrate a thieves' guild to recover stolen royal documents",
+
+            // Survival & Horror
+            "Survive a night in a manor where reality itself seems to break down",
+            "Escape from an underground prison built by a mad wizard",
+            "Navigate a city overtaken by a zombie plague seeking the cure",
+            "Survive the wilderness after a shipwreck on a hostile island",
+            "Escape a time loop that resets every midnight with deadly consequences",
+
+            // Unusual & Creative
+            "Help a ghost find peace by solving the mystery of their murder",
+            "Stop a bard whose cursed songs are driving people to madness",
+            "Investigate why all the cats in the city have gone missing",
+            "Resolve a dispute between warring factions of druids and loggers",
+            "Recover memories stolen by a mischievous fey creature",
+
+            // High Stakes
+            "Prevent a mad mage from collapsing reality by fixing magical ley lines",
+            "Stop a plague of magical corruption spreading across the land",
+            "Save a city from sinking into the ocean by appeasing sea gods",
+            "Prevent a prophecy that foretells the end of all magic",
+            "Close dimensional rifts before creatures from the void consume reality",
+
+            // Personal Quests
+            "Avenge your village destroyed by bandits and bring them to justice",
+            "Find your lost sibling who was kidnapped by slavers years ago",
+            "Prove your innocence after being framed for a crime you didn't commit",
+            "Earn your place in the legendary order of knights through trials",
+            "Discover the truth about your mysterious magical heritage",
+
+            // Comic Relief / Light-Hearted
+            "Help a dragon who has lost their voice get it back before a concert",
+            "Recover a bakery's secret recipe stolen by rival pastry chefs",
+            "Organize the most epic tavern brawl tournament the realm has ever seen",
+            "Rescue a prince who doesn't want to be rescued from his comfortable prison",
+            "Help a lich who wants to retire and become mortal again"
+        ];
+
+        // Randomize story prompt
+        function randomizeStory(event) {
+            const textarea = document.getElementById('storyPrompt');
+            const randomPrompt = STORY_PROMPTS[Math.floor(Math.random() * STORY_PROMPTS.length)];
+
+            // Smooth animation
+            textarea.style.opacity = '0.5';
+            textarea.value = '';
+
+            setTimeout(() => {
+                textarea.value = randomPrompt;
+                textarea.style.opacity = '1';
+
+                // Visual feedback on button
+                if (event && event.target) {
+                    const button = event.target;
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '✨ Nice!';
+                    button.style.background = 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)';
+
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    }, 1000);
+                }
+            }, 200);
+
+            console.log('🎲 Randomized story prompt:', randomPrompt);
+        }
 
         // Test backend connection on load
         async function testBackend() {
@@ -471,10 +648,12 @@
 
             const model = document.getElementById('modelSelect').value;
             const characterName = document.getElementById('characterName').value;
+            const storyPrompt = document.getElementById('storyPrompt').value;
 
             console.group('⚙️ Adventure Configuration');
             console.log('%cCharacter Name:', 'font-weight: bold; color: #3498db;', characterName);
             console.log('%cAI Model:', 'font-weight: bold; color: #3498db;', model);
+            console.log('%cStory Prompt:', 'font-weight: bold; color: #3498db;', storyPrompt || 'Random adventure');
             console.log('%cBackend URL:', 'font-weight: bold; color: #3498db;', `${BACKEND_URL}/start-adventure`);
             console.groupEnd();
             console.log('');
@@ -492,20 +671,24 @@
 
             try {
                 console.log('%c[STEP 2/4] 📤 Sending request...', 'color: #f39c12; font-weight: bold;');
-                console.log('Request payload:', {
+                const requestPayload = {
                     model: model,
                     character_name: characterName
-                });
+                };
+
+                // Add story_prompt if provided
+                if (storyPrompt && storyPrompt.trim()) {
+                    requestPayload.story_prompt = storyPrompt.trim();
+                }
+
+                console.log('Request payload:', requestPayload);
 
                 const response = await fetch(`${BACKEND_URL}/start-adventure`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        model: model,
-                        character_name: characterName
-                    })
+                    body: JSON.stringify(requestPayload)
                 });
 
                 const responseTime = (performance.now() - startTime).toFixed(2);
@@ -553,25 +736,8 @@
                 console.log(`%c✅ ADVENTURE STARTED SUCCESSFULLY! (${totalTime}ms total)`, 'color: #2ecc71; font-size: 18px; font-weight: bold;');
                 console.log('%c═══════════════════════════════════════════════════════════════', 'color: #2ecc71; font-size: 16px; font-weight: bold;');
                 console.log('');
-
-                // Auto-generate scene image (with error handling)
-                console.log('🎨 Checking if image generation services are available...');
-                setTimeout(async () => {
-                    try {
-                        // Quick health check for image services
-                        const healthCheck = await fetch(`${BACKEND_URL}/health`, { signal: AbortSignal.timeout(2000) });
-                        const health = await healthCheck.json();
-
-                        if (health.status === 'healthy') {
-                            console.log('✅ Backend healthy, attempting image generation...');
-                            generateSceneImage();
-                        } else {
-                            console.log('⚠️ Skipping auto-image generation - backend not fully ready');
-                        }
-                    } catch (error) {
-                        console.log('⚠️ Skipping auto-image generation - use manual button if needed');
-                    }
-                }, 500);
+                console.log('💡 Click "🎨 Generate Scene Art" button to create an image!');
+                console.log('');
 
             } catch (error) {
                 const errorTime = (performance.now() - startTime).toFixed(2);
@@ -668,7 +834,7 @@
                 console.log('  • Scene ID:', scene.scene_id);
                 console.log('  • Type:', scene.type || 'Unknown');
                 console.log('%c🎬 Scene Narrative:', 'color: #f39c12; font-weight: bold;', scene.narrative?.substring(0, 100) + '...');
-            } else {
+                } else {
                 console.warn('⚠️ No scene found in response!');
             }
             console.groupEnd();
@@ -704,13 +870,41 @@
             html += '<hr style="margin: 20px 0;">';
             html += '<h3>👥 Your Party</h3>';
 
-            // Characters section (not markdown)
+            // Characters section - Enhanced character cards
             if (data.characters && data.characters.length > 0) {
+                html += '<h3 style="color: #FFD700; margin: 20px 0 15px 0;">👥 Your Party</h3>';
                 data.characters.forEach(char => {
                     const charClass = char.class || char.char_class || 'Unknown Class';
-                    const charHTML = `<p>⚔️ <strong>${char.name}</strong> - ${charClass} (HP: ${char.hp}/${char.max_hp})</p>`;
+                    const charHTML = `
+                        <div class="character-card" style="display: flex; gap: 20px; padding: 20px; margin: 15px 0; background: linear-gradient(135deg, #2c1810 0%, #1a0f08 100%); border: 3px solid #8B4513; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.4);">
+                            <div style="flex-shrink: 0; position: relative; width: 150px; height: 150px;">
+                                <div id="spinner-${char.name}" class="portrait-spinner"></div>
+                                <img id="portrait-${char.name}" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+                                     style="width: 150px; height: 150px; border: 4px solid #FFD700; border-radius: 12px; background: #333; object-fit: cover; opacity: 0;"
+                                     onerror="this.style.display='none'"
+                                     alt="${char.name} portrait">
+                </div>
+                            <div style="flex: 1;">
+                                <h3 style="margin: 0 0 12px 0; color: #FFD700; font-size: 26px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">⚔️ ${char.name}</h3>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                                    <div><strong style="color: #FFA500;">Class:</strong> <span style="color: #fff; font-size: 16px;">${charClass}</span></div>
+                                    <div><strong style="color: #FF6B6B;">HP:</strong> <span style="color: #fff; font-size: 16px;">${char.hp}/${char.max_hp}</span></div>
+                                    <div><strong style="color: #4ECDC4;">Attack:</strong> <span style="color: #fff; font-size: 16px;">${char.attack}</span></div>
+                                    <div><strong style="color: #95E1D3;">Defense:</strong> <span style="color: #fff; font-size: 16px;">${char.defense}</span></div>
+                </div>
+                                <p style="margin: 12px 0; color: #DDD; font-style: italic; line-height: 1.6; font-size: 15px;">${char.intro || 'A brave adventurer ready to face any challenge that lies ahead.'}</p>
+                                <div style="margin-top: 12px; padding: 10px; background: rgba(155, 89, 182, 0.2); border-left: 4px solid #9B59B6; border-radius: 4px;">
+                                    <strong style="color: #9B59B6;">⚡ Abilities:</strong>
+                                    <span style="color: #E8B4F1; font-size: 15px;">${char.abilities.join(' • ')}</span>
+                        </div>
+                    </div>
+                        </div>
+                    `;
                     html += charHTML;
                     console.log(`✅ Character HTML added: ${char.name} - ${charClass}`);
+
+                    // Auto-generate character portrait
+                    setTimeout(() => generateCharacterPortrait(char.name, charClass), 1000);
                 });
             }
 
@@ -738,6 +932,15 @@
             console.log('%c║  ✨  STORY RENDERING COMPLETE!                              ║', 'color: #2ecc71; font-weight: bold; font-size: 14px;');
             console.log('%c╚═══════════════════════════════════════════════════════════════╝', 'color: #2ecc71; font-weight: bold; font-size: 14px;');
             console.log('');
+
+            // Auto-generate scene artwork after a brief delay
+            if (scene) {
+                console.log('%c🎨 Auto-generating scene artwork...', 'color: #9B59B6; font-weight: bold;');
+                setTimeout(() => {
+                    const sceneDescription = scene.narrative || scene.location || 'fantasy adventure scene';
+                    generateSceneImage(sceneDescription.substring(0, 200)); // Use first 200 chars as prompt
+                }, 2000); // Wait 2 seconds after character portraits start
+            }
         }
 
         async function nextScene() {
@@ -760,7 +963,7 @@
                     })
                 });
 
-                const data = await response.json();
+                    const data = await response.json();
                 console.log('✅ Next scene:', data);
 
                 const storyDiv = document.getElementById('story-display');
@@ -771,100 +974,154 @@
             }
         }
 
+        async function generateCharacterPortrait(charName, charClass) {
+            console.log(`%c🎨 Generating portrait for ${charName} (${charClass})...`, 'color: #9B59B6; font-weight: bold;');
+
+            try {
+                const prompt = `fantasy RPG character portrait, ${charClass} class, heroic pose, detailed face, D&D style`;
+
+                const response = await fetch('http://localhost:5000/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        aspect_ratio: "1:1"  // Square portrait
+                    })
+                });
+
+                    const data = await response.json();
+
+                if (data.success && data.image) {
+                    const portraitImg = document.getElementById(`portrait-${charName}`);
+                    const spinner = document.getElementById(`spinner-${charName}`);
+
+                    if (portraitImg) {
+                        portraitImg.src = `data:image/png;base64,${data.image}`;
+                        portraitImg.style.opacity = '1';
+                        if (spinner) spinner.style.display = 'none';
+                        console.log(`✅ Portrait generated for ${charName}`);
+                    }
+                }
+            } catch (error) {
+                console.log(`⚠️ Portrait generation failed for ${charName} (using placeholder)`);
+                const spinner = document.getElementById(`spinner-${charName}`);
+                if (spinner) spinner.style.display = 'none';
+            }
+        }
+
         async function generateSceneImage() {
             console.log('%c╔═══════════════════════════════════════════════════════════════╗', 'color: #7B3F00; font-weight: bold; font-size: 14px;');
-            console.log('%c║  🎨  GENERATING SCENE ARTWORK                               ║', 'color: #7B3F00; font-weight: bold; font-size: 14px;');
+            console.log('%c║  🎨  GENERATING MULTI-IMAGE GALLERY                         ║', 'color: #7B3F00; font-weight: bold; font-size: 14px;');
             console.log('%c╚═══════════════════════════════════════════════════════════════╝', 'color: #7B3F00; font-weight: bold; font-size: 14px;');
+            console.log('');
+            console.log('🖼️  Will generate 3 images:');
+            console.log('   1️⃣  Pixel Art (PixelLab 64x64)');
+            console.log('   2️⃣  Landscape (Nano Banana 16:9)');
+            console.log('   3️⃣  Enhanced Pipeline (Sprite → Nano Banana)');
             console.log('');
 
             if (!sessionId) {
-                console.error('❌ No session ID - cannot generate image');
+                console.error('❌ No session ID - cannot generate images');
                 alert('Please start an adventure first!');
                 return;
             }
 
-            // Show loading overlay
-            const loadingOverlay = document.getElementById('loading-overlay');
-            const loadingText = document.getElementById('loading-text');
-            loadingOverlay.classList.remove('hidden');
-            loadingText.textContent = '✨ Generating your adventure artwork...';
-            console.log('🎨 Loading animation displayed');
+            // Show container
+            const container = document.getElementById('scene-image-container');
+            container.classList.remove('hidden');
 
-            try {
-                console.log('🎨 Requesting scene image generation...');
-                const startTime = performance.now();
+            const sceneDesc = "epic fantasy tavern scene, medieval adventure";
 
-                // Add timeout to prevent infinite loading
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => {
-                    controller.abort();
-                    console.warn('⏰ Request timeout after 30 seconds');
-                }, 30000); // 30 second timeout
-
-                const response = await fetch(`${BACKEND_URL}/generate-scene-image`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        session_id: sessionId
-                    }),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-
-                const responseTime = (performance.now() - startTime).toFixed(2);
-                console.log(`⏱️ Image generation time: ${responseTime}ms`);
-
-                const data = await response.json();
-                console.log('✅ Image generation response:', data);
-
-                if (data.success && (data.image_url || data.image)) {
-                    console.log('%c🖼️ Image ready!', 'color: #2ecc71; font-weight: bold;');
-
-                    // Handle both URL and base64 image data
-                    let imageSrc;
-                    if (data.image_url) {
-                        imageSrc = data.image_url;
-                        console.log('Image URL:', data.image_url);
-                    } else if (data.image) {
-                        // Base64 data - determine format
-                        const imageType = data.image_type || 'png';
-                        imageSrc = `data:image/${imageType};base64,${data.image}`;
-                        console.log('Base64 image data received');
-                        console.log('Image type:', imageType);
-                        console.log('Data length:', data.image.length, 'chars');
+            // Helper: Generate PixelLab Sprite
+            const generateSprite = async () => {
+                console.log('🎮 [1/3] Generating PixelLab sprite...');
+                const spinner = document.getElementById('sprite-loading');
+                const img = document.getElementById('sprite-image');
+                try {
+                    const response = await fetch('http://localhost:5001/generate-sprite', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: sceneDesc, width: 64, height: 64 }),
+                        signal: AbortSignal.timeout(30000)
+                    });
+                    const data = await response.json();
+                    if (data.image) {
+                        img.src = `data:image/png;base64,${data.image}`;
+                        img.style.display = 'block';
+                        spinner.style.display = 'none';
+                        console.log('✅ Sprite complete!');
+                        return data.image;
                     }
-
-                    // Display the image
-                    const imageContainer = document.getElementById('scene-image-container');
-                    const imageElement = document.getElementById('scene-image');
-                    imageElement.src = imageSrc;
-                    imageContainer.classList.remove('hidden');
-
-                    console.log('✅ Image displayed in page');
-
-                    // Hide loading overlay
-                    loadingOverlay.classList.add('hidden');
-                } else {
-                    throw new Error(data.error || 'Image generation failed - no image data received');
+                } catch (error) {
+                    console.error('❌ Sprite failed:', error.message);
+                    spinner.style.display = 'none';
                 }
+                return null;
+            };
 
-            } catch (error) {
-                console.error('%c❌ Image generation failed!', 'color: #e74c3c; font-weight: bold;');
-                console.error('Error:', error.message);
-                console.error('Full error:', error);
+            // Helper: Generate Nano Banana Landscape
+            const generateLandscape = async () => {
+                console.log('🎨 [2/3] Generating Nano Banana landscape...');
+                const spinner = document.getElementById('landscape-loading');
+                const img = document.getElementById('landscape-image');
+                try {
+                    const response = await fetch('http://localhost:5000/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: sceneDesc, aspect_ratio: "16:9" }),
+                        signal: AbortSignal.timeout(30000)
+                    });
+                    const data = await response.json();
+                    if (data.image) {
+                        img.src = `data:image/png;base64,${data.image}`;
+                        img.style.display = 'block';
+                        spinner.style.display = 'none';
+                        console.log('✅ Landscape complete!');
+                    }
+                } catch (error) {
+                    console.error('❌ Landscape failed:', error.message);
+                    spinner.style.display = 'none';
+                }
+            };
 
-                // Hide loading overlay
-                loadingOverlay.classList.add('hidden');
+            // Helper: Enhanced Pipeline
+            const generateEnhanced = async (spriteData) => {
+                console.log('✨ [3/3] Running enhancement pipeline...');
+                const spinner = document.getElementById('enhanced-loading');
+                const img = document.getElementById('enhanced-image');
+                const status = document.getElementById('enhanced-status');
+                if (!spriteData) {
+                    status.textContent = '⚠️ Sprite not available';
+                    spinner.style.display = 'none';
+                    return;
+                }
+                status.textContent = '📤 Enhancing sprite with Nano Banana...';
+                try {
+                    const response = await fetch('http://localhost:5000/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: `Enhance: ${sceneDesc}`, aspect_ratio: "16:9" }),
+                        signal: AbortSignal.timeout(30000)
+                    });
+                    const data = await response.json();
+                    if (data.image) {
+                        img.src = `data:image/png;base64,${data.image}`;
+                        img.style.display = 'block';
+                        spinner.style.display = 'none';
+                        status.textContent = '✅ Enhanced artwork complete!';
+                        console.log('✅ Enhanced complete!');
+                    }
+                } catch (error) {
+                    console.error('❌ Enhancement failed:', error.message);
+                    spinner.style.display = 'none';
+                    status.textContent = '❌ Enhancement failed';
+                }
+            };
 
-                // User-friendly error message
-                const errorMsg = error.message.includes('fetch')
-                    ? 'Cannot connect to backend. Is the server running on port 5002?'
-                    : 'Image generation failed. Make sure PixelLab Bridge (port 5001) and Nano-Banana (port 5000) are running.';
-                alert(errorMsg);
-            }
+            // Execute: Sprite first, then parallel
+            const spriteData = await generateSprite();
+            await Promise.all([generateLandscape(), generateEnhanced(spriteData)]);
+            console.log('🎉 All images generated!');
         }
 
         async function downloadAsPDF() {

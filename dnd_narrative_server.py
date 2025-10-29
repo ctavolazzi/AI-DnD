@@ -45,10 +45,10 @@ class NarrativeSession:
 
         logger.info(f"Created new narrative session: {session_id} with {model} engine")
 
-    def start_adventure(self):
+    def start_adventure(self, theme="epic adventure"):
         """Initialize the adventure with characters and quest."""
-        # Generate quest
-        quest = self.narrative_engine.generate_quest(difficulty="medium", theme="epic adventure")
+        # Generate quest with custom theme if provided
+        quest = self.narrative_engine.generate_quest(difficulty="medium", theme=theme)
 
         # Generate character introductions
         character_data = []
@@ -349,13 +349,15 @@ def start_adventure():
         # Generate or use provided session ID
         session_id = data.get('session_id', f"session_{datetime.now().strftime('%Y%m%d%H%M%S')}_{random.randint(1000, 9999)}")
         model = data.get('model', 'gemini')  # Default to Gemini
+        story_prompt = data.get('story_prompt', 'epic adventure')  # Get custom story theme
 
         # Create new session
         session = NarrativeSession(session_id, model=model)
         game_sessions[session_id] = session
 
-        # Start the adventure
-        result = session.start_adventure()
+        # Start the adventure with custom theme
+        logger.info(f"Starting adventure with theme: {story_prompt}")
+        result = session.start_adventure(theme=story_prompt)
 
         logger.info(f"Started adventure for session: {session_id}")
 
@@ -445,6 +447,24 @@ def generate_scene_image():
         session_id = data.get('session_id')
         scene_description = data.get('scene_description', '')
         scene_type = data.get('scene_type', 'exploration')
+        format_type = data.get('format', 'square')  # 'landscape' or 'square'
+        width = data.get('width', 64)
+        height = data.get('height', 64)
+
+        # If no scene description provided, try to get from session
+        if not scene_description and session_id and session_id in game_sessions:
+            session = game_sessions[session_id]
+            # NarrativeSession is an object, not a dict
+            if hasattr(session, 'scenes') and session.scenes:
+                latest_scene = session.scenes[-1]
+                if 'narrative' in latest_scene:
+                    scene_description = latest_scene['narrative'][:200]  # First 200 chars
+            if not scene_description and hasattr(session, 'game') and hasattr(session.game, 'quest'):
+                scene_description = f"fantasy tavern scene, {session.game.quest[:100]}"
+
+        # Fallback description
+        if not scene_description:
+            scene_description = "epic fantasy adventure scene, medieval tavern, heroes gathering"
 
         # For MVP, we'll call the existing servers
         # Character intros get pixel art sprites
@@ -490,14 +510,25 @@ def generate_scene_image():
                     "image_type": "enhanced"
                 })
 
-        # Default: try pixel art first
-        response = requests.post(
-            'http://localhost:5001/generate-sprite',
-            json={
-                "prompt": scene_description,
-                "width": 64,
-                "height": 64,
-                "no_background": True
+        # Default: Use Nano Banana for landscape scenes
+        if format_type == 'landscape':
+            response = requests.post(
+                'http://localhost:5000/generate',
+                json={
+                    "prompt": scene_description,
+                    "aspect_ratio": "16:9"  # Landscape format
+                },
+                timeout=60
+            )
+        else:
+            # Square format - use PixelLab
+            response = requests.post(
+                'http://localhost:5001/generate-sprite',
+                json={
+                    "prompt": scene_description,
+                    "width": width,
+                    "height": height,
+                    "no_background": True
             },
             timeout=60
         )
