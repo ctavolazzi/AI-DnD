@@ -1077,20 +1077,16 @@
         }
 </head>
 <body>
-    <script>console.log('📄 HTML body starting to render...');</script>
     <div class="container">
         <!-- Header -->
         <div class="header">
             <h1>🎭 THE NARRATIVE THEATER 🎲</h1>
             <div class="subtitle">Where Stories Come Alive • AI-Powered D&D Adventures</div>
         </div>
-        <script>console.log('📄 Header rendered');</script>
 
         <!-- Start Screen -->
-        <script>console.log('📄 About to render start-screen...');</script>
         <div id="start-screen" class="start-screen">
             <h2>Welcome, Adventurer!</h2>
-            <script>console.log('📄 Start-screen welcome text rendered');</script>
             <p>
                 Embark on an epic journey where narrative and imagery merge.<br>
                 Your choices shape the story, and every moment can be visualized.<br>
@@ -1197,9 +1193,6 @@
     </div>
 
     <script>
-        console.log('🚀 JavaScript file starting to load...');
-        console.log('🕐 Timestamp:', new Date().toISOString());
-
         // =====================================================================
         // STATE MANAGEMENT
         // =====================================================================
@@ -1208,8 +1201,6 @@
         let characters = [];
         let scenes = [];
         let imageQueue = [];
-
-        console.log('✅ Global variables initialized');
 
         // API Configuration
         const NARRATIVE_SERVER = 'http://localhost:5002';
@@ -2311,111 +2302,6 @@
         // Hide AI controls when adventure ends
         function hideAIControls() {
             document.getElementById('ai-controls').classList.add('hidden');
-        }
-
-        // Initialize the page when it loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('=== 🎭 NARRATIVE THEATER LOADING ===');
-            console.log('1. DOMContentLoaded event fired');
-
-            // Log all major elements
-            console.log('2. Checking for key elements:');
-            console.log('   - body:', document.body ? '✅ Found' : '❌ Missing');
-            console.log('   - container:', document.querySelector('.container') ? '✅ Found' : '❌ Missing');
-            console.log('   - header:', document.querySelector('.header') ? '✅ Found' : '❌ Missing');
-            console.log('   - start-screen:', document.getElementById('start-screen') ? '✅ Found' : '❌ Missing');
-            console.log('   - workspace:', document.getElementById('workspace') ? '✅ Found' : '❌ Missing');
-
-            // Log computed styles for start-screen
-            const startScreen = document.getElementById('start-screen');
-            if (startScreen) {
-                const styles = window.getComputedStyle(startScreen);
-                console.log('3. Start screen computed styles:');
-                console.log('   - display:', styles.display);
-                console.log('   - visibility:', styles.visibility);
-                console.log('   - opacity:', styles.opacity);
-                console.log('   - width:', styles.width);
-                console.log('   - height:', styles.height);
-            }
-
-            console.log('4. Testing backend connection...');
-            // Test backend connection
-            testBackendConnection();
-
-            console.log('5. Setting up event listeners...');
-            // Set up event listeners
-            setupEventListeners();
-
-            console.log('6. Initializing UI...');
-            // Initialize UI state
-            initializeUI();
-
-            console.log('=== ✅ INITIALIZATION COMPLETE ===');
-        });
-
-        async function testBackendConnection() {
-            try {
-                const response = await fetch('http://localhost:5002/health');
-                const data = await response.json();
-                console.log('✅ Backend connected:', data);
-                return true;
-            } catch (error) {
-                console.error('❌ Backend connection failed:', error);
-                showError('Backend connection failed. Please make sure the narrative server is running on port 5002.');
-                return false;
-            }
-        }
-
-        function setupEventListeners() {
-            // Add event listeners for buttons
-            const startButton = document.getElementById('startAdventure');
-            if (startButton) {
-                startButton.addEventListener('click', startAdventure);
-            }
-        }
-
-        function initializeUI() {
-            // Show the start screen
-            const startScreen = document.getElementById('start-screen');
-            if (startScreen) {
-                startScreen.style.display = 'block';
-                console.log('✅ Start screen should be visible');
-            } else {
-                console.error('❌ Start screen element not found');
-            }
-
-            // Hide loading states
-            const loadingElements = document.querySelectorAll('.loading');
-            loadingElements.forEach(el => el.style.display = 'none');
-
-            console.log('✅ UI initialized');
-        }
-
-        function showError(message) {
-            // Create error display
-            const errorDiv = document.createElement('div');
-            errorDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: #e74c3c;
-                color: white;
-                padding: 15px 30px;
-                border-radius: 5px;
-                z-index: 10000;
-                font-family: Arial, sans-serif;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            `;
-            errorDiv.textContent = message;
-            document.body.appendChild(errorDiv);
-
-            // Remove after 5 seconds
-            setTimeout(() => {
-                if (errorDiv.parentNode) {
-                    errorDiv.parentNode.removeChild(errorDiv);
-                }
-            }, 5000);
         }
     </script>
 </body>

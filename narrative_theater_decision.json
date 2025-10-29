@@ -1,0 +1,135 @@
+{
+  "title": "Narrative Theater UI Fix - Next Steps Decision",
+  "description": "Determining the best approach to move forward after discovering the simple version works but the complex version doesn't",
+  "criteria": [
+    {
+      "name": "Time to Working Solution",
+      "weight": 0.25,
+      "description": "How quickly can we get a fully working product"
+    },
+    {
+      "name": "Feature Completeness",
+      "weight": 0.20,
+      "description": "How many features from the original vision are included"
+    },
+    {
+      "name": "Maintainability",
+      "weight": 0.20,
+      "description": "How easy is it to maintain and debug going forward"
+    },
+    {
+      "name": "Risk of Breakage",
+      "weight": 0.15,
+      "description": "Likelihood of encountering more bugs or issues"
+    },
+    {
+      "name": "Code Quality",
+      "weight": 0.10,
+      "description": "Clean, understandable, well-structured code"
+    },
+    {
+      "name": "User Experience",
+      "weight": 0.10,
+      "description": "Quality of the user interface and interaction"
+    }
+  ],
+  "options": [
+    {
+      "name": "Use Simple Version As-Is",
+      "description": "Deploy the working simple version (narrative-theater-simple.html) immediately, no changes needed",
+      "scores": {
+        "Time to Working Solution": 10,
+        "Feature Completeness": 6,
+        "Maintainability": 9,
+        "Risk of Breakage": 10,
+        "Code Quality": 9,
+        "User Experience": 7
+      },
+      "pros": [
+        "Works right now - immediate deployment",
+        "Clean, simple codebase (200 lines vs 2400)",
+        "All console logging already in place",
+        "Backend connection tested and working",
+        "No mystery bugs to hunt down"
+      ],
+      "cons": [
+        "Missing AI decision controls",
+        "No image generation features",
+        "No visual gallery",
+        "Fewer advanced story options"
+      ]
+    },
+    {
+      "name": "Enhance Simple Version Incrementally",
+      "description": "Start with working simple version, add features one at a time from complex version",
+      "scores": {
+        "Time to Working Solution": 8,
+        "Feature Completeness": 9,
+        "Maintainability": 8,
+        "Risk of Breakage": 7,
+        "Code Quality": 8,
+        "User Experience": 9
+      },
+      "pros": [
+        "Build on proven foundation",
+        "Add features incrementally with testing",
+        "Can prioritize most important features first",
+        "Maintain clean code structure",
+        "Learn what broke the complex version by avoiding it"
+      ],
+      "cons": [
+        "Takes more time to reach full feature parity",
+        "Need to carefully port code from complex version",
+        "May require multiple iterations"
+      ]
+    },
+    {
+      "name": "Debug Complex Version",
+      "description": "Find and fix the bug in the 2400-line dnd-narrative-theater.html file",
+      "scores": {
+        "Time to Working Solution": 3,
+        "Feature Completeness": 10,
+        "Maintainability": 4,
+        "Risk of Breakage": 4,
+        "Code Quality": 3,
+        "User Experience": 8
+      },
+      "pros": [
+        "All features already implemented",
+        "No need to re-code anything",
+        "Complete UI with all controls"
+      ],
+      "cons": [
+        "Could take hours to find the bug",
+        "No console logs means mystery debugging",
+        "May have multiple bugs, not just one",
+        "2400 lines is hard to maintain",
+        "Same issues could resurface later"
+      ]
+    },
+    {
+      "name": "Rebuild from Scratch with Best Practices",
+      "description": "Create new version using modern framework (React/Vue) with proper component structure",
+      "scores": {
+        "Time to Working Solution": 2,
+        "Feature Completeness": 8,
+        "Maintainability": 10,
+        "Risk of Breakage": 6,
+        "Code Quality": 10,
+        "User Experience": 9
+      },
+      "pros": [
+        "Modern, professional architecture",
+        "Component-based structure",
+        "Easy to test and maintain",
+        "Scalable for future features"
+      ],
+      "cons": [
+        "Significant time investment",
+        "Need to set up build tools",
+        "More complex deployment",
+        "Overkill for current needs"
+      ]
+    }
+  ]
+}

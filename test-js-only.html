@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JS Test</title>
+    <style>
+        body {
+            background: linear-gradient(90deg, #8B4513 0%, #A0522D 50%, #8B4513 100%);
+            color: white;
+            font-family: Arial;
+            padding: 50px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>JavaScript Test Page</h1>
+    <div id="test">Loading...</div>
+
+    <script>
+        console.log('=== SCRIPT TAG 1: Inline script at top ===');
+        alert('Script 1: JavaScript is working!');
+        document.getElementById('test').innerHTML = 'JavaScript is WORKING!';
+    </script>
+
+    <script>
+        console.log('=== SCRIPT TAG 2: Second script ===');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== DOMContentLoaded fired ===');
+            document.body.style.fontSize = '24px';
+        });
+    </script>
+</body>
+</html>

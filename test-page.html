@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+    <style>
+        body { 
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            text-align: center;
+        }
+        .test-box {
+            background: rgba(0,0,0,0.3);
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px;
+        }
+        button {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #45b7aa;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🎭 D&D Narrative Theater Test</h1>
+        <p>If you can see this, the HTTP server is working!</p>
+        <button onclick="testBackend()">Test Backend Connection</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testBackend() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:5002/health');
+                const data = await response.json();
+                result.innerHTML = `
+                    <div style="background: #2ecc71; padding: 10px; margin: 10px; border-radius: 5px;">
+                        ✅ Backend Connected!<br>
+                        Service: ${data.service}<br>
+                        Status: ${data.status}<br>
+                        Port: ${data.port}
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div style="background: #e74c3c; padding: 10px; margin: 10px; border-radius: 5px;">
+                        ❌ Backend Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Test</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(90deg, #8B4513 0%, #A0522D 50%, #8B4513 100%);
+            color: #2c1810;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(180deg, #d2691e 0%, #8B4513 100%);
+            border: 4px solid #3e2723;
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+            margin: 0;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(210, 105, 30, 0.3);
+            border-radius: 8px;
+            border: 2px solid #3e2723;
+        }
+
+        .start-screen h2 {
+            font-size: 32px;
+            color: #3e2723;
+            margin-bottom: 20px;
+        }
+
+        .start-screen p {
+            font-size: 18px;
+            color: #5d4037;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        button {
+            background: #8B4513;
+            color: #ffd700;
+            border: 2px solid #3e2723;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #A0522D;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 THE NARRATIVE THEATER 🎲</h1>
+        </div>
+
+        <div class="start-screen">
+            <h2>Welcome, Adventurer!</h2>
+            <p>
+                Embark on an epic journey where narrative and imagery merge.<br>
+                Your choices shape the story, and every moment can be visualized.<br>
+                The theater awaits...
+            </p>
+            <button onclick="alert('Button works!')">🎲 Start Your Adventure</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('✅ Minimal test page loaded');
+        console.log('If you can see this in console but not the page, there might be a rendering issue');
+    </script>
+</body>
+</html>
