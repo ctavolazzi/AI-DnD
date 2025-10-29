@@ -242,6 +242,12 @@ game_state.json
 # Generated images and assets
 backend/images/
 backend/backups/
+assets/pixellab/
+pixellab_integration/outputs/
+test_results_*/
+game_assets/
+dashboards/generated/
+dashboards/history.json
 
 # Standalone builds
 *-standalone.html

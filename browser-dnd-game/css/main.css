@@ -1,0 +1,249 @@
+/* ============================================
+   MAIN STYLES - Browser D&D Game
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Cinzel:wght@400;600;700&display=swap');
+
+/* CSS Variables for Theme */
+:root {
+    /* Colors - Retro RPG Theme */
+    --bg-deep-brown: #1a1410;
+    --bg-darker-brown: #0f0a08;
+    --panel-parchment: #e8d4b8;
+    --panel-parchment-dark: #d4c4a8;
+    --border-wood: #4a3426;
+    --border-bronze: #8b6914;
+    --primary-gold: #d4af37;
+    --accent-amber: #ffbf00;
+    --text-dark: #2c1810;
+    --text-light: #f5f5dc;
+    --text-cream: #e8d4b8;
+    --accent-brown: #8b4513;
+    --alert-rust: #b7410e;
+    --hp-green: #4caf50;
+    --hp-yellow: #ffeb3b;
+    --hp-red: #f44336;
+    --stat-blue: #2196f3;
+    --quest-complete: #4caf50;
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-xxl: 3rem;
+
+    /* Typography */
+    --font-title: 'Cinzel', serif;
+    --font-body: 'Press Start 2P', monospace;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+    --font-size-xxl: 2rem;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    background: var(--bg-deep-brown);
+    color: var(--text-light);
+    line-height: 1.6;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Screen Management */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.screen.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.fade-in {
+    animation: fadeIn var(--transition-normal) ease-in;
+}
+
+.fade-out {
+    animation: fadeOut var(--transition-normal) ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* Button Base Styles */
+.menu-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border: 2px solid var(--border-wood);
+    background: linear-gradient(145deg, var(--panel-parchment), var(--panel-parchment-dark));
+    color: var(--text-dark);
+    font-family: var(--font-body);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    min-width: 200px;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left var(--transition-normal);
+}
+
+.menu-btn:hover::before {
+    left: 100%;
+}
+
+.menu-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-bronze);
+}
+
+.menu-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.menu-btn.primary {
+    background: linear-gradient(145deg, var(--primary-gold), #b8941f);
+    color: var(--text-dark);
+    font-weight: bold;
+}
+
+.menu-btn.secondary {
+    background: linear-gradient(145deg, var(--accent-amber), #e6ac00);
+    color: var(--text-dark);
+}
+
+.menu-btn.tertiary {
+    background: linear-gradient(145deg, var(--panel-parchment-dark), #c4b498);
+    color: var(--text-dark);
+}
+
+/* Button Icons and Text */
+.btn-icon {
+    font-size: var(--font-size-lg);
+    line-height: 1;
+}
+
+.btn-text {
+    font-size: var(--font-size-sm);
+    line-height: 1;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-light);
+    font-size: var(--font-size-sm);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--border-wood);
+    background: var(--panel-parchment);
+    color: var(--text-dark);
+    font-family: var(--font-body);
+    font-size: var(--font-size-xs);
+    border-radius: 0;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--border-bronze);
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .menu-btn {
+        min-width: 150px;
+        padding: var(--spacing-sm) var(--spacing-lg);
+        font-size: var(--font-size-xs);
+    }
+
+    .btn-icon {
+        font-size: var(--font-size-md);
+    }
+
+    .btn-text {
+        font-size: var(--font-size-xs);
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-btn {
+        min-width: 120px;
+        padding: var(--spacing-sm);
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .btn-text {
+        font-size: 0.6rem;
+    }
+}

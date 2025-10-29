@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI D&D - The Emberpeak Expedition</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50'%20font-size='48'%3E%F0%9F%8F%9B%EF%B8%8F%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/start-screen.css">
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active">
+        <div class="start-container">
+            <!-- Game Title -->
+            <div class="game-title">
+                <h1 class="title-main">The Emberpeak Expedition</h1>
+                <p class="title-subtitle">A D&D Adventure</p>
+            </div>
+
+            <!-- Main Menu -->
+            <div class="main-menu">
+                <button id="new-game-btn" class="menu-btn primary">
+                    <span class="btn-icon">⚔️</span>
+                    <span class="btn-text">New Game</span>
+                </button>
+
+                <button id="load-game-btn" class="menu-btn secondary">
+                    <span class="btn-icon">💾</span>
+                    <span class="btn-text">Load Game</span>
+                </button>
+
+                <button id="settings-btn" class="menu-btn tertiary">
+                    <span class="btn-icon">⚙️</span>
+                    <span class="btn-text">Settings</span>
+                </button>
+            </div>
+
+            <!-- Save Game List (Hidden by default) -->
+            <div id="save-list" class="save-list hidden">
+                <h3>Select Save Game</h3>
+                <div id="save-slots" class="save-slots">
+                    <!-- Save slots will be populated by JavaScript -->
+                </div>
+                <div class="save-actions">
+                    <button id="back-to-menu" class="menu-btn tertiary">Back to Menu</button>
+                </div>
+            </div>
+
+            <!-- Character Creation (Hidden by default) -->
+            <div id="character-creation" class="character-creation hidden">
+                <h3>Create Your Character</h3>
+                <div class="char-form">
+                    <div class="form-group">
+                        <label for="char-name">Character Name:</label>
+                        <input type="text" id="char-name" placeholder="Enter your name" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="char-class">Class:</label>
+                        <select id="char-class">
+                            <option value="warrior">Warrior</option>
+                            <option value="mage">Mage</option>
+                            <option value="rogue">Rogue</option>
+                            <option value="cleric">Cleric</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="char-race">Race:</label>
+                        <select id="char-race">
+                            <option value="human">Human</option>
+                            <option value="elf">Elf</option>
+                            <option value="dwarf">Dwarf</option>
+                            <option value="halfling">Halfling</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="char-actions">
+                    <button id="start-adventure" class="menu-btn primary">Start Adventure</button>
+                    <button id="back-to-menu-char" class="menu-btn tertiary">Back to Menu</button>
+                </div>
+            </div>
+
+            <!-- Game Info -->
+            <div class="game-info">
+                <p class="version">Version 1.0.0</p>
+                <p class="credits">Built with AI & Magic ✨</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen (Hidden by default) -->
+    <div id="game-screen" class="screen">
+        <div class="game-container">
+            <!-- This will be populated by the game engine -->
+            <div class="game-content">
+                <h2>Game Content Goes Here</h2>
+                <p>This is where the actual game will be rendered.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/engine/EventBus.js"></script>
+    <script src="js/engine/StateManager.js"></script>
+    <script src="js/engine/SaveManager.js"></script>
+    <script src="js/engine/GameEngine.js"></script>
+    <script src="js/ui/StartScreen.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelLab Command Center</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --card-border: rgba(255, 255, 255, 0.35);
+      --muted-text: rgba(20, 20, 40, 0.65);
+      --accent: #3b82f6;
+      --danger: #ef4444;
+      --success: #10b981;
+      --shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: #111827;
+    }
+
+    header {
+      padding: 32px;
+      background: rgba(17, 24, 39, 0.65);
+      color: white;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(6px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 0;
+      opacity: 0.85;
+      font-size: 0.95rem;
+    }
+
+    main {
+      padding: 28px;
+      display: grid;
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+    }
+
+    .grid-two {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    }
+
+    label {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted-text);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    textarea,
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      font-size: 1rem;
+      transition: box-shadow 0.2s ease, border 0.2s ease;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 18px 25px rgba(59, 130, 246, 0.25);
+    }
+
+    button.secondary {
+      background: rgba(148, 163, 184, 0.2);
+      color: #111827;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: progress;
+      transform: none;
+      box-shadow: none;
+    }
+
+    button:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(59, 130, 246, 0.35);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .status-success {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .results-grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      margin-top: 18px;
+    }
+
+    .result-card {
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .result-card header {
+      padding: 16px;
+      background: rgba(59, 130, 246, 0.08);
+      color: #1e3a8a;
+      position: static;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .result-body {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-body img {
+      width: 100%;
+      border-radius: 12px;
+      background: rgba(148, 163, 184, 0.18);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--muted-text);
+    }
+
+    .history-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .history-card {
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .history-card h3 {
+      margin: 0 0 4px;
+    }
+
+    .history-meta {
+      display: flex;
+      gap: 18px;
+      font-size: 0.85rem;
+      color: var(--muted-text);
+      flex-wrap: wrap;
+    }
+
+    .history-links {
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .history-links a {
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 12px;
+      background: rgba(59, 130, 246, 0.12);
+      color: #1d4ed8;
+      font-weight: 500;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .empty-state {
+      padding: 18px;
+      border-radius: 12px;
+      background: rgba(254, 215, 170, 0.6);
+      border: 1px dashed rgba(251, 146, 60, 0.5);
+      color: #9a3412;
+      font-size: 0.92rem;
+    }
+
+    .instructions {
+      font-size: 0.85rem;
+      color: var(--muted-text);
+      background: rgba(148, 163, 184, 0.18);
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PixelLab Command Center</h1>
+    <p class="subtitle">Trigger PixelLab workflows, capture new assets, and review historical test runs — all in one place.</p>
+  </header>
+
+  <main>
+    <section class="card" id="function-runner">
+      <h2>PixFlux Character Generation</h2>
+      <p class="instructions">
+        1. Start the actions server: <code>python3 scripts/pixellab_actions.py --serve</code><br />
+        2. Enter a prompt and click <strong>Run Test</strong> to generate a character via the PixelLab PixFlux engine.
+      </p>
+      <div class="grid-two">
+        <div>
+          <label for="prompt">Prompt</label>
+          <textarea id="prompt" rows="4" placeholder="e.g. heroic knight with glowing sword"></textarea>
+        </div>
+        <div>
+          <label for="width">Width (px)</label>
+          <input id="width" type="number" min="16" max="256" value="64" />
+          <label for="height" style="margin-top:16px;">Height (px)</label>
+          <input id="height" type="number" min="16" max="256" value="64" />
+        </div>
+      </div>
+      <div class="controls">
+        <button class="primary" id="run-button">▶ Run Test</button>
+        <button class="secondary" id="clear-button">✕ Clear</button>
+        <span id="status-text" class="subtitle" style="font-size:0.9rem;"></span>
+      </div>
+    </section>
+
+    <section class="card" id="latest-results">
+      <h2>Latest Attempts</h2>
+      <div class="results-grid" id="results-grid">
+        <div class="empty-state" id="empty-state">
+          No runs yet. Generate a character to see results here.
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="history">
+      <h2>Historical Test Runs</h2>
+      <div class="history-list" id="history-list">
+        <div class="empty-state">Run <code>python3 enhanced_test_results_display.py</code> to refresh history data.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const runButton = document.getElementById("run-button");
+    const clearButton = document.getElementById("clear-button");
+    const promptInput = document.getElementById("prompt");
+    const widthInput = document.getElementById("width");
+    const heightInput = document.getElementById("height");
+    const statusText = document.getElementById("status-text");
+    const resultsGrid = document.getElementById("results-grid");
+    const emptyState = document.getElementById("empty-state");
+
+    const SERVER_URL = "http://127.0.0.1:8787";
+
+    const setStatus = (message, tone = "info") => {
+      statusText.textContent = message;
+      statusText.style.color = tone === "error" ? "#dc2626" : tone === "success" ? "#047857" : "#1f2937";
+    };
+
+    const createResultCard = (payload) => {
+      const card = document.createElement("article");
+      card.className = "result-card";
+
+      const header = document.createElement("header");
+      header.innerHTML = `<div class="meta-row"><span>${new Date(payload.timestamp).toLocaleString()}</span><span>${payload.prompt}</span></div>`;
+      card.appendChild(header);
+
+      const body = document.createElement("div");
+      body.className = "result-body";
+
+      const badge = document.createElement("span");
+      badge.className = `status-badge ${payload.status === "success" ? "status-success" : "status-fail"}`;
+      badge.innerHTML = payload.status === "success" ? "✓ Success" : "⚠ Failure";
+      body.appendChild(badge);
+
+      const meta = document.createElement("div");
+      meta.className = "meta-row";
+      meta.innerHTML = `<span>${payload.width}×${payload.height}px</span><span>${payload.duration.toFixed(2)}s</span>`;
+      body.appendChild(meta);
+
+      if (payload.status === "success" && payload.image_data_url) {
+        const img = document.createElement("img");
+        img.src = payload.image_data_url;
+        img.alt = payload.prompt;
+        body.appendChild(img);
+      }
+
+      if (payload.error_message) {
+        const errorBox = document.createElement("div");
+        errorBox.className = "instructions";
+        errorBox.style.color = "#991b1b";
+        errorBox.style.borderColor = "rgba(239, 68, 68, 0.35)";
+        errorBox.textContent = payload.error_message;
+        body.appendChild(errorBox);
+      }
+
+      if (payload.image_path) {
+        const link = document.createElement("a");
+        link.href = payload.image_path;
+        link.textContent = "Open saved file";
+        link.target = "_blank";
+        link.style.fontSize = "0.85rem";
+        body.appendChild(link);
+      }
+
+      card.appendChild(body);
+      return card;
+    };
+
+    const runTest = async () => {
+      const prompt = promptInput.value.trim();
+      const width = Number(widthInput.value) || 64;
+      const height = Number(heightInput.value) || 64;
+
+      if (!prompt) {
+        setStatus("Please enter a prompt before running the test.", "error");
+        return;
+      }
+
+      runButton.disabled = true;
+      setStatus("Generating character...");
+
+      try {
+        const response = await fetch(`${SERVER_URL}/generate-character`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, width, height })
+        });
+
+        if (!response.ok) {
+          const message = await response.text();
+          throw new Error(message || `Server responded with ${response.status}`);
+        }
+
+        const payload = await response.json();
+        if (emptyState) emptyState.remove();
+        resultsGrid.prepend(createResultCard(payload));
+        setStatus("Generation complete.", "success");
+      } catch (error) {
+        console.error(error);
+        const payload = {
+          status: "fail",
+          prompt,
+          width,
+          height,
+          duration: 0,
+          timestamp: new Date().toISOString(),
+          error_message: error.message || "Unknown error"
+        };
+        if (emptyState) emptyState.remove();
+        resultsGrid.prepend(createResultCard(payload));
+        setStatus("Generation failed. Check console for details.", "error");
+      } finally {
+        runButton.disabled = false;
+      }
+    };
+
+    const clearResults = () => {
+      resultsGrid.innerHTML = "";
+      resultsGrid.appendChild(emptyState);
+      setStatus("Results cleared.");
+    };
+
+    runButton.addEventListener("click", runTest);
+    clearButton.addEventListener("click", clearResults);
+
+    const loadHistory = async () => {
+      try {
+        const response = await fetch("history.json", { cache: "no-store" });
+        if (!response.ok) throw new Error("History file not found. Run the generator script to refresh data.");
+
+        const data = await response.json();
+        const list = document.getElementById("history-list");
+        list.innerHTML = "";
+
+        if (!data.runs || data.runs.length === 0) {
+          const note = document.createElement("div");
+          note.className = "empty-state";
+          note.textContent = "No historical runs detected yet.";
+          list.appendChild(note);
+          return;
+        }
+
+        data.runs.forEach(run => {
+          const card = document.createElement("article");
+          card.className = "history-card";
+
+          const header = document.createElement("h3");
+          header.textContent = `${run.label}`;
+          card.appendChild(header);
+
+          const meta = document.createElement("div");
+          meta.className = "history-meta";
+          meta.innerHTML = `
+            <span>Timestamp: ${new Date(run.timestamp).toLocaleString()}</span>
+            <span>Passed: ${run.total_passed}/${run.total_tests}</span>
+            <span>Images: ${run.total_images}</span>
+            <span>Duration: ${run.total_duration.toFixed(2)}s</span>
+          `;
+          card.appendChild(meta);
+
+          if (run.cover_image) {
+            const preview = document.createElement("img");
+            preview.src = run.cover_image;
+            preview.alt = `Preview from ${run.label}`;
+            preview.style.maxWidth = "160px";
+            preview.style.borderRadius = "12px";
+            preview.style.marginTop = "12px";
+            preview.style.border = "1px solid rgba(148,163,184,0.4)";
+            card.appendChild(preview);
+          }
+
+          const links = document.createElement("div");
+          links.className = "history-links";
+
+          if (run.reports && run.reports.length) {
+            run.reports.forEach(report => {
+              const link = document.createElement("a");
+              link.href = report.path;
+              link.textContent = report.label;
+              link.target = "_blank";
+              links.appendChild(link);
+            });
+          }
+
+          card.appendChild(links);
+          document.getElementById("history-list").appendChild(card);
+        });
+      } catch (error) {
+        console.warn("Failed to load history:", error);
+      }
+    };
+
+    loadHistory();
+  </script>
+</body>
+</html>
