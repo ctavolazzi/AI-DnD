@@ -255,6 +255,27 @@
       </li>
     </template>
 
+    <template id="story-window">
+      <div class="story-window-overlay hidden">
+        <div class="story-window">
+          <div class="story-window-content">
+            <div class="story-image-container">
+              <img class="story-image" src="" alt="Story scene" />
+            </div>
+            <div class="story-text-container">
+              <p class="story-text"></p>
+            </div>
+            <div class="story-button-row">
+              <button class="story-button" type="button" data-choice="0"></button>
+              <button class="story-button" type="button" data-choice="1"></button>
+              <button class="story-button" type="button" data-choice="2"></button>
+              <button class="story-button" type="button" data-choice="3"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <script src="app.js" type="module"></script>
   </body>
 </html>
