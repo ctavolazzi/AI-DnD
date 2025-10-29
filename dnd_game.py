@@ -407,6 +407,128 @@ class Character:
         if "stunned" in self.status_effects:
             self.status_effects.remove("stunned")
 
+    # ========== Conversion Methods for Backend Integration ==========
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert Character to dictionary for JSON serialization"""
+        return {
+            "name": self.name,
+            "char_class": self.char_class,
+            "team": self.team,
+            "hp": self.hp,
+            "max_hp": self.max_hp,
+            "mana": self.mana,
+            "max_mana": self.max_mana,
+            "attack": self.attack,
+            "defense": self.defense,
+            "ability_scores": self.ability_scores,
+            "alive": self.alive,
+            "status_effects": self.status_effects,
+            "inventory": self.inventory.to_dict() if hasattr(self.inventory, 'to_dict') else {
+                "items": self.inventory.items if hasattr(self.inventory, 'items') else {},
+                "equipped": self.inventory.equipped if hasattr(self.inventory, 'equipped') else {},
+                "capacity": self.inventory.capacity if hasattr(self.inventory, 'capacity') else 20
+            },
+            "spells": list(self.spellbook.spells.keys()) if hasattr(self.spellbook, 'spells') else [],
+            "proficiency_bonus": self.proficiency_bonus,
+            "skill_proficiencies": self.skill_proficiencies,
+            "abilities": list(self.abilities.keys()) if self.abilities else []
+        }
+
+    def to_db_dict(self, char_id: str, session_id: str) -> Dict[str, Any]:
+        """Convert Character to dictionary compatible with backend Character (SQLAlchemy) model"""
+        inventory_dict = self.inventory.to_dict() if hasattr(self.inventory, 'to_dict') else {
+            "items": self.inventory.items if hasattr(self.inventory, 'items') else {},
+            "equipped": self.inventory.equipped if hasattr(self.inventory, 'equipped') else {},
+            "capacity": self.inventory.capacity if hasattr(self.inventory, 'capacity') else 20
+        }
+
+        spells_list = list(self.spellbook.spells.keys()) if hasattr(self.spellbook, 'spells') else []
+
+        return {
+            "id": char_id,
+            "session_id": session_id,
+            "name": self.name,
+            "char_class": self.char_class,
+            "team": self.team or "players",
+            "hp": self.hp,
+            "max_hp": self.max_hp,
+            "mana": self.mana,
+            "max_mana": self.max_mana,
+            "attack": self.attack,
+            "defense": self.defense,
+            "ability_scores": self.ability_scores,
+            "alive": self.alive,
+            "current_location_id": None,  # Can be set from context
+            "status_effects": self.status_effects,
+            "inventory": inventory_dict,
+            "spells": spells_list,
+            "proficiency_bonus": self.proficiency_bonus,
+            "skill_proficiencies": self.skill_proficiencies,
+            "bio": None  # Can be set if available
+        }
+
+    @classmethod
+    def from_db_dict(cls, data: Dict[str, Any]) -> 'Character':
+        """Create Character instance from backend Character model dictionary"""
+        char = cls(
+            name=data["name"],
+            char_class=data["char_class"],
+            hp=data.get("hp", data.get("max_hp", 30)),
+            max_hp=data.get("max_hp", 30),
+            attack=data.get("attack", 10),
+            defense=data.get("defense", 5)
+        )
+
+        # Set additional fields
+        char.team = data.get("team")
+        char.mana = data.get("mana", 0)
+        char.max_mana = data.get("max_mana", 0)
+        char.ability_scores = data.get("ability_scores", {})
+        char.alive = data.get("alive", True)
+        char.status_effects = data.get("status_effects", [])
+        char.proficiency_bonus = data.get("proficiency_bonus", 2)
+        char.skill_proficiencies = data.get("skill_proficiencies", [])
+
+        # Restore inventory if provided
+        if "inventory" in data and data["inventory"]:
+            inv_data = data["inventory"]
+            if isinstance(inv_data, dict):
+                # First add items
+                if "items" in inv_data and isinstance(inv_data["items"], dict):
+                    for item_id, quantity in inv_data["items"].items():
+                        char.inventory.add_item(item_id, quantity)
+                # Then equip items (must exist in inventory first)
+                # equipped is {slot: item_id} mapping
+                if "equipped" in inv_data and isinstance(inv_data["equipped"], dict):
+                    for slot, item_id in inv_data["equipped"].items():
+                        # item_id should be a string, ensure it exists
+                        if item_id and isinstance(item_id, str):
+                            try:
+                                if hasattr(char.inventory, 'has_item') and char.inventory.has_item(item_id, 1):
+                                    char.inventory.equip(item_id)
+                            except (AttributeError, TypeError):
+                                # If equip fails, skip - item might not be compatible
+                                pass
+
+        # Restore spells if provided
+        if "spells" in data and data["spells"]:
+            for spell_id in data["spells"]:
+                char.spellbook.learn_spell(spell_id)
+
+        return char
+
+    def to_pydantic(self) -> Dict[str, Any]:
+        """Convert Character to dictionary compatible with session_service CharacterModel"""
+        from session_service.schemas import CharacterModel
+        return {
+            "name": self.name,
+            "char_class": self.char_class,
+            "hp": self.hp,
+            "max_hp": self.max_hp,
+            "alive": self.alive
+        }
+
 class DnDGame:
     def __init__(self, auto_create_characters: bool = True, model: str = "mistral"):
         logger.info("Initializing DnDGame")

@@ -1,4 +1,34 @@
+"""
+DEPRECATED: This Character class is deprecated and should not be used.
+
+Use the unified Character class from dnd_game.py instead:
+    from dnd_game import Character
+
+This legacy class is kept for historical reference only.
+It may be removed in a future version.
+
+Migration Guide:
+    Old: from legacy.character import Character
+    New: from dnd_game import Character
+    
+    The new Character class includes:
+    - Full D&D combat mechanics
+    - Ability system integration
+    - Status effects and logging
+    - Backend persistence methods (to_db_dict, from_db_dict)
+    - Pydantic model conversion (to_pydantic)
+
+Last Updated: 2025-10-29
+"""
+
 import json
+import warnings
+
+warnings.warn(
+    "legacy.character.Character is deprecated. Use dnd_game.Character instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 class Character:
     DEFAULT_CONFIG = {
