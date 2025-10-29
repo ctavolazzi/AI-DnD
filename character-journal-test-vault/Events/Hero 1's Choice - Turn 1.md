@@ -1,20 +1,20 @@
 ---
 name: Hero 1's Choice - Turn 1
 type: Player Choice
-timestamp: 2025-10-18 07:46:46
-location: Starting Tavern
+timestamp: 2025-10-27 12:33:19
+location: thornhaven_tavern
 ---
 
 # Hero 1's Choice - Turn 1
 
-*2025-10-18 07:46:46 at [[Starting Tavern]]*
+*2025-10-27 12:33:19 at [[thornhaven_tavern]]*
 
 ## Summary
 Hero 1 makes a decision
 
 ## Detailed Description
-Choice: Investigate the surroundings carefully
-Outcome: Uncovered hidden symbols, gaining valuable insight into ancient ritual's dark purpose and potential dangers lurking nearby.
+Choice: Seek divine guidance about the situation
+Outcome: 
 
 ## Participants
 - [[Hero 1]]

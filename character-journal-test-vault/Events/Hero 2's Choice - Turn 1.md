@@ -1,20 +1,20 @@
 ---
 name: Hero 2's Choice - Turn 1
 type: Player Choice
-timestamp: 2025-10-18 07:46:56
-location: Starting Tavern
+timestamp: 2025-10-27 12:33:19
+location: thornhaven_tavern
 ---
 
 # Hero 2's Choice - Turn 1
 
-*2025-10-18 07:46:56 at [[Starting Tavern]]*
+*2025-10-27 12:33:19 at [[thornhaven_tavern]]*
 
 ## Summary
 Hero 2 makes a decision
 
 ## Detailed Description
-Choice: Investigate the surroundings carefully
-Outcome: A faint whispering echoes through the air, distracting Hero 2's concentration momentarily.
+Choice: Try to communicate with any nearby beings
+Outcome: 
 
 ## Participants
 - [[Hero 2]]

@@ -1,19 +1,19 @@
 ---
 name: Skill Check: Hero 1 - CHA
 type: Skill Check
-timestamp: 2025-10-18 07:48:22
+timestamp: 2025-10-27 12:33:34
 location: Unknown Location
 ---
 
 # Skill Check: Hero 1 - CHA
 
-*2025-10-18 07:48:22 at [[Unknown Location]]*
+*2025-10-27 12:33:34 at [[Unknown Location]]*
 
 ## Summary
 Hero 1 makes a CHA check
 
 ## Detailed Description
-Hero 1 rolled 7 vs DC 10: FAILURE
+Hero 1 rolled 16 vs DC 10: SUCCESS
 
 ## Participants
 - [[Hero 1]]

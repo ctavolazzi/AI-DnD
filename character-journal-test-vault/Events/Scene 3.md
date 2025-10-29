@@ -1,19 +1,19 @@
 ---
 name: Scene 3
 type: Scene
-timestamp: 2025-10-18 07:48:21
-location: Starting Tavern
+timestamp: 2025-10-27 12:33:22
+location: thornhaven_tavern
 ---
 
 # Scene 3
 
-*2025-10-18 07:48:21 at [[Starting Tavern]]*
+*2025-10-27 12:33:22 at [[thornhaven_tavern]]*
 
 ## Summary
 A new scene unfolds
 
 ## Detailed Description
-Dark wooden beams creak, patrons murmur in the corner of the Red Griffin.
+
 
 ## Participants
 - [[Hero 1]]

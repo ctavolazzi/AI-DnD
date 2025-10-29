@@ -1,20 +1,20 @@
 ---
 name: Hero 1's Choice - Turn 2
 type: Player Choice
-timestamp: 2025-10-18 07:47:36
-location: Starting Tavern
+timestamp: 2025-10-27 12:33:21
+location: thornhaven_tavern
 ---
 
 # Hero 1's Choice - Turn 2
 
-*2025-10-18 07:47:36 at [[Starting Tavern]]*
+*2025-10-27 12:33:21 at [[thornhaven_tavern]]*
 
 ## Summary
 Hero 1 makes a decision
 
 ## Detailed Description
-Choice: Try to communicate with any nearby beings
-Outcome: The hero's words fall flat, met with only the eerie silence of the abandoned temple.
+Choice: Investigate the surroundings carefully
+Outcome: 
 
 ## Participants
 - [[Hero 1]]

@@ -2,22 +2,22 @@
 name: Hero 1
 class: Cleric
 status: Active
-hp: 27
-max_hp: 27
-attack: 6
-defense: 2
+hp: 33
+max_hp: 33
+attack: 15
+defense: 4
 team: Player
 ---
 
 # Hero 1
 
-> Active - HP: 27/27
+> Active - HP: 33/33
 
 ## Character Stats
 - **Class**: Cleric
-- **HP**: 27/27
-- **Attack**: 6
-- **Defense**: 2
+- **HP**: 33/33
+- **Attack**: 15
+- **Defense**: 4
 - **Status**: Active
 
 ## Abilities

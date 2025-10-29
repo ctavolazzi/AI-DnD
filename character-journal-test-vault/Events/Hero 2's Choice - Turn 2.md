@@ -1,20 +1,20 @@
 ---
 name: Hero 2's Choice - Turn 2
 type: Player Choice
-timestamp: 2025-10-18 07:47:58
-location: Starting Tavern
+timestamp: 2025-10-27 12:33:21
+location: thornhaven_tavern
 ---
 
 # Hero 2's Choice - Turn 2
 
-*2025-10-18 07:47:58 at [[Starting Tavern]]*
+*2025-10-27 12:33:21 at [[thornhaven_tavern]]*
 
 ## Summary
 Hero 2 makes a decision
 
 ## Detailed Description
-Choice: Seek divine guidance about the situation
-Outcome: A dark, swirling mist obscures Hero 2's vision, shattering their spiritual connection utterly.
+Choice: Try to communicate with any nearby beings
+Outcome: 
 
 ## Participants
 - [[Hero 2]]

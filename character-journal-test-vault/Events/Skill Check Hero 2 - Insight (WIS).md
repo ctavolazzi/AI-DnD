@@ -1,19 +1,19 @@
 ---
 name: Skill Check: Hero 2 - Insight (WIS)
 type: Skill Check
-timestamp: 2025-10-18 07:47:36
+timestamp: 2025-10-27 12:31:13
 location: Unknown Location
 ---
 
 # Skill Check: Hero 2 - Insight (WIS)
 
-*2025-10-18 07:47:36 at [[Unknown Location]]*
+*2025-10-27 12:31:13 at [[Unknown Location]]*
 
 ## Summary
 Hero 2 makes a Insight (WIS) check
 
 ## Detailed Description
-Hero 2 rolled 8 vs DC 11: FAILURE
+Hero 2 rolled 11 vs DC 11: SUCCESS
 
 ## Participants
 - [[Hero 2]]

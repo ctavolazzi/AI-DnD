@@ -2,15 +2,15 @@
 name: Main Quest
 difficulty: Medium
 status: Active
-started: 2025-10-18 07:45:25
+started: 2025-10-27 12:33:19
 ---
 
 # Main Quest
 
-> "The Last Stand of Eldrador: Defend the Wizard's Spire against the Dark Legion."
+> 
 
 ## Overview
-A grand adventure awaits: "The Last Stand of Eldrador: Defend the Wizard's Spire against the Dark Legion."
+A grand adventure awaits: 
 
 ## Status: Active
 
@@ -24,7 +24,7 @@ A grand adventure awaits: "The Last Stand of Eldrador: Defend the Wizard's Spire
 - [[Hero 2]]
 
 ## Locations
-- [[Starting Tavern]]
+- [[thornhaven_tavern]]
 
 ## Related Items
 - No items associated with this quest

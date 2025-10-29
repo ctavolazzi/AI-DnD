@@ -1,6 +1,6 @@
 ---
 character: Hero 1
-date_created: 2025-10-18 07:46:01
+date_created: 2025-10-27 12:33:19
 class: 
 race: 
 ---
@@ -8,7 +8,7 @@ race:
 # Hero 1's Journal
 
 ## Journal Entries
-### 2025-10-18 07:46:23
+### 2025-10-27 12:33:19
 
 Dear Journal,
 
@@ -16,7 +16,7 @@ Today I was involved in an event known as 'Hero 1's Introduction'.
 
 Hero 1 begins the adventure.
 
-This took place at Starting Tavern. I've been here before and it feels familiar. 
+This took place at thornhaven_tavern. I've been here before and it feels familiar. 
 
 This event has given me much to think about. I should reflect on what happened and what it means for my future.
 
@@ -25,7 +25,7 @@ This relates to my quest: Main Quest. I should keep this in mind as I proceed.
 Until next time,
 Hero 1
 
-### 2025-10-18 07:46:01
+### 2025-10-27 12:33:19
 
 I am Hero 1.
 
@@ -37,13 +37,13 @@ My journey begins now.
 *No journal entries yet*
 
 ## Internal Thoughts
-### 2025-10-18 07:46:23
+### 2025-10-27 12:33:19
 
 *Internal thoughts about Hero 1's Introduction*
 
 I'm not entirely sure how to feel about what just happened. Events like these can be difficult to process immediately.
 
-Being back at Starting Tavern brings back memories. Places hold power over us in ways we don't always acknowledge.
+Being back at thornhaven_tavern brings back memories. Places hold power over us in ways we don't always acknowledge.
 
 Questions that linger in my mind:
 
