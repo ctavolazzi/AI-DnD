@@ -4,6 +4,10 @@
 
 This integration provides a fully-featured Python client for PixelLab's API, enabling you to generate characters, animations, tilesets, and complete game assets directly within the AI-DnD project.
 
+## 🔒 Security Notice
+
+**Never commit API keys to version control!** This integration uses environment variables for secure credential management. See [PIXELLAB_API_SETUP.md](../PIXELLAB_API_SETUP.md) for detailed setup instructions.
+
 ## 🚀 Quick Start
 
 ### 1. Get Your API Key
@@ -13,19 +17,31 @@ Visit [PixelLab](https://www.pixellab.ai/vibe-coding) to:
 - Get your API token
 - Check your credit balance
 
-### 2. Install Dependencies
+### 2. Set Up Your API Key
+
+**Important:** Use environment variables, not hardcoded keys!
+
+```bash
+export PIXELLAB_API_KEY="your-api-key-here"
+```
+
+For detailed setup instructions, see [PIXELLAB_API_SETUP.md](../PIXELLAB_API_SETUP.md)
+
+### 3. Install Dependencies
 
 ```bash
 pip install pixellab pillow
 ```
 
-### 3. Run Your First Example
+### 4. Run Your First Example
 
 ```python
+import os
 from pixellab_integration.pixellab_client import PixelLabClient
 
-# Initialize client
-client = PixelLabClient(api_key="your-api-key-here")
+# Initialize client (reads from PIXELLAB_API_KEY environment variable)
+api_key = os.getenv("PIXELLAB_API_KEY")
+client = PixelLabClient(api_key=api_key)
 
 # Generate a character
 wizard = client.generate_character(

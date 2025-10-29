@@ -51,13 +51,13 @@ git status
 - [x] Demo API key in .mcp.json documented as requiring replacement
 - [x] Test suite API key documented as demo/invalid
 
-**Note:** The API key `b4567140-3203-42ec-be0e-3b995f61dc93` appears in:
-- `.mcp.json` - MCP configuration (users must replace)
-- `tests/pixellab_api_test/test_pixellab_api.py` - Test file (documented as demo)
-- `tests/pixellab_api_test/DIAGNOSTIC_REPORT.md` - Documentation only
-
-This key was provided in the original request and returns 403 (documented as demo/invalid).
-README now clearly instructs users to get their own API key.
+**✅ SECURITY UPDATE (2025-10-29):** All hardcoded API keys have been removed and replaced with environment variables.
+- `.mcp.json` - Now uses `${PIXELLAB_API_KEY}` environment variable
+- `tests/pixellab_api_test/test_pixellab_api.py` - Now reads from `PIXELLAB_API_KEY` env var
+- All example files - Now read from `PIXELLAB_API_KEY` env var
+- Created `.env.example` and `.mcp.json.example` templates
+- Added comprehensive security documentation in `PIXELLAB_API_SETUP.md`
+- Updated `.gitignore` to protect `.mcp.json` and `.env` files
 
 ### ✅ Package Structure
 

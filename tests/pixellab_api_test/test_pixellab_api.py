@@ -7,6 +7,7 @@ Comprehensive testing of PixelLab API integration with detailed logging and erro
 import logging
 import sys
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
@@ -18,7 +19,13 @@ from PIL import Image
 
 
 # Configuration
-API_KEY = "b4567140-3203-42ec-be0e-3b995f61dc93"
+API_KEY = os.getenv("PIXELLAB_API_KEY")
+if not API_KEY:
+    raise ValueError(
+        "PIXELLAB_API_KEY environment variable not set.\n"
+        "Get your API key from https://www.pixellab.ai/vibe-coding\n"
+        "Then set it: export PIXELLAB_API_KEY=your-api-key"
+    )
 TEST_DIR = Path(__file__).parent
 OUTPUTS_DIR = TEST_DIR / "outputs"
 LOGS_DIR = TEST_DIR / "logs"

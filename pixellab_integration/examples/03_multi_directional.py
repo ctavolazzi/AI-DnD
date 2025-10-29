@@ -5,6 +5,7 @@ Create characters facing different directions for top-down games
 """
 
 import sys
+import os
 sys.path.insert(0, '..')
 
 from pixellab_client import PixelLabClient, create_8_directional_character
@@ -14,7 +15,13 @@ logging.basicConfig(level=logging.INFO)
 
 
 def main():
-    API_KEY = "your-api-key-here"
+    API_KEY = os.getenv("PIXELLAB_API_KEY")
+    if not API_KEY:
+        raise ValueError(
+            "PIXELLAB_API_KEY environment variable not set.\n"
+            "Get your API key from https://www.pixellab.ai/vibe-coding\n"
+            "Then set it: export PIXELLAB_API_KEY=your-api-key"
+        )
     client = PixelLabClient(
         api_key=API_KEY,
         auto_save=True,
