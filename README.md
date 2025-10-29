@@ -48,9 +48,57 @@ AI-DnD is designed to integrate seamlessly with **Obsidian**, allowing it to gen
 5. **Navigate the Campaign in Obsidian**  
    - Open the generated Markdown files in Obsidian to explore the AI-generated world, review past events, and track character development over time.  
 
-## PixelLab MCP Integration
+## PixelLab Integration
 
-AI-DnD now integrates with **PixelLab's Model Context Protocol (MCP)** server, enabling AI-powered pixel art generation directly within the development workflow. This allows Claude Code to generate game assets on-the-fly.
+AI-DnD now includes **complete PixelLab integration** with both MCP and direct API access, enabling AI-powered pixel art generation for game development.
+
+### 🚀 Quick Start
+
+1. Get your API key from [pixellab.ai/vibe-coding](https://www.pixellab.ai/vibe-coding)
+2. Update the API key in example files
+3. Install and run:
+
+```bash
+cd pixellab_integration
+pip install -r requirements.txt
+# Edit examples/01_basic_character_generation.py and add your API key
+python examples/01_basic_character_generation.py
+```
+
+See [`pixellab_integration/QUICKSTART.md`](pixellab_integration/QUICKSTART.md) for detailed setup.
+
+### 🗺️ Map Generation
+
+NEW! Comprehensive map and tileset generation test suite:
+
+```bash
+cd tests/pixellab_map_test
+python test_map_generation.py
+```
+
+**Features:**
+- Top-down terrain tilesets (grass, water, stone, etc.)
+- Isometric tiles for strategy games
+- 2D platformer tiles and levels
+- Complete map composition (8x8 to 16x10 tiles)
+- Dungeon generation (walls, doors, treasures)
+- Example map builder with RPG overworld, dungeons, platformer levels
+
+See [`tests/pixellab_map_test/README.md`](tests/pixellab_map_test/README.md) for complete documentation.
+
+### Full-Featured Python Client
+
+The `pixellab_integration/` directory provides a complete Python client with:
+- Character generation with customizable styles
+- Animation creation (walk, run, attack, etc.)
+- Multi-directional sprites (4 and 8 directions)
+- Rotation and view changes
+- Sprite sheet generation
+- Game-ready asset workflows
+
+### MCP Integration for Claude Code
+
+AI-DnD also integrates with **PixelLab's Model Context Protocol (MCP)** server, enabling Claude Code to generate game assets through natural language.
 
 ### Available Tools
 
@@ -85,10 +133,11 @@ The PixelLab MCP provides the following capabilities:
 
 The MCP server is configured in `.mcp.json` at the project root. To use PixelLab tools:
 
-1. Ensure you have Claude Code installed
-2. The `.mcp.json` file is already configured with the PixelLab API key
-3. Restart Claude Code to load the MCP server
-4. Use natural language to request asset generation (e.g., "Create a pixel art wizard character with 8 directions")
+1. Get your API key from [pixellab.ai/vibe-coding](https://www.pixellab.ai/vibe-coding)
+2. Update the API key in `.mcp.json`
+3. Ensure you have Claude Code installed
+4. Restart Claude Code to load the MCP server
+5. Use natural language to request asset generation (e.g., "Create a pixel art wizard character with 8 directions")
 
 ### Use Cases
 
