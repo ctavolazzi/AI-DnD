@@ -11,6 +11,7 @@ from dataclasses import dataclass, asdict
 from mcp.server import Server
 from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
+from mcp.server.lowlevel.server import NotificationOptions
 from mcp.types import (
     Resource, Tool, TextContent, ImageContent, EmbeddedResource,
     CallToolRequest, CallToolResult, ListResourcesRequest, ListResourcesResult,
@@ -502,8 +503,8 @@ class DecisionMatrixMCP:
                     server_name="decision-matrix",
                     server_version="1.0.0",
                     capabilities=self.server.get_capabilities(
-                        notification_options=None,
-                        experimental_capabilities=None
+                        notification_options=NotificationOptions(),
+                        experimental_capabilities={}
                     )
                 )
             )

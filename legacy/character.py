@@ -10,7 +10,7 @@ It may be removed in a future version.
 Migration Guide:
     Old: from legacy.character import Character
     New: from dnd_game import Character
-    
+
     The new Character class includes:
     - Full D&D combat mechanics
     - Ability system integration

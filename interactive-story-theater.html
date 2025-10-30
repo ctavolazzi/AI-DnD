@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📖 Interactive Story Theater - Living D&D Adventures</title>
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.0.0/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-brown: #8B4513;
+            --dark-brown: #3e2723;
+            --light-brown: #d2691e;
+            --cream: #F5DEB3;
+            --gold: #FFD700;
+            --text-dark: #2c1810;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #2c1810 0%, #1a0f08 100%);
+            color: var(--text-dark);
+            line-height: 1.8;
+        }
+
+        /* Banner Image Section */
+        .banner-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--dark-brown) 0%, var(--primary-brown) 100%);
+            border-bottom: 4px solid var(--gold);
+        }
+
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .banner-title {
+            font-size: 4em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            margin-bottom: 20px;
+        }
+
+        .banner-subtitle {
+            font-size: 1.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-style: italic;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 0;
+            max-width: 1800px;
+            margin: 0 auto;
+            min-height: calc(100vh - 400px);
+        }
+
+        /* Story Content Area */
+        .story-area {
+            background: var(--cream);
+            padding: 60px 80px;
+            overflow-y: auto;
+        }
+
+        .story-header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid var(--primary-brown);
+        }
+
+        .story-header h1 {
+            font-size: 3em;
+            color: var(--dark-brown);
+            margin-bottom: 20px;
+        }
+
+        .story-header .meta {
+            font-size: 1.1em;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Chapter Styling */
+        .chapter {
+            margin-bottom: 80px;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chapter-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-brown);
+        }
+
+        .chapter-number {
+            font-size: 2.5em;
+            color: var(--gold);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            min-width: 100px;
+        }
+
+        .chapter-title {
+            font-size: 2em;
+            color: var(--dark-brown);
+            flex: 1;
+        }
+
+        .chapter-content {
+            font-size: 1.2em;
+            line-height: 1.9;
+            color: var(--text-dark);
+            text-align: justify;
+        }
+
+        .chapter-content p {
+            margin-bottom: 1.5em;
+        }
+
+        /* Peppered Images */
+        .story-image {
+            margin: 40px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .story-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .image-caption {
+            background: var(--dark-brown);
+            color: var(--gold);
+            padding: 15px 20px;
+            font-style: italic;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        /* Chat Sidebar */
+        .chat-sidebar {
+            background: linear-gradient(180deg, var(--dark-brown) 0%, #1a0f08 100%);
+            border-left: 4px solid var(--gold);
+            display: flex;
+            flex-direction: column;
+            color: white;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .chat-header {
+            padding: 25px;
+            background: var(--primary-brown);
+            border-bottom: 2px solid var(--gold);
+            text-align: center;
+        }
+
+        .chat-header h2 {
+            font-size: 1.8em;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        .chat-subtitle {
+            font-size: 0.9em;
+            color: var(--cream);
+            opacity: 0.8;
+        }
+
+        .chat-history {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-message {
+            padding: 15px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .chat-message.user {
+            background: rgba(255, 215, 0, 0.2);
+            border-left: 4px solid var(--gold);
+            align-self: flex-end;
+            max-width: 85%;
+        }
+
+        .chat-message.assistant {
+            background: rgba(139, 69, 19, 0.3);
+            border-left: 4px solid var(--light-brown);
+            align-self: flex-start;
+            max-width: 85%;
+        }
+
+        .chat-message.system {
+            background: rgba(100, 100, 100, 0.2);
+            border-left: 4px solid #666;
+            font-style: italic;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .message-content {
+            margin-bottom: 8px;
+        }
+
+        .message-time {
+            font-size: 0.75em;
+            opacity: 0.6;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 2px solid var(--gold);
+        }
+
+        .chat-input-area textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--primary-brown);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Georgia', serif;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 80px;
+            margin-bottom: 15px;
+        }
+
+        .chat-input-area textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .chat-input-area button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--gold) 0%, #FFA500 100%);
+            border: none;
+            border-radius: 8px;
+            color: var(--dark-brown);
+            font-family: 'Georgia', serif;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input-area button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .chat-input-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading States */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .generating-indicator {
+            text-align: center;
+            padding: 30px;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* Initial Setup Screen */
+        .setup-screen {
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .setup-screen h2 {
+            font-size: 2.5em;
+            color: var(--dark-brown);
+            margin-bottom: 30px;
+        }
+
+        .setup-form {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .setup-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--dark-brown);
+            text-align: left;
+        }
+
+        .setup-form input,
+        .setup-form select,
+        .setup-form textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid var(--primary-brown);
+            border-radius: 6px;
+            font-family: 'Georgia', serif;
+            font-size: 1em;
+        }
+
+        .setup-form button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary-brown) 0%, var(--light-brown) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .setup-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-sidebar {
+                position: relative;
+                height: auto;
+                min-height: 600px;
+            }
+
+            .story-area {
+                padding: 40px 30px;
+            }
+        }
+
+        /* Hidden utility */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner Image Section -->
+    <div class="banner-container" id="bannerContainer">
+        <img id="bannerImage" class="banner-image" style="display: none;" alt="Story Banner">
+        <div class="banner-overlay">
+            <h1 class="banner-title">📖 Interactive Story Theater</h1>
+            <p class="banner-subtitle">Where Your Choices Shape Living Adventures</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Story Content Area -->
+        <div class="story-area" id="storyArea">
+            <!-- Setup Screen (shown initially) -->
+            <div class="setup-screen" id="setupScreen">
+                <h2>Begin Your Adventure</h2>
+                <div class="setup-form">
+                    <label for="characterName">⚔️ Your Character Name:</label>
+                    <input type="text" id="characterName" placeholder="Enter your hero's name..." value="Thorin">
+
+                    <label for="storyPrompt">📖 What story shall we tell?</label>
+                    <textarea id="storyPrompt" rows="4" placeholder="Describe the adventure you want to experience... (e.g., 'A quest to find a lost artifact in an ancient temple')"></textarea>
+
+                    <button onclick="startStory()">🎲 Begin Your Story</button>
+                </div>
+            </div>
+
+            <!-- Story Content (hidden initially) -->
+            <div class="story-content" id="storyContent" style="display: none;">
+                <div class="story-header">
+                    <h1 id="storyTitle">Your Adventure Awaits</h1>
+                    <div class="meta">
+                        <span id="storyMeta">A tale of courage and destiny</span>
+                    </div>
+                </div>
+
+                <!-- Chapters will be appended here -->
+                <div id="chaptersContainer"></div>
+            </div>
+        </div>
+
+        <!-- Chat Sidebar -->
+        <div class="chat-sidebar">
+            <div class="chat-header">
+                <h2>💬 Story Continuation</h2>
+                <p class="chat-subtitle">Guide the narrative with your choices</p>
+            </div>
+
+            <div class="chat-history" id="chatHistory">
+                <div class="chat-message system">
+                    <div class="message-content">Welcome! Start your adventure to begin chatting...</div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <textarea id="chatInput" placeholder="What do you do next? Describe your action..." disabled></textarea>
+                <button id="sendButton" onclick="sendChatMessage()" disabled>
+                    📜 Continue Story
+                </button>
+                <button id="saveButton" onclick="saveStoryToObsidian()" disabled style="margin-top: 10px; background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);">
+                    💾 Save to Obsidian
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // 📖 INTERACTIVE STORY THEATER - Core System
+        // ═══════════════════════════════════════════════════════════════
+
+        console.clear();
+        console.log('%c╔═══════════════════════════════════════════════════════════╗', 'color: #8B4513; font-weight: bold;');
+        console.log('%c║  📖  INTERACTIVE STORY THEATER                          ║', 'color: #8B4513; font-weight: bold;');
+        console.log('%c║  Living D&D Adventures with AI                          ║', 'color: #8B4513; font-weight: bold;');
+        console.log('%c╚═══════════════════════════════════════════════════════════╝', 'color: #8B4513; font-weight: bold;');
+
+        // Configuration
+        const BACKEND_URL = 'http://localhost:5002';
+        const IMAGE_SERVER_URL = 'http://localhost:5000';
+        const PIXELLAB_URL = 'http://localhost:5001';
+
+        // State
+        let sessionId = null;
+        let chapterCount = 0;
+        let storyContext = [];
+        let chapters = []; // Track all chapters for saving
+        let storyTitle = 'Untitled Adventure';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ Story Theater initialized');
+            checkBackendConnection();
+        });
+
+        // Check backend connection
+        async function checkBackendConnection() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`);
+                const data = await response.json();
+                console.log('✅ Backend connected:', data);
+                addSystemMessage('System ready. All services connected.');
+            } catch (error) {
+                console.error('❌ Backend connection failed:', error);
+                addSystemMessage('⚠️ Backend offline. Some features may not work.');
+            }
+        }
+
+        // Start the story
+        async function startStory() {
+            const characterName = document.getElementById('characterName').value.trim();
+            const storyPrompt = document.getElementById('storyPrompt').value.trim();
+
+            if (!characterName) {
+                alert('Please enter a character name!');
+                return;
+            }
+
+            console.log('🎬 Starting story:', { characterName, storyPrompt });
+            addSystemMessage('🎬 Generating your adventure...');
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/start-adventure`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        character_name: characterName,
+                        story_prompt: storyPrompt || undefined,
+                        model: 'gemini'
+                    })
+                });
+
+                const data = await response.json();
+                console.log('✅ Adventure started:', data);
+
+                sessionId = data.session_id;
+                storyTitle = data.quest || storyPrompt || 'Your Adventure';
+
+                // Hide setup, show story
+                document.getElementById('setupScreen').style.display = 'none';
+                document.getElementById('storyContent').style.display = 'block';
+
+                // Update story title
+                document.getElementById('storyTitle').textContent = storyTitle;
+
+                // Enable chat and save button
+                document.getElementById('chatInput').disabled = false;
+                document.getElementById('sendButton').disabled = false;
+                document.getElementById('saveButton').disabled = false;
+
+                // Generate banner image
+                await generateBannerImage(data.quest || storyPrompt || 'epic fantasy adventure');
+
+                // Add first chapter with scene extraction
+                if (data.first_scene) {
+                    // Extract scenes from the first chapter
+                    const firstChapterResponse = await fetch(`${BACKEND_URL}/generate-chapter`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            session_id: sessionId,
+                            player_input: 'begin the adventure',
+                            story_context: []
+                        })
+                    });
+
+                    const chapterData = await firstChapterResponse.json();
+
+                    if (chapterData.success) {
+                        await addChapterWithScenes(
+                            'The Journey Begins',
+                            chapterData.chapter.content,
+                            chapterData.scenes || []
+                        );
+                        storyContext.push(chapterData.chapter.content);
+                    } else {
+                        // Fallback to simple chapter
+                        await addChapter('The Journey Begins', data.first_scene.narrative);
+                        storyContext.push(data.first_scene.narrative);
+                    }
+                }
+
+                addSystemMessage('✅ Adventure started! What do you do?');
+
+            } catch (error) {
+                console.error('❌ Error starting story:', error);
+                alert('Failed to start story. Check console for details.');
+            }
+        }
+
+        // Generate banner image
+        async function generateBannerImage(prompt) {
+            console.log('🎨 Generating banner image...');
+
+            try {
+                const response = await fetch(`${IMAGE_SERVER_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: `Epic fantasy banner image: ${prompt}, cinematic, wide angle, dramatic lighting`,
+                        aspect_ratio: '16:9'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.image) {
+                    const bannerImg = document.getElementById('bannerImage');
+                    bannerImg.src = `data:image/png;base64,${data.image}`;
+                    bannerImg.style.display = 'block';
+                    console.log('✅ Banner image generated');
+                }
+            } catch (error) {
+                console.warn('⚠️ Banner generation failed:', error);
+            }
+        }
+
+        // Add a chapter to the story
+        async function addChapter(title, content, generateImages = true) {
+            chapterCount++;
+
+            const chaptersContainer = document.getElementById('chaptersContainer');
+            const chapterDiv = document.createElement('div');
+            chapterDiv.className = 'chapter';
+            chapterDiv.id = `chapter-${chapterCount}`;
+
+            // Render markdown
+            const renderedContent = typeof marked !== 'undefined' ? marked.parse(content) : content;
+
+            chapterDiv.innerHTML = `
+                <div class="chapter-header">
+                    <div class="chapter-number">Chapter ${chapterCount}</div>
+                    <div class="chapter-title">${title}</div>
+                </div>
+                <div class="chapter-content">
+                    ${renderedContent}
+                </div>
+            `;
+
+            chaptersContainer.appendChild(chapterDiv);
+
+            // Scroll to new chapter
+            chapterDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Generate images for scenes (if enabled)
+            if (generateImages) {
+                await generateChapterImages(chapterCount, content);
+            }
+
+            console.log(`✅ Chapter ${chapterCount} added:`, title);
+        }
+
+        // Add chapter with intelligent scene-based images
+        async function addChapterWithScenes(title, content, scenes) {
+            chapterCount++;
+
+            // Track chapter for saving
+            chapters.push({
+                number: chapterCount,
+                title: title,
+                content: content
+            });
+
+            const chaptersContainer = document.getElementById('chaptersContainer');
+            const chapterDiv = document.createElement('div');
+            chapterDiv.className = 'chapter';
+            chapterDiv.id = `chapter-${chapterCount}`;
+
+            // Render markdown
+            const renderedContent = typeof marked !== 'undefined' ? marked.parse(content) : content;
+
+            chapterDiv.innerHTML = `
+                <div class="chapter-header">
+                    <div class="chapter-number">Chapter ${chapterCount}</div>
+                    <div class="chapter-title">${title}</div>
+                </div>
+                <div class="chapter-content" id="chapter-content-${chapterCount}">
+                    ${renderedContent}
+                </div>
+            `;
+
+            chaptersContainer.appendChild(chapterDiv);
+
+            // Scroll to new chapter
+            chapterDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Generate images for extracted scenes
+            if (scenes && scenes.length > 0) {
+                console.log(`🎨 Generating ${scenes.length} images for chapter ${chapterCount}...`);
+
+                for (const scene of scenes) {
+                    await insertSceneImage(chapterCount, scene);
+                }
+            }
+
+            console.log(`✅ Chapter ${chapterCount} added with ${scenes.length} scene images`);
+        }
+
+        // Insert image for a specific scene
+        async function insertSceneImage(chapterNum, sceneData) {
+            const chapterContent = document.getElementById(`chapter-content-${chapterNum}`);
+            if (!chapterContent) return;
+
+            console.log(`🖼️ Generating image for ${sceneData.position} scene...`);
+
+            // Create loading placeholder
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'story-image';
+            imageContainer.innerHTML = `
+                <div style="text-align: center; padding: 60px; background: #f0f0f0;">
+                    <div class="loading-spinner" style="margin: 0 auto;"></div>
+                    <p style="margin-top: 20px; color: #666;">✨ ${sceneData.position === 'start' ? 'Opening' : sceneData.position === 'end' ? 'Closing' : 'Mid'} scene artwork...</p>
+                </div>
+            `;
+
+            // Insert based on position
+            if (sceneData.position === 'start') {
+                // Insert at beginning of content
+                chapterContent.insertBefore(imageContainer, chapterContent.firstChild);
+            } else if (sceneData.position === 'end') {
+                // Insert at end of content
+                chapterContent.appendChild(imageContainer);
+            } else {
+                // Insert in middle (after first paragraph)
+                const paragraphs = chapterContent.querySelectorAll('p');
+                if (paragraphs.length > 1) {
+                    paragraphs[Math.floor(paragraphs.length / 2)].after(imageContainer);
+                } else {
+                    chapterContent.appendChild(imageContainer);
+                }
+            }
+
+            try {
+                // Use the optimized prompt from backend
+                const response = await fetch(`${IMAGE_SERVER_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: sceneData.prompt,
+                        aspect_ratio: '16:9'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.image) {
+                    imageContainer.innerHTML = `
+                        <img src="data:image/png;base64,${data.image}" alt="${sceneData.description}">
+                        <div class="image-caption">${sceneData.description.substring(0, 100)}...</div>
+                    `;
+                    console.log(`✅ ${sceneData.position} scene image generated`);
+                } else {
+                    throw new Error('Image generation failed');
+                }
+            } catch (error) {
+                console.error(`❌ Failed to generate ${sceneData.position} scene image:`, error);
+                imageContainer.innerHTML = `
+                    <div style="padding: 30px; background: #f8d7da; color: #721c24; text-align: center;">
+                        <p>⚠️ Image generation unavailable</p>
+                        <p style="font-size: 0.9em; margin-top: 10px;">${sceneData.description.substring(0, 100)}...</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Generate images for chapter scenes (legacy support)
+        async function generateChapterImages(chapterNum, content) {
+            console.log(`🎨 Using legacy scene extraction for chapter ${chapterNum}...`);
+
+            // Simple fallback: generate one image from first sentence
+            const firstSentence = content.split('.')[0];
+            const sceneData = {
+                description: firstSentence,
+                position: 'start',
+                prompt: `Fantasy D&D scene: ${firstSentence}, detailed, cinematic`
+            };
+
+            await insertSceneImage(chapterNum, sceneData);
+        }
+
+        // Insert image into story
+        async function insertStoryImage(chapterNum, sceneDescription) {
+            console.log(`🖼️ Generating image for chapter ${chapterNum}...`);
+
+            const chapterDiv = document.getElementById(`chapter-${chapterNum}`);
+            if (!chapterDiv) return;
+
+            // Create loading placeholder
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'story-image';
+            imageContainer.innerHTML = `
+                <div style="text-align: center; padding: 60px; background: #f0f0f0;">
+                    <div class="loading-spinner" style="margin: 0 auto;"></div>
+                    <p style="margin-top: 20px; color: #666;">Generating scene artwork...</p>
+                </div>
+            `;
+
+            chapterDiv.querySelector('.chapter-content').appendChild(imageContainer);
+
+            try {
+                // Generate image
+                const response = await fetch(`${IMAGE_SERVER_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: `Fantasy RPG scene: ${sceneDescription.substring(0, 150)}, D&D style, detailed`,
+                        aspect_ratio: '16:9'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.image) {
+                    imageContainer.innerHTML = `
+                        <img src="data:image/png;base64,${data.image}" alt="Chapter ${chapterNum} scene">
+                        <div class="image-caption">A scene from your adventure</div>
+                    `;
+                    console.log(`✅ Image generated for chapter ${chapterNum}`);
+                }
+            } catch (error) {
+                console.error('❌ Image generation failed:', error);
+                imageContainer.innerHTML = `
+                    <div style="padding: 30px; background: #f8d7da; color: #721c24; text-align: center;">
+                        <p>⚠️ Image generation failed</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Send chat message
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message to chat
+            addChatMessage('user', message);
+            input.value = '';
+
+            // Disable input while processing
+            input.disabled = true;
+            document.getElementById('sendButton').disabled = true;
+
+            addSystemMessage('🎲 Weaving the next chapter...');
+
+            try {
+                // Use new generate-chapter endpoint for story-first workflow
+                const response = await fetch(`${BACKEND_URL}/generate-chapter`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        player_input: message,
+                        story_context: storyContext
+                    })
+                });
+
+                const data = await response.json();
+                console.log('✅ Chapter received:', data);
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to generate chapter');
+                }
+
+                // Add new chapter with scene-based images
+                await addChapterWithScenes(
+                    data.chapter.title,
+                    data.chapter.content,
+                    data.scenes || []
+                );
+
+                storyContext.push(data.chapter.content);
+
+                // Add assistant response to chat
+                addChatMessage('assistant', `Chapter ${data.chapter.number} complete. What happens next?`);
+
+            } catch (error) {
+                console.error('❌ Error generating chapter:', error);
+                addSystemMessage('❌ Failed to generate next chapter. Please try again.');
+            } finally {
+                // Re-enable input
+                input.disabled = false;
+                document.getElementById('sendButton').disabled = false;
+                input.focus();
+            }
+        }
+
+        // Add message to chat history
+        function addChatMessage(type, content) {
+            const chatHistory = document.getElementById('chatHistory');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${type}`;
+
+            const timestamp = new Date().toLocaleTimeString();
+
+            messageDiv.innerHTML = `
+                <div class="message-content">${content}</div>
+                <div class="message-time">${timestamp}</div>
+            `;
+
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // Add system message
+        function addSystemMessage(content) {
+            const chatHistory = document.getElementById('chatHistory');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message system';
+            messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // Save story to Obsidian vault
+        async function saveStoryToObsidian() {
+            if (!sessionId || chapters.length === 0) {
+                alert('No story to save! Start an adventure first.');
+                return;
+            }
+
+            console.log('💾 Saving story to Obsidian...');
+            addSystemMessage('💾 Saving your adventure to Obsidian...');
+
+            const saveButton = document.getElementById('saveButton');
+            saveButton.disabled = true;
+            saveButton.textContent = '💾 Saving...';
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/save-story`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        story_title: storyTitle,
+                        chapters: chapters
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('✅ Story saved:', data.file_path);
+                    addSystemMessage(`✅ Story saved successfully!`);
+                    alert(`Story saved to Obsidian!\n\nFile: ${data.file_path}`);
+                } else {
+                    throw new Error(data.error || 'Save failed');
+                }
+
+            } catch (error) {
+                console.error('❌ Error saving story:', error);
+                addSystemMessage('❌ Failed to save story. Check console for details.');
+                alert('Failed to save story: ' + error.message);
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = '💾 Save to Obsidian';
+            }
+        }
+
+        // Handle Enter key in chat
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatInput = document.getElementById('chatInput');
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+        });
+
+        console.log('✅ Interactive Story Theater loaded and ready!');
+    </script>
+</body>
+</html>
+

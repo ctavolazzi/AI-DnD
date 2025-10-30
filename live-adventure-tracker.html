@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎭 Live Adventure Tracker - D&D Narrative Theater</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            border: 3px solid #667eea;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+
+        .log-entry {
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 3px;
+        }
+
+        .log-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .log-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .log-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .log-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .log-api {
+            background: #e7e7ff;
+            color: #4a4a8a;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 10px 0;
+            border-left: 2px solid #667eea;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 15px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+
+        .timeline-item.active::before {
+            background: #56ab2f;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .timeline-time {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .api-calls-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .api-call {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .api-call.success {
+            border-left-color: #28a745;
+        }
+
+        .api-call.error {
+            border-left-color: #dc3545;
+        }
+
+        .api-call-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .api-call-time {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-running {
+            background: #28a745;
+            animation: pulse 1s infinite;
+        }
+
+        .status-idle {
+            background: #6c757d;
+        }
+
+        .status-error {
+            background: #dc3545;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 2px solid #dee2e6;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .metrics-table th,
+        .metrics-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .metrics-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .export-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Live Adventure Tracker</h1>
+            <p>Real-time monitoring and comprehensive analysis of D&D Narrative Theater</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="startTrackedAdventure()">🚀 Start Tracked Adventure</button>
+            <button class="btn-success" onclick="generateReport()">📊 Generate Full Report</button>
+            <button class="btn-secondary" onclick="clearLogs()">🗑️ Clear Logs</button>
+            <button class="btn-danger" onclick="stopTracking()">⏹️ Stop Tracking</button>
+        </div>
+
+        <div class="grid">
+            <div class="panel">
+                <h2>
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    Live Adventure View
+                </h2>
+                <div class="iframe-container">
+                    <iframe id="theaterFrame" src="dnd-narrative-theater.html"></iframe>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>📊 Real-Time Stats</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">API Calls</div>
+                        <div class="stat-value" id="apiCallCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Images Generated</div>
+                        <div class="stat-value" id="imageCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Elapsed Time</div>
+                        <div class="stat-value" id="elapsedTime">0s</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="currentStatus" style="font-size: 1.2em;">Idle</div>
+                    </div>
+                </div>
+
+                <h3>⏱️ Timeline</h3>
+                <div class="timeline" id="timeline">
+                    <div class="timeline-item">
+                        <strong>Ready to start</strong>
+                        <div class="timeline-time">Click "Start Tracked Adventure" to begin</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="panel">
+                <h2>📝 Event Log</h2>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry log-info">System initialized and ready</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>🌐 API Calls</h2>
+                <div class="api-calls-list" id="apiCallsList">
+                    <p style="color: #666;">No API calls yet</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel full-width">
+            <h2>🖼️ Generated Images</h2>
+            <div class="image-gallery" id="imageGallery">
+                <p style="color: #666;">Images will appear here as they generate</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tracking data
+        const trackingData = {
+            startTime: null,
+            apiCalls: [],
+            images: [],
+            timeline: [],
+            logs: [],
+            metrics: {
+                totalCalls: 0,
+                successfulCalls: 0,
+                failedCalls: 0,
+                totalImages: 0,
+                averageResponseTime: 0
+            }
+        };
+
+        let trackingInterval = null;
+        let statusIndicator = document.getElementById('statusIndicator');
+        statusIndicator.className = 'status-indicator status-idle';
+
+        // Add timeline event
+        function addTimelineEvent(title, description = '') {
+            const now = new Date();
+            const elapsed = trackingData.startTime ?
+                ((now - trackingData.startTime) / 1000).toFixed(1) : '0.0';
+
+            trackingData.timeline.push({
+                time: now,
+                elapsed: elapsed,
+                title: title,
+                description: description
+            });
+
+            const timeline = document.getElementById('timeline');
+            const item = document.createElement('div');
+            item.className = 'timeline-item active';
+            item.innerHTML = `
+                <strong>${title}</strong>
+                <div class="timeline-time">+${elapsed}s - ${description}</div>
+            `;
+            timeline.appendChild(item);
+
+            // Remove active class from previous items
+            const items = timeline.querySelectorAll('.timeline-item');
+            items.forEach((el, idx) => {
+                if (idx < items.length - 1) {
+                    el.classList.remove('active');
+                }
+            });
+        }
+
+        // Add log entry
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            trackingData.logs.push({
+                time: new Date(),
+                message: message,
+                type: type
+            });
+        }
+
+        // Track API call
+        function trackAPICall(url, method, status, responseTime, response) {
+            const call = {
+                time: new Date(),
+                url: url,
+                method: method,
+                status: status,
+                responseTime: responseTime,
+                success: status >= 200 && status < 300,
+                response: response
+            };
+
+            trackingData.apiCalls.push(call);
+            trackingData.metrics.totalCalls++;
+
+            if (call.success) {
+                trackingData.metrics.successfulCalls++;
+            } else {
+                trackingData.metrics.failedCalls++;
+            }
+
+            // Update API calls list
+            const apiList = document.getElementById('apiCallsList');
+            if (apiList.querySelector('p')) {
+                apiList.innerHTML = '';
+            }
+
+            const callDiv = document.createElement('div');
+            callDiv.className = `api-call ${call.success ? 'success' : 'error'}`;
+            callDiv.innerHTML = `
+                <div class="api-call-header">${method} ${url}</div>
+                <div class="api-call-time">
+                    Status: ${status} | Time: ${responseTime}ms |
+                    ${new Date().toLocaleTimeString()}
+                </div>
+            `;
+            apiList.insertBefore(callDiv, apiList.firstChild);
+
+            // Update counter
+            document.getElementById('apiCallCount').textContent = trackingData.metrics.totalCalls;
+
+            addLog(`API ${method} ${url} - ${status} (${responseTime}ms)`,
+                   call.success ? 'api' : 'error');
+        }
+
+        // Track image generation
+        function trackImage(url, prompt, source) {
+            const image = {
+                time: new Date(),
+                url: url,
+                prompt: prompt,
+                source: source
+            };
+
+            trackingData.images.push(image);
+            trackingData.metrics.totalImages++;
+
+            // Add to gallery
+            const gallery = document.getElementById('imageGallery');
+            if (gallery.querySelector('p')) {
+                gallery.innerHTML = '';
+            }
+
+            const img = document.createElement('img');
+            img.className = 'image-preview';
+            img.src = url;
+            img.title = prompt;
+            gallery.appendChild(img);
+
+            // Update counter
+            document.getElementById('imageCount').textContent = trackingData.metrics.totalImages;
+
+            addLog(`Image generated: ${source} - "${prompt.substring(0, 50)}..."`, 'success');
+            addTimelineEvent(`Image Generated`, `${source}: ${prompt.substring(0, 30)}...`);
+        }
+
+        // Update elapsed time
+        function updateElapsedTime() {
+            if (trackingData.startTime) {
+                const elapsed = Math.floor((new Date() - trackingData.startTime) / 1000);
+                document.getElementById('elapsedTime').textContent = `${elapsed}s`;
+            }
+        }
+
+        // Start tracked adventure
+        async function startTrackedAdventure() {
+            trackingData.startTime = new Date();
+            statusIndicator.className = 'status-indicator status-running';
+            document.getElementById('currentStatus').textContent = 'Running';
+
+            addLog('Starting tracked adventure...', 'info');
+            addTimelineEvent('Test Started', 'Initializing adventure tracker');
+
+            // Start elapsed time counter
+            trackingInterval = setInterval(updateElapsedTime, 1000);
+
+            // Intercept fetch calls from iframe
+            interceptIframeFetch();
+
+            // Simulate adventure start
+            setTimeout(() => {
+                addTimelineEvent('Adventure Initiated', 'Sending start request');
+                // The actual iframe will handle the real adventure
+            }, 500);
+        }
+
+        // Intercept iframe fetch calls
+        function interceptIframeFetch() {
+            const iframe = document.getElementById('theaterFrame');
+
+            iframe.onload = function() {
+                const iframeWindow = iframe.contentWindow;
+
+                // Store original fetch
+                const originalFetch = iframeWindow.fetch;
+
+                // Override fetch
+                iframeWindow.fetch = function(...args) {
+                    const url = args[0];
+                    const options = args[1] || {};
+                    const method = options.method || 'GET';
+                    const startTime = Date.now();
+
+                    return originalFetch.apply(this, args)
+                        .then(response => {
+                            const responseTime = Date.now() - startTime;
+
+                            // Clone response to read it
+                            const clonedResponse = response.clone();
+                            clonedResponse.json().then(data => {
+                                trackAPICall(url, method, response.status, responseTime, data);
+
+                                // Check for images in response
+                                if (data.image || data.images) {
+                                    const imageData = data.image || data.images;
+                                    if (typeof imageData === 'string') {
+                                        trackImage(imageData, data.prompt || 'Unknown', url);
+                                    }
+                                }
+                            }).catch(() => {
+                                // Not JSON, that's okay
+                                trackAPICall(url, method, response.status, responseTime, null);
+                            });
+
+                            return response;
+                        })
+                        .catch(error => {
+                            const responseTime = Date.now() - startTime;
+                            trackAPICall(url, method, 0, responseTime, {error: error.message});
+                            throw error;
+                        });
+                };
+
+                addLog('Fetch interception active', 'success');
+            };
+        }
+
+        // Generate comprehensive report
+        function generateReport() {
+            addLog('Generating comprehensive analysis report...', 'info');
+
+            const report = {
+                metadata: {
+                    generatedAt: new Date(),
+                    testDuration: trackingData.startTime ?
+                        ((new Date() - trackingData.startTime) / 1000).toFixed(1) + 's' : 'N/A',
+                    totalEvents: trackingData.timeline.length
+                },
+                metrics: trackingData.metrics,
+                apiCalls: trackingData.apiCalls,
+                images: trackingData.images,
+                timeline: trackingData.timeline,
+                logs: trackingData.logs
+            };
+
+            // Create detailed HTML report
+            createDetailedReport(report);
+        }
+
+        // Create detailed HTML report
+        function createDetailedReport(report) {
+            const reportContent = `
+# 🎭 D&D Narrative Theater - Live Adventure Analysis Report
+
+**Generated:** ${new Date().toLocaleString()}
+**Test Duration:** ${report.metadata.testDuration}
+**Total Events:** ${report.metadata.totalEvents}
+
+---
+
+## 📊 Performance Metrics
+
+| Metric | Value |
+|--------|-------|
+| Total API Calls | ${report.metrics.totalCalls} |
+| Successful Calls | ${report.metrics.successfulCalls} |
+| Failed Calls | ${report.metrics.failedCalls} |
+| Success Rate | ${((report.metrics.successfulCalls / report.metrics.totalCalls) * 100).toFixed(1)}% |
+| Total Images Generated | ${report.metrics.totalImages} |
+
+---
+
+## ⏱️ Timeline of Events
+
+${report.timeline.map((event, idx) => `
+${idx + 1}. **${event.title}** (${event.elapsed}s)
+   - ${event.description}
+`).join('\n')}
+
+---
+
+## 🌐 API Call Details
+
+${report.apiCalls.map((call, idx) => `
+### Call ${idx + 1}: ${call.method} ${call.url}
+- **Status:** ${call.status} ${call.success ? '✅' : '❌'}
+- **Response Time:** ${call.responseTime}ms
+- **Timestamp:** ${call.time.toLocaleTimeString()}
+`).join('\n')}
+
+---
+
+## 🖼️ Generated Images
+
+${report.images.map((img, idx) => `
+${idx + 1}. **${img.source}**
+   - Prompt: "${img.prompt}"
+   - Generated: ${img.time.toLocaleTimeString()}
+`).join('\n')}
+
+---
+
+## 📝 Complete Event Log
+
+${report.logs.map((log, idx) => `
+${idx + 1}. [${log.time.toLocaleTimeString()}] ${log.type.toUpperCase()}: ${log.message}
+`).join('\n')}
+
+---
+
+**Report Complete** ✅
+            `;
+
+            // Download as markdown file
+            const blob = new Blob([reportContent], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `adventure-analysis-${Date.now()}.md`;
+            a.click();
+
+            addLog('Report generated and downloaded!', 'success');
+            alert('📊 Comprehensive analysis report generated and downloaded!');
+        }
+
+        // Clear logs
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML =
+                '<div class="log-entry log-info">Logs cleared</div>';
+            addLog('Tracking data reset', 'warning');
+        }
+
+        // Stop tracking
+        function stopTracking() {
+            if (trackingInterval) {
+                clearInterval(trackingInterval);
+                trackingInterval = null;
+            }
+            statusIndicator.className = 'status-indicator status-idle';
+            document.getElementById('currentStatus').textContent = 'Stopped';
+            addLog('Tracking stopped', 'warning');
+            addTimelineEvent('Tracking Stopped', 'Manual stop triggered');
+        }
+
+        // Initialize
+        addLog('Live Adventure Tracker initialized', 'success');
+        addLog('Servers running on ports 5000, 5001, 5002', 'info');
+        addLog('Ready to track adventure!', 'info');
+    </script>
+</body>
+</html>
+
+
+

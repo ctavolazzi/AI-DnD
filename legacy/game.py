@@ -2,7 +2,9 @@
 import importlib
 import random
 import json
-from character import Character
+# LEGACY: This file uses old character.py - should migrate to dnd_game.Character
+# For now, keeping legacy import as this module appears unused
+from character import Character  # TODO: Migrate to dnd_game.Character
 from module_loader import ModuleLoader
 from game_state_manager import GameStateManager
 from main_menu import MainMenu

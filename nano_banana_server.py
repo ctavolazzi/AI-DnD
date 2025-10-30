@@ -91,6 +91,7 @@ def health_check():
         'client_initialized': bool(client)
     })
 
+@app.route('/generate', methods=['POST'])
 @app.route('/generate-image', methods=['POST'])
 @rate_limit
 def generate_image():
@@ -113,19 +114,23 @@ def generate_image():
     }
     """
     if not client:
-        return jsonify({
-            'error': 'Gemini API client not initialized. Check GEMINI_API_KEY.'
-        }), 500
+        error_msg = 'Gemini API client not initialized. Check GEMINI_API_KEY.'
+        print(f"❌ {error_msg}")
+        return jsonify({'error': error_msg}), 500
 
     try:
         # Parse request
         data = request.get_json()
         if not data or 'prompt' not in data:
+            print("❌ Missing prompt in request")
             return jsonify({'error': 'Missing required field: prompt'}), 400
 
         prompt = data['prompt']
         aspect_ratio = data.get('aspect_ratio', '1:1')
         response_modalities = data.get('response_modalities', ['Text', 'Image'])
+
+        print(f"🎨 Generating image with prompt: {prompt[:100]}...")
+        print(f"   Aspect ratio: {aspect_ratio}")
 
         # Validate aspect ratio
         valid_ratios = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9']
@@ -138,10 +143,12 @@ def generate_image():
         start_time = time.time()
 
         # Generate image using Gemini 2.5 Flash Image Preview
+        print("🔄 Calling Gemini API...")
         response = client.models.generate_content(
             model='gemini-2.5-flash-image-preview',
             contents=[prompt]
         )
+        print(f"✅ Gemini responded in {time.time() - start_time:.2f}s")
 
         # Extract results
         result = {
@@ -150,28 +157,41 @@ def generate_image():
         }
 
         # Extract image and text from response
+        has_image = False
         for part in response.candidates[0].content.parts:
             if part.text is not None:
                 result['text'] = part.text
+                print(f"   Text received: {part.text[:50]}...")
             elif part.inline_data is not None:
                 # Convert image to base64
+                print(f"   Image data received: {len(part.inline_data.data)} bytes")
                 image = Image.open(BytesIO(part.inline_data.data))
                 buffered = BytesIO()
                 image.save(buffered, format='PNG')
                 img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
                 result['image'] = img_base64
+                has_image = True
+                print(f"   Base64 encoded: {len(img_base64)} chars")
 
-        if 'image' not in result and 'Image' in response_modalities:
+        if not has_image and 'Image' in response_modalities:
+            error_msg = 'Image generation failed. No image in response.'
+            print(f"❌ {error_msg}")
             return jsonify({
-                'error': 'Image generation failed. No image in response.'
+                'error': error_msg,
+                'success': False
             }), 500
 
+        print(f"✅ Image generation successful!")
         return jsonify(result)
 
     except Exception as e:
-        print(f"Error generating image: {str(e)}")
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Error generating image: {str(e)}")
+        print(f"Traceback:\n{error_trace}")
         return jsonify({
-            'error': f'Image generation failed: {str(e)}'
+            'error': f'Image generation failed: {str(e)}',
+            'success': False
         }), 500
 
 @app.route('/generate-scene', methods=['POST'])

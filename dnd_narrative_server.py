@@ -381,7 +381,8 @@ def next_scene():
 
     Request body:
     {
-        "session_id": "..."
+        "session_id": "...",
+        "player_action": "..." (optional)
     }
 
     Returns:
@@ -389,12 +390,14 @@ def next_scene():
         "scene": {...},
         "character_states": [...],
         "turn_count": 1,
-        "location": "..."
+        "location": "...",
+        "narrative": "..." (extracted for convenience)
     }
     """
     try:
         data = request.json
         session_id = data.get('session_id')
+        player_action = data.get('player_action')
 
         if not session_id or session_id not in game_sessions:
             return jsonify({
@@ -409,6 +412,7 @@ def next_scene():
 
         return jsonify({
             "success": True,
+            "narrative": result['scene']['narrative'],
             **result
         })
 
@@ -418,6 +422,147 @@ def next_scene():
             "success": False,
             "error": str(e)
         }), 500
+
+
+@app.route('/generate-chapter', methods=['POST'])
+def generate_chapter():
+    """
+    Generate a story chapter with intelligent scene extraction.
+    Story-first approach: Generate text, then extract scenes for images.
+
+    Request body:
+    {
+        "session_id": "...",
+        "player_input": "What the player does/says",
+        "story_context": ["previous chapter texts..."] (optional)
+    }
+
+    Returns:
+    {
+        "success": true,
+        "chapter": {
+            "title": "Chapter title",
+            "content": "Full chapter text",
+            "number": 1
+        },
+        "scenes": [
+            {
+                "description": "Scene description for image generation",
+                "position": "start|middle|end",
+                "prompt": "Optimized image prompt"
+            }
+        ],
+        "character_states": [...],
+        "location": "..."
+    }
+    """
+    try:
+        data = request.json
+        session_id = data.get('session_id')
+        player_input = data.get('player_input', 'continue the adventure')
+        story_context = data.get('story_context', [])
+
+        if not session_id or session_id not in game_sessions:
+            return jsonify({
+                "success": False,
+                "error": "Invalid or missing session_id"
+            }), 400
+
+        session = game_sessions[session_id]
+
+        # Generate the next scene (this creates the story content)
+        result = session.generate_next_scene()
+        narrative_text = result['scene']['narrative']
+
+        # Extract key scenes from the narrative for image generation
+        scenes = _extract_scenes_for_images(narrative_text, result['scene']['type'])
+
+        # Create chapter data
+        chapter = {
+            "title": _generate_chapter_title(result['scene']['type'], session.turn_count),
+            "content": narrative_text,
+            "number": session.turn_count,
+            "type": result['scene']['type']
+        }
+
+        logger.info(f"Generated chapter {session.turn_count} with {len(scenes)} scenes for session: {session_id}")
+
+        return jsonify({
+            "success": True,
+            "chapter": chapter,
+            "scenes": scenes,
+            "character_states": result['character_states'],
+            "location": result['location'],
+            "turn_count": result['turn_count']
+        })
+
+    except Exception as e:
+        logger.error(f"Error generating chapter: {e}", exc_info=True)
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+def _extract_scenes_for_images(narrative_text, scene_type):
+    """
+    Extract key visual scenes from narrative text for image generation.
+    Returns list of scene descriptions optimized for image prompts.
+    """
+    scenes = []
+
+    # Split narrative into sentences
+    sentences = [s.strip() for s in narrative_text.split('.') if len(s.strip()) > 20]
+
+    # Strategy: Extract visually descriptive sentences
+    visual_keywords = [
+        'see', 'sees', 'appear', 'appears', 'stood', 'stands', 'entered', 'enters',
+        'emerged', 'emerges', 'raised', 'raises', 'wielding', 'holding', 'wearing',
+        'dark', 'bright', 'glowing', 'ancient', 'massive', 'towering', 'surrounded'
+    ]
+
+    for i, sentence in enumerate(sentences):
+        # Check if sentence contains visual keywords
+        if any(keyword in sentence.lower() for keyword in visual_keywords):
+            # Determine position in narrative
+            if i < len(sentences) * 0.3:
+                position = "start"
+            elif i > len(sentences) * 0.7:
+                position = "end"
+            else:
+                position = "middle"
+
+            # Create image prompt
+            prompt = f"Fantasy D&D scene: {sentence}. {scene_type} scene, detailed, cinematic"
+
+            scenes.append({
+                "description": sentence,
+                "position": position,
+                "prompt": prompt
+            })
+
+    # If no visual scenes found, create one from first meaningful sentence
+    if not scenes and sentences:
+        scenes.append({
+            "description": sentences[0],
+            "position": "start",
+            "prompt": f"Fantasy D&D {scene_type} scene: {sentences[0]}, detailed, cinematic"
+        })
+
+    # Limit to 2-3 scenes per chapter to avoid overload
+    return scenes[:3]
+
+
+def _generate_chapter_title(scene_type, turn_count):
+    """Generate an appropriate chapter title based on scene type."""
+    titles = {
+        "introduction": "The Journey Begins",
+        "combat": f"Battle #{turn_count}",
+        "exploration": f"Discovery in the Unknown",
+        "choice": f"A Crossroads",
+        "conclusion": "The Final Chapter"
+    }
+    return titles.get(scene_type, f"Chapter {turn_count}")
 
 
 @app.route('/generate-scene-image', methods=['POST'])
@@ -1265,6 +1410,97 @@ def get_ai_engine_status():
 
     except Exception as e:
         logger.error(f"Error getting engine status: {e}", exc_info=True)
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+@app.route('/save-story', methods=['POST'])
+def save_story():
+    """
+    Save the current story to Obsidian vault.
+
+    Request body:
+    {
+        "session_id": "...",
+        "story_title": "...",
+        "chapters": [
+            {
+                "number": 1,
+                "title": "...",
+                "content": "..."
+            }
+        ],
+        "vault_path": "ai-dnd-test-vault" (optional)
+    }
+
+    Returns:
+    {
+        "success": true,
+        "file_path": "path/to/saved/story.md"
+    }
+    """
+    try:
+        from obsidian_logger import ObsidianLogger
+
+        data = request.json
+        session_id = data.get('session_id')
+        story_title = data.get('story_title', 'Untitled Adventure')
+        chapters = data.get('chapters', [])
+        vault_path = data.get('vault_path', 'ai-dnd-test-vault')
+
+        if not session_id or session_id not in game_sessions:
+            return jsonify({
+                "success": False,
+                "error": "Invalid or missing session_id"
+            }), 400
+
+        # Initialize Obsidian logger
+        obs_logger = ObsidianLogger(vault_path)
+
+        # Create story content
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+        story_content = f"""# {story_title}
+
+**Session ID:** {session_id}
+**Created:** {timestamp}
+**Type:** Interactive Story Theater
+
+---
+
+"""
+
+        # Add each chapter
+        for chapter in chapters:
+            story_content += f"""## Chapter {chapter.get('number', '?')}: {chapter.get('title', 'Untitled')}
+
+{chapter.get('content', '')}
+
+---
+
+"""
+
+        # Save to Obsidian vault
+        story_filename = f"{story_title.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        stories_dir = os.path.join(vault_path, "Stories")
+        os.makedirs(stories_dir, exist_ok=True)
+
+        file_path = os.path.join(stories_dir, story_filename)
+
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(story_content)
+
+        logger.info(f"Story saved to Obsidian: {file_path}")
+
+        return jsonify({
+            "success": True,
+            "file_path": file_path,
+            "message": f"Story saved successfully to {story_filename}"
+        })
+
+    except Exception as e:
+        logger.error(f"Error saving story: {e}", exc_info=True)
         return jsonify({
             "success": False,
             "error": str(e)

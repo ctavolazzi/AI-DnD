@@ -249,6 +249,14 @@ Successfully integrated Random User Generator API to enhance D&D character gener
 4. Continue exploration of the remaining core components
 5. Investigate potential for bidirectional integration (reading from Obsidian back into the game)
 
+### Codebase Review Plan (October 29, 2025)
+- Map repository structure, highlighting primary runtimes (FastAPI backend, legacy Flask services, CLI tools, HTML dashboards).
+- Inspect active backend code (`backend/app/main.py` and related modules) alongside legacy counterparts to understand execution paths and shared resources.
+- Review core gameplay modules (`dnd_game.py`, `game_state.py`, character and inventory modules) for data model alignment and duplication.
+- Sample key frontend entry points (browser dashboards and Pygame launchers) to trace their integration with backend services.
+- Scan architectural documentation (`ARCHITECTURE_ANALYSIS.md`, `PROJECT_SUMMARY.md`, etc.) to reconcile current code with documented design.
+- Aggregate findings—including strengths, risks, and recommendations—and append them to `10.31_20251029_codebase_review.md`.
+
 ---
 
 *This index will be updated as exploration and development progress.*
