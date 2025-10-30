@@ -494,15 +494,34 @@ class Character:
         if "inventory" in data and data["inventory"]:
             inv_data = data["inventory"]
             if isinstance(inv_data, dict):
+                # Restore gold first (if present)
+                if "gold" in inv_data:
+                    char.inventory.gold = inv_data["gold"]
+
                 # First add items
+                # Handle two formats: {item_id: quantity} or {item_id: {"quantity": qty, "name": "..."}}
                 if "items" in inv_data and isinstance(inv_data["items"], dict):
-                    for item_id, quantity in inv_data["items"].items():
+                    for item_id, item_data in inv_data["items"].items():
+                        if isinstance(item_data, dict):
+                            # Rich format: {"quantity": 5, "name": "Health Potion"}
+                            quantity = item_data.get("quantity", 1)
+                        else:
+                            # Simple format: item_id -> quantity (int)
+                            quantity = item_data
                         char.inventory.add_item(item_id, quantity)
                 # Then equip items (must exist in inventory first)
-                # equipped is {slot: item_id} mapping
+                # equipped can be: {slot: item_id} or {slot: {"item_id": "...", "name": "..."}}
                 if "equipped" in inv_data and isinstance(inv_data["equipped"], dict):
-                    for slot, item_id in inv_data["equipped"].items():
-                        # item_id should be a string, ensure it exists
+                    for slot, item_ref in inv_data["equipped"].items():
+                        # Handle two formats: string item_id or dict with item_id
+                        if isinstance(item_ref, dict):
+                            item_id = item_ref.get("item_id")
+                        elif isinstance(item_ref, str):
+                            item_id = item_ref
+                        else:
+                            continue
+
+                        # Ensure item exists and equip it
                         if item_id and isinstance(item_id, str):
                             try:
                                 if hasattr(char.inventory, 'has_item') and char.inventory.has_item(item_id, 1):
@@ -528,6 +547,94 @@ class Character:
             "max_hp": self.max_hp,
             "alive": self.alive
         }
+
+    # ========== Validation Methods ==========
+
+    def validate(self) -> List[str]:
+        """
+        Validate character state and return list of issues found.
+
+        Returns:
+            List of issue descriptions (empty if valid)
+        """
+        issues = []
+
+        # HP validation
+        if self.hp < 0:
+            issues.append(f"Invalid: HP is negative ({self.hp})")
+        if self.hp > self.max_hp:
+            issues.append(f"Invalid: HP ({self.hp}) exceeds max_hp ({self.max_hp})")
+        if self.max_hp <= 0:
+            issues.append(f"Invalid: max_hp must be positive ({self.max_hp})")
+
+        # Mana validation
+        if self.mana < 0:
+            issues.append(f"Invalid: Mana is negative ({self.mana})")
+        if self.mana > self.max_mana:
+            issues.append(f"Invalid: Mana ({self.mana}) exceeds max_mana ({self.max_mana})")
+
+        # Alive consistency
+        if self.hp <= 0 and self.alive:
+            issues.append(f"Inconsistent: HP is 0 or negative but alive=True")
+        if self.hp > 0 and not self.alive:
+            issues.append(f"Inconsistent: HP is positive but alive=False")
+
+        # Attack/Defense validation
+        if self.attack < 0:
+            issues.append(f"Invalid: Attack is negative ({self.attack})")
+        if self.defense < 0:
+            issues.append(f"Invalid: Defense is negative ({self.defense})")
+
+        # Ability scores validation
+        if self.ability_scores:
+            for ability, value in self.ability_scores.items():
+                if not isinstance(value, int) or value < 1 or value > 30:
+                    issues.append(f"Invalid: {ability} ability score out of range ({value})")
+
+        return issues
+
+    def fix_validation_issues(self) -> List[str]:
+        """
+        Automatically fix common validation issues.
+
+        Returns:
+            List of fixes applied
+        """
+        fixes = []
+
+        # Fix HP issues
+        if self.hp < 0:
+            self.hp = 0
+            fixes.append("Fixed: Set negative HP to 0")
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
+            fixes.append(f"Fixed: Reduced HP from {self.hp} to max_hp ({self.max_hp})")
+
+        # Fix mana issues
+        if self.mana < 0:
+            self.mana = 0
+            fixes.append("Fixed: Set negative mana to 0")
+        if self.mana > self.max_mana:
+            self.mana = self.max_mana
+            fixes.append(f"Fixed: Reduced mana to max_mana ({self.max_mana})")
+
+        # Fix alive consistency
+        if self.hp <= 0 and self.alive:
+            self.alive = False
+            fixes.append("Fixed: Set alive=False when HP <= 0")
+        if self.hp > 0 and not self.alive:
+            self.alive = True
+            fixes.append("Fixed: Set alive=True when HP > 0")
+
+        # Fix negative stats
+        if self.attack < 0:
+            self.attack = 0
+            fixes.append("Fixed: Set negative attack to 0")
+        if self.defense < 0:
+            self.defense = 0
+            fixes.append("Fixed: Set negative defense to 0")
+
+        return fixes
 
 class DnDGame:
     def __init__(self, auto_create_characters: bool = True, model: str = "mistral"):

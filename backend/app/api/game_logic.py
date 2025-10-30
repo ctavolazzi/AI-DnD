@@ -5,6 +5,14 @@ from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 from datetime import datetime
 import uuid
+import sys
+from pathlib import Path
+
+# Add project root to path for dnd_game import
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from dnd_game import Character as GameCharacter
 
 from ..database import get_db
 from ..models import GameSession, Character as DBCharacter, Location as DBLocation, Event as DBEvent
@@ -26,7 +34,8 @@ class CharacterCreateRequest(BaseModel):
 
 
 class CharacterResponse(BaseModel):
-    id: str
+    """Character response model - matches dnd_game.Character.to_dict() format"""
+    id: Optional[str] = None  # Added from character_data
     name: str
     char_class: str
     hp: int
@@ -38,8 +47,13 @@ class CharacterResponse(BaseModel):
     alive: bool
     status_effects: List[str]
     ability_scores: Dict[str, int]
-    team: Optional[str]
-    current_location_id: Optional[str]
+    team: Optional[str] = None
+    inventory: Optional[Dict[str, Any]] = None
+    spells: Optional[List[str]] = None
+    proficiency_bonus: Optional[int] = None
+    skill_proficiencies: Optional[List[str]] = None
+    abilities: Optional[List[str]] = None
+    current_location_id: Optional[str] = None
 
 
 class CombatActionRequest(BaseModel):
@@ -107,40 +121,42 @@ async def create_character(
     if not state_manager:
         state_manager = create_session(session_id)
 
-    # Create character
+    # Create character using dnd_game.Character (game logic)
     char_id = f"char_{uuid.uuid4().hex[:12]}"
-    character_data = {
-        "id": char_id,
-        "name": request.name,
-        "char_class": request.char_class,
-        "hp": request.hp,
-        "max_hp": request.max_hp,
-        "attack": request.attack,
-        "defense": request.defense,
-        "team": request.team,
-        "current_location_id": db_session.current_location_id
-    }
 
-    # Add to state manager
-    state_manager.add_character(character_data)
-
-    # Persist to database
-    db_character = DBCharacter(
-        id=char_id,
-        session_id=session_id,
+    # Create game character instance
+    game_character = GameCharacter(
         name=request.name,
         char_class=request.char_class,
-        hp=request.hp or 30,
-        max_hp=request.max_hp or 30,
-        attack=request.attack or 10,
-        defense=request.defense or 5,
-        team=request.team,
-        current_location_id=db_session.current_location_id,
-        data=character_data
+        hp=request.hp,
+        max_hp=request.max_hp,
+        attack=request.attack,
+        defense=request.defense
     )
+
+    # Set team if provided
+    if request.team:
+        game_character.team = request.team
+
+    # Convert to dict for state manager (using to_dict)
+    character_data = game_character.to_dict()
+    character_data["id"] = char_id
+    character_data["current_location_id"] = db_session.current_location_id
+
+    # Add to state manager
+    state_manager.add_character(char_id, character_data)
+
+    # Convert to database format using to_db_dict
+    db_char_dict = game_character.to_db_dict(char_id, session_id)
+    db_char_dict["current_location_id"] = db_session.current_location_id
+
+    # Create SQLAlchemy model
+    db_character = DBCharacter(**db_char_dict)
     db.add(db_character)
     db.commit()
+    db.refresh(db_character)
 
+    # Return response using game character dict
     return CharacterResponse(**character_data)
 
 

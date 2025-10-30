@@ -404,3 +404,142 @@ class GameState:
                 setattr(state, key, value)
         return state
 
+    # ========== Validation Methods ==========
+
+    def validate(self) -> List[str]:
+        """
+        Validate game state and return list of issues found.
+
+        Returns:
+            List of issue descriptions (empty if valid)
+        """
+        issues = []
+
+        # Turn validation
+        if self.turn < 0:
+            issues.append(f"Invalid: Turn is negative ({self.turn})")
+
+        # Status validation
+        valid_statuses = ["active", "completed", "error", "paused"]
+        if self.status not in valid_statuses:
+            issues.append(f"Invalid: Status '{self.status}' not in {valid_statuses}")
+
+        # Current location validation
+        if self.current_location_id and self.current_location_id not in self.locations:
+            issues.append(f"Invalid: current_location_id '{self.current_location_id}' not in locations")
+
+        # Character validation (basic - detailed validation should use Character.validate())
+        for char_id, char_data in self.characters.items():
+            if not isinstance(char_data, dict):
+                issues.append(f"Invalid: Character {char_id} data is not a dict")
+                continue
+
+            # Check required fields
+            if "name" not in char_data:
+                issues.append(f"Invalid: Character {char_id} missing 'name' field")
+            if "hp" in char_data and char_data["hp"] < 0:
+                issues.append(f"Invalid: Character {char_id} has negative HP ({char_data['hp']})")
+
+        # Location validation
+        for loc_id, loc_data in self.locations.items():
+            if not isinstance(loc_data, dict):
+                issues.append(f"Invalid: Location {loc_id} data is not a dict")
+                continue
+            if "name" not in loc_data:
+                issues.append(f"Invalid: Location {loc_id} missing 'name' field")
+
+        return issues
+
+    def fix_validation_issues(self) -> List[str]:
+        """
+        Automatically fix common validation issues.
+
+        Returns:
+            List of fixes applied
+        """
+        fixes = []
+
+        # Fix turn
+        if self.turn < 0:
+            self.turn = 0
+            fixes.append("Fixed: Set negative turn to 0")
+
+        # Fix status
+        valid_statuses = ["active", "completed", "error", "paused"]
+        if self.status not in valid_statuses:
+            self.status = "active"
+            fixes.append(f"Fixed: Reset invalid status to 'active'")
+
+        # Remove invalid current_location_id reference
+        if self.current_location_id and self.current_location_id not in self.locations:
+            fixes.append(f"Fixed: Removed invalid current_location_id reference ({self.current_location_id})")
+            self.current_location_id = None
+
+        return fixes
+
+    # ========== WorldManager Integration Methods ==========
+
+    def sync_with_world_manager(self, world_manager) -> None:
+        """
+        Synchronize GameState with WorldManager.
+
+        Updates current_location_id and adds all WorldManager locations to GameState.
+
+        Args:
+            world_manager: WorldManager instance with locations
+        """
+        self.current_location_id = world_manager.current_location_id
+
+        # Add all locations from WorldManager to GameState
+        for loc_id, location in world_manager.locations.items():
+            if hasattr(location, 'to_dict'):
+                self.locations[loc_id] = location.to_dict()
+            else:
+                # Fallback if location doesn't have to_dict
+                self.locations[loc_id] = {
+                    "id": loc_id,
+                    "name": getattr(location, 'name', loc_id),
+                    "type": getattr(location, 'location_type', {}).value if hasattr(getattr(location, 'location_type', None), 'value') else "unknown"
+                }
+
+        self.update_timestamp()
+
+    def get_current_location_data(self) -> Optional[dict]:
+        """
+        Get current location data from locations dict.
+
+        Returns:
+            Location dict or None if not found
+        """
+        if self.current_location_id:
+            return self.locations.get(self.current_location_id)
+        return None
+
+    def update_location(self, location_id: str, location_data: dict) -> None:
+        """
+        Update location data in GameState.
+
+        Args:
+            location_id: Location identifier
+            location_data: Location data dict (from Location.to_dict())
+        """
+        self.locations[location_id] = location_data
+        self.update_timestamp()
+
+    def set_current_location(self, location_id: str) -> None:
+        """
+        Set current location and mark as visited.
+
+        Args:
+            location_id: Location identifier
+        """
+        self.current_location_id = location_id
+
+        # Mark location as visited if it exists
+        if location_id in self.locations:
+            if "visited" not in self.locations[location_id]:
+                self.locations[location_id]["visited"] = False
+            self.locations[location_id]["visited"] = True
+
+        self.update_timestamp()
+
