@@ -21,7 +21,12 @@ class CharacterEnhancementCache:
         self.cache: Dict[str, Dict[str, Any]] = {}
         self.ttl_hours = ttl_hours
 
-    def _generate_key(self, character_data: Dict[str, Any], enhancement_type: str) -> str:
+    def _generate_key(
+        self,
+        character_data: Dict[str, Any],
+        enhancement_type: str,
+        thinking_level: str
+    ) -> str:
         """Generate cache key from character data and enhancement type"""
         # Create a stable hash from key character attributes
         key_data = {
@@ -29,14 +34,20 @@ class CharacterEnhancementCache:
             "character_type": character_data.get("character_type", ""),
             "primary_trait": character_data.get("primary_trait", ""),
             "motivation": character_data.get("motivation", ""),
-            "enhancement_type": enhancement_type
+            "enhancement_type": enhancement_type,
+            "thinking_level": thinking_level
         }
         key_string = json.dumps(key_data, sort_keys=True)
         return hashlib.md5(key_string.encode()).hexdigest()
 
-    def get(self, character_data: Dict[str, Any], enhancement_type: str) -> Optional[Dict[str, Any]]:
+    def get(
+        self,
+        character_data: Dict[str, Any],
+        enhancement_type: str,
+        thinking_level: str
+    ) -> Optional[Dict[str, Any]]:
         """Get cached enhancement"""
-        key = self._generate_key(character_data, enhancement_type)
+        key = self._generate_key(character_data, enhancement_type, thinking_level)
 
         if key in self.cache:
             cached_data = self.cache[key]
@@ -53,14 +64,21 @@ class CharacterEnhancementCache:
 
         return None
 
-    def set(self, character_data: Dict[str, Any], enhancement_type: str, enhancement: Dict[str, Any]):
+    def set(
+        self,
+        character_data: Dict[str, Any],
+        enhancement_type: str,
+        thinking_level: str,
+        enhancement: Dict[str, Any]
+    ):
         """Cache enhancement"""
-        key = self._generate_key(character_data, enhancement_type)
+        key = self._generate_key(character_data, enhancement_type, thinking_level)
 
         self.cache[key] = {
             "enhancement": enhancement,
             "cached_at": datetime.now().isoformat(),
-            "enhancement_type": enhancement_type
+            "enhancement_type": enhancement_type,
+            "thinking_level": thinking_level
         }
 
         logger.info(f"Cached enhancement for type: {enhancement_type}")
@@ -127,7 +145,8 @@ class GeminiCharacterEnhancer:
     async def enhance_character(
         self,
         character: Any,
-        enhancement_type: EnhancementType = EnhancementType.FULL
+        enhancement_type: EnhancementType = EnhancementType.FULL,
+        thinking_level: Optional[str] = None
     ) -> Tuple[CharacterEnhancement, bool]:
         """
         Enhance a character using Gemini AI
@@ -135,6 +154,7 @@ class GeminiCharacterEnhancer:
         Args:
             character: Character object or dictionary to enhance
             enhancement_type: Type of enhancement to perform
+            thinking_level: Optional Gemini 3 thinking level override ("low" or "high")
 
         Returns:
             Tuple of (enhancement_data, cache_hit)
@@ -143,9 +163,10 @@ class GeminiCharacterEnhancer:
             GeminiError: If AI enhancement fails
         """
         character_data = self._extract_character_data(character)
+        level_key = (thinking_level or getattr(self.gemini_client, "default_thinking_level", None) or "high")
 
         # Check cache first
-        cached_enhancement = self.cache.get(character_data, enhancement_type.value)
+        cached_enhancement = self.cache.get(character_data, enhancement_type.value, level_key)
         if cached_enhancement:
             return CharacterEnhancement(**cached_enhancement), True
 
@@ -153,14 +174,15 @@ class GeminiCharacterEnhancer:
             # Generate enhancement using Gemini
             enhancement_data, generation_time = self.gemini_client.generate_character_enhancement(
                 character_data,
-                enhancement_type.value
+                enhancement_type.value,
+                thinking_level=thinking_level
             )
 
             # Parse enhancement data into structured format
             enhancement = self._parse_enhancement_data(enhancement_data, enhancement_type, generation_time)
 
             # Cache the result
-            self.cache.set(character_data, enhancement_type.value, enhancement.dict())
+            self.cache.set(character_data, enhancement_type.value, level_key, enhancement.dict())
 
             logger.info(f"Successfully enhanced character '{character_data['name']}' with {enhancement_type.value} enhancement")
             return enhancement, False
@@ -347,7 +369,7 @@ class GeminiCharacterEnhancer:
         try:
             # Test Gemini API with a simple prompt
             test_prompt = "Say 'Hello' if you can respond."
-            response, _ = self.gemini_client.generate_text(test_prompt)
+            response, _ = self.gemini_client.generate_text(test_prompt, thinking_level="low")
 
             return {
                 "status": "healthy",

@@ -32,6 +32,8 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
     def setUp(self):
         """Set up test environment"""
         self.engine = GeminiNarrativeEngine()
+        # Ensure engine reports available without requiring real API calls
+        self.engine.client = MagicMock()
         self.context = NarrativeContext(
             campaign_id="test_campaign",
             session_id="test_session",
@@ -48,6 +50,10 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
         self.assertIsInstance(self.engine, GeminiNarrativeEngine)
         self.assertIsNotNone(self.engine.api_key)
         self.assertIsNotNone(self.engine.safety_settings)
+        # Thinking level might be None if not set in environment, forcing default
+        # But get_engine_status should report the effective level
+        status = self.engine.get_engine_status()
+        self.assertIn(status["thinking_level"], ("low", "high"))
 
     def test_engine_status(self):
         """Test engine status reporting"""
@@ -58,6 +64,7 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
         self.assertIn("gemini_available", status)
         self.assertIn("capabilities", status)
         self.assertIn("timestamp", status)
+        self.assertIn("thinking_level", status)
 
         self.assertEqual(status["engine_name"], "Gemini Narrative Engine")
         self.assertEqual(status["version"], "1.0.0")
@@ -72,25 +79,19 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
         self.assertIn("bartender", self.context.npc_states)
         self.assertEqual(self.context.campaign_tone, "mystery")
 
-    @patch('google.generativeai.GenerativeModel')
-    def test_narrative_response_generation(self, mock_model):
+    def test_narrative_response_generation(self):
         """Test narrative response generation with mocked Gemini"""
-        # Mock the Gemini response
-        mock_response = MagicMock()
-        mock_response.text = "The bartender eyes you suspiciously and mutters something under his breath."
-        mock_model.return_value.generate_content.return_value = mock_response
-
-        # Mock the engine's model
-        self.engine.model = mock_model.return_value
+        mock_text = "The bartender eyes you suspiciously and mutters something under his breath."
 
         # Test async function
         async def run_test():
-            response = await self.engine.generate_narrative_response(
-                self.context,
-                "The bartender looks at you suspiciously. What do you say?"
-            )
-            self.assertIn("bartender", response.lower())
-            self.assertIn("suspicious", response.lower())
+            with patch.object(self.engine, '_generate_text', return_value=mock_text):
+                response = await self.engine.generate_narrative_response(
+                    self.context,
+                    "The bartender looks at you suspiciously. What do you say?"
+                )
+                self.assertIn("bartender", response.lower())
+                self.assertIn("suspicious", response.lower())
 
         asyncio.run(run_test())
 
@@ -100,9 +101,8 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
         options = ["Ask about rumors", "Order a drink", "Leave quietly"]
 
         # Test with mocked Gemini
-        with patch.object(self.engine, 'model') as mock_model:
-            mock_response = MagicMock()
-            mock_response.text = json.dumps([
+        with patch.object(self.engine, '_generate_text') as mock_generate:
+            mock_generate.return_value = json.dumps([
                 {
                     "option": "Ask about rumors",
                     "reasoning": "This could reveal valuable information",
@@ -128,7 +128,6 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
                     "alignment": "neutral"
                 }
             ])
-            mock_model.generate_content.return_value = mock_response
 
             decisions = self.engine.generate_decision_matrix(
                 self.context, scenario, options
@@ -144,9 +143,8 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
         """Test story branch analysis"""
         player_choice = "Ask the bartender about recent strange events"
 
-        with patch.object(self.engine, 'model') as mock_model:
-            mock_response = MagicMock()
-            mock_response.text = json.dumps([
+        with patch.object(self.engine, '_generate_text') as mock_generate:
+            mock_generate.return_value = json.dumps([
                 {
                     "branch_name": "Information Gathering",
                     "description": "The bartender shares valuable information",
@@ -156,7 +154,6 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
                     "world_changes": ["Local rumors become known", "Bartender's attitude shifts"]
                 }
             ])
-            mock_model.generate_content.return_value = mock_response
 
             branches = self.engine.analyze_story_branches(
                 self.context, player_choice
@@ -173,9 +170,8 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
         npc_personality = "Suspicious but knowledgeable about local events"
         situation = "Strangers asking questions in his tavern"
 
-        with patch.object(self.engine, 'model') as mock_model:
-            mock_response = MagicMock()
-            mock_response.text = json.dumps({
+        with patch.object(self.engine, '_generate_text') as mock_generate:
+            mock_generate.return_value = json.dumps({
                 "personality_traits": ["suspicious", "knowledgeable", "protective"],
                 "current_mood": "wary",
                 "reaction": "Gareth eyes you carefully, weighing whether to trust you",
@@ -190,7 +186,6 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
                     "Prepare to call for help if needed"
                 ]
             })
-            mock_model.generate_content.return_value = mock_response
 
             behavior = self.engine.generate_npc_behavior(
                 self.context, npc_name, npc_personality, situation
@@ -207,10 +202,11 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
         """Test adaptive story generation"""
         story_element = "A mysterious figure approaches the party"
 
-        with patch.object(self.engine, 'model') as mock_model:
-            mock_response = MagicMock()
-            mock_response.text = "As the storm rages outside, a hooded figure emerges from the shadows of the tavern. Their movements are deliberate, and their presence seems to command attention from all present. The figure approaches your table with purpose, their face hidden beneath a deep hood that seems to absorb the flickering candlelight."
-            mock_model.generate_content.return_value = mock_response
+        mock_story = (
+            "As the storm rages outside, a hooded figure emerges from the shadows of the tavern."
+        )
+
+        with patch.object(self.engine, '_generate_text', return_value=mock_story):
 
             story_content = self.engine.generate_adaptive_story(
                 self.context, story_element
@@ -220,6 +216,26 @@ class TestGeminiNarrativeEngine(unittest.TestCase):
             self.assertIn("hooded figure", story_content.lower())
             self.assertIn("tavern", story_content.lower())
             self.assertGreater(len(story_content), 50)
+
+    def test_thinking_level_override(self):
+        """Test that thinking level can be overridden per call"""
+        mock_text = "Thoughtful response"
+
+        # We need to patch the client to check if the config was passed correctly
+        self.engine.client.models.generate_content = MagicMock(return_value=MagicMock(candidates=[MagicMock(content=MagicMock(parts=[MagicMock(text=mock_text)]))]))
+
+        # Patch GenerateContentConfig to accept any kwargs for test purposes
+        # This simulates the newer SDK version that supports thinking_level
+        with patch('google.genai.types.GenerateContentConfig', lambda **kwargs: MagicMock(**kwargs)):
+            self.engine._generate_text("Test prompt", thinking_level="low")
+
+            # Check arguments passed to generate_content
+            call_args = self.engine.client.models.generate_content.call_args
+            self.assertIsNotNone(call_args)
+            kwargs = call_args[1]
+            self.assertIn("config", kwargs)
+            # Verify thinking_level in config
+            self.assertEqual(kwargs["config"].thinking_level, "low")
 
 class TestNarrativeEngineIntegration(unittest.TestCase):
     """Test integration between Gemini and Ollama engines"""
@@ -412,12 +428,9 @@ class TestErrorHandling(unittest.TestCase):
     def test_invalid_json_response(self):
         """Test handling of invalid JSON responses"""
         engine = GeminiNarrativeEngine()
+        engine.client = MagicMock()
 
-        with patch.object(engine, 'model') as mock_model:
-            mock_response = MagicMock()
-            mock_response.text = "Invalid JSON response"
-            mock_model.generate_content.return_value = mock_response
-
+        with patch.object(engine, '_generate_text', return_value="Invalid JSON response"):
             # Should return fallback options
             decisions = engine.generate_decision_matrix(
                 NarrativeContext(

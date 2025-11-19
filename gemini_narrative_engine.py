@@ -16,8 +16,8 @@ try:
     load_dotenv()  # Load environment variables from .env file
 except ImportError:
     pass  # dotenv is optional
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from google import genai
+from google.genai import types
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -77,37 +77,51 @@ class GeminiNarrativeEngine:
             logger.info(f"✅ Gemini API key loaded: {self.api_key[:10]}...")
         else:
             logger.warning("⚠️ No Gemini API key found - will use fallback mode")
-        self.model = None
-        self.safety_settings = {
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-        }
+        self.model_name = os.getenv('GEMINI_MODEL', 'gemini-3-pro-preview')
+        self.thinking_level = self._validate_thinking_level(os.getenv('GEMINI_THINKING_LEVEL', 'high'))
+        self.client = None
+        self.safety_settings = [
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                threshold=types.HarmBlockThreshold.BLOCK_NONE
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                threshold=types.HarmBlockThreshold.BLOCK_NONE
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                threshold=types.HarmBlockThreshold.BLOCK_NONE
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+                threshold=types.HarmBlockThreshold.BLOCK_NONE
+            ),
+        ]
 
         if self.api_key:
             try:
-                genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel(
-                    'gemini-2.0-flash-exp',
-                    safety_settings=self.safety_settings
+                self.client = genai.Client(
+                    api_key=self.api_key,
+                    http_options={"api_version": "v1alpha"}
                 )
                 logger.info("✅ Gemini Narrative Engine initialized successfully")
             except Exception as e:
-                logger.error(f"❌ Failed to initialize Gemini: {e}")
-                self.model = None
+                logger.error(f"❌ Failed to initialize Gemini client: {e}")
+                self.client = None
         else:
             logger.warning("⚠️ No Gemini API key found, engine will use fallback mode")
 
     def is_available(self) -> bool:
         """Check if Gemini is available"""
-        return self.model is not None
+        return self.client is not None
 
     async def generate_narrative_response(
         self,
         context: NarrativeContext,
         prompt: str,
-        max_tokens: int = 1000
+        max_tokens: int = 1000,
+        thinking_level: Optional[str] = None
     ) -> str:
         """Generate narrative response using Gemini"""
         if not self.is_available():
@@ -118,18 +132,17 @@ class GeminiNarrativeEngine:
             full_prompt = self._build_narrative_prompt(context, prompt)
 
             # Generate response
-            response = await asyncio.to_thread(
-                self.model.generate_content,
+            response_text = await asyncio.to_thread(
+                self._generate_text,
                 full_prompt,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=max_tokens,
-                    temperature=0.8,
-                    top_p=0.9,
-                    top_k=40
-                )
+                max_output_tokens=max_tokens,
+                temperature=0.8,
+                top_p=0.9,
+                top_k=40,
+                thinking_level=thinking_level
             )
 
-            return response.text.strip()
+            return response_text.strip()
 
         except Exception as e:
             logger.error(f"❌ Error generating narrative response: {e}")
@@ -139,7 +152,8 @@ class GeminiNarrativeEngine:
         self,
         context: NarrativeContext,
         decision_scenario: str,
-        options: List[str]
+        options: List[str],
+        thinking_level: Optional[str] = None
     ) -> List[DecisionOption]:
         """Generate AI-powered decision matrix with reasoning"""
         if not self.is_available():
@@ -166,8 +180,13 @@ class GeminiNarrativeEngine:
             Format as JSON array with fields: option, reasoning, consequences, probability_success, risk_level, alignment
             """
 
-            response = self.model.generate_content(prompt)
-            decision_data = json.loads(response.text)
+            response_text = self._generate_text(
+                prompt,
+                max_output_tokens=800,
+                temperature=0.7,
+                thinking_level=thinking_level
+            )
+            decision_data = json.loads(response_text)
 
             return [
                 DecisionOption(
@@ -199,7 +218,8 @@ class GeminiNarrativeEngine:
     def analyze_story_branches(
         self,
         context: NarrativeContext,
-        player_choice: str
+        player_choice: str,
+        thinking_level: Optional[str] = None
     ) -> List[StoryBranch]:
         """Analyze potential story branches from player choice"""
         if not self.is_available():
@@ -223,8 +243,13 @@ class GeminiNarrativeEngine:
             Format as JSON array with fields: branch_name, description, immediate_consequences, long_term_effects, character_impact, world_changes
             """
 
-            response = self.model.generate_content(prompt)
-            branch_data = json.loads(response.text)
+            response_text = self._generate_text(
+                prompt,
+                max_output_tokens=900,
+                temperature=0.75,
+                thinking_level=thinking_level
+            )
+            branch_data = json.loads(response_text)
 
             return [
                 StoryBranch(
@@ -247,7 +272,8 @@ class GeminiNarrativeEngine:
         context: NarrativeContext,
         npc_name: str,
         npc_personality: str,
-        situation: str
+        situation: str,
+        thinking_level: Optional[str] = None
     ) -> NPCBehavior:
         """Generate dynamic NPC behavior based on personality and situation"""
         if not self.is_available():
@@ -271,8 +297,13 @@ class GeminiNarrativeEngine:
             Format as JSON with fields: personality_traits, current_mood, reaction, dialogue_suggestions, action_recommendations
             """
 
-            response = self.model.generate_content(prompt)
-            behavior_data = json.loads(response.text)
+            response_text = self._generate_text(
+                prompt,
+                max_output_tokens=700,
+                temperature=0.65,
+                thinking_level=thinking_level
+            )
+            behavior_data = json.loads(response_text)
 
             return NPCBehavior(
                 npc_name=npc_name,
@@ -297,7 +328,8 @@ class GeminiNarrativeEngine:
     def generate_adaptive_story(
         self,
         context: NarrativeContext,
-        story_element: str
+        story_element: str,
+        thinking_level: Optional[str] = None
     ) -> str:
         """Generate adaptive story content based on campaign progression"""
         if not self.is_available():
@@ -322,8 +354,13 @@ class GeminiNarrativeEngine:
             Return as narrative text (2-3 paragraphs).
             """
 
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
+            response_text = self._generate_text(
+                prompt,
+                max_output_tokens=600,
+                temperature=0.85,
+                thinking_level=thinking_level
+            )
+            return response_text.strip()
 
         except Exception as e:
             logger.error(f"❌ Error generating adaptive story: {e}")
@@ -363,6 +400,86 @@ class GeminiNarrativeEngine:
         Response:
         """
 
+    def _generate_text(
+        self,
+        prompt: str,
+        *,
+        max_output_tokens: int = 600,
+        temperature: float = 0.8,
+        top_p: float = 0.9,
+        top_k: int = 40,
+        thinking_level: Optional[str] = None
+    ) -> str:
+        """Call Gemini and return concatenated text output."""
+        if not self.is_available():
+            raise RuntimeError("Gemini engine not available")
+
+        level = self._validate_thinking_level(thinking_level) if thinking_level else self.thinking_level
+        config_kwargs = {
+            "temperature": temperature,
+            "top_p": top_p,
+            "top_k": top_k,
+            "max_output_tokens": max_output_tokens,
+            "safety_settings": self.safety_settings
+        }
+        if level:
+            config_kwargs["thinking_level"] = level
+
+        try:
+            config = types.GenerateContentConfig(**config_kwargs)
+        except Exception as e:
+            # Fallback for older SDK versions that don't support thinking_level
+            if "thinking_level" in config_kwargs:
+                logger.warning(f"⚠️ 'thinking_level' not supported by installed SDK version: {e}")
+                del config_kwargs["thinking_level"]
+                config = types.GenerateContentConfig(**config_kwargs)
+            else:
+                raise e
+
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=[prompt],
+            config=config
+        )
+
+        return self._extract_text(response)
+
+    def _extract_text(self, response: Any) -> str:
+        """Extract plain text from a Gemini response."""
+        if not response or not getattr(response, "candidates", None):
+            raise ValueError("No candidates in Gemini response")
+
+        text_parts: List[str] = []
+        for candidate in response.candidates:
+            content = getattr(candidate, "content", None)
+            if not content or not getattr(content, "parts", None):
+                continue
+            for part in content.parts:
+                if getattr(part, "text", None):
+                    text_parts.append(part.text)
+
+        if not text_parts:
+            raise ValueError("No text parts in Gemini response")
+
+        return "\n".join(text_parts).strip()
+
+    def _validate_thinking_level(self, level: Optional[str]) -> Optional[str]:
+        """Normalize and validate requested thinking level."""
+        if level is None:
+            return "high"
+
+        normalized = str(level).lower().strip()
+        allowed_levels = {"low", "high"}
+        if normalized not in allowed_levels:
+            logger.warning(f"⚠️ Invalid thinking level '{level}' provided. Falling back to 'high'.")
+            return "high"
+        return normalized
+
+    def set_thinking_level(self, level: str) -> str:
+        """Update the default thinking level for future generations."""
+        self.thinking_level = self._validate_thinking_level(level)
+        return self.thinking_level
+
     def get_engine_status(self) -> Dict[str, Any]:
         """Get current engine status and capabilities"""
         return {
@@ -370,7 +487,8 @@ class GeminiNarrativeEngine:
             "version": "1.0.0",
             "gemini_available": self.is_available(),
             "api_key_configured": bool(self.api_key),
-            "model": "gemini-2.0-flash-exp" if self.is_available() else None,
+            "model": self.model_name if self.is_available() else None,
+            "thinking_level": self.thinking_level,
             "capabilities": [
                 "narrative_generation",
                 "decision_matrix",
@@ -385,7 +503,7 @@ class GeminiNarrativeEngine:
     # LEGACY COMPATIBILITY METHODS (for narrative_engine.py interface)
     # =========================================================================
 
-    def generate_quest(self, difficulty="medium", theme=None):
+    def generate_quest(self, difficulty="medium", theme=None, thinking_level: Optional[str] = None):
         """Generate a quest using Gemini or fallback"""
         if not self.is_available():
             return f"A {difficulty} quest in a fantasy world" + (f" with theme: {theme}" if theme else "")
@@ -396,38 +514,36 @@ class GeminiNarrativeEngine:
                 prompt += f" with the theme: {theme}"
             prompt += ". Provide a concise quest description with objectives."
 
-            response = self.model.generate_content(
+            response_text = self._generate_text(
                 prompt,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=300,
-                    temperature=0.8
-                )
+                max_output_tokens=300,
+                temperature=0.8,
+                thinking_level=thinking_level
             )
-            return response.text.strip()
+            return response_text.strip()
         except Exception as e:
             logger.error(f"Error generating quest: {e}")
             return f"Embark on a {difficulty} quest" + (f" themed around {theme}" if theme else "")
 
-    def generate_random_encounter(self, party_level, environment):
+    def generate_random_encounter(self, party_level, environment, thinking_level: Optional[str] = None):
         """Generate a random encounter"""
         if not self.is_available():
             return f"You encounter enemies in the {environment}"
 
         try:
             prompt = f"Generate a brief D&D encounter for a level {party_level} party in a {environment}. Just describe what they encounter in 2-3 sentences."
-            response = self.model.generate_content(
+            response_text = self._generate_text(
                 prompt,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=200,
-                    temperature=0.8
-                )
+                max_output_tokens=200,
+                temperature=0.8,
+                thinking_level=thinking_level
             )
-            return response.text.strip()
+            return response_text.strip()
         except Exception as e:
             logger.error(f"Error generating encounter: {e}")
             return f"You encounter hostile creatures in the {environment}!"
 
-    def describe_scene(self, location, characters):
+    def describe_scene(self, location, characters, thinking_level: Optional[str] = None):
         """Describe a scene"""
         if not self.is_available():
             return f"{', '.join(characters)} stand in {location}"
@@ -435,19 +551,18 @@ class GeminiNarrativeEngine:
         try:
             chars = ', '.join(characters)
             prompt = f"Describe in 2-3 vivid sentences: {chars} arrive at {location}. Make it atmospheric and engaging."
-            response = self.model.generate_content(
+            response_text = self._generate_text(
                 prompt,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=200,
-                    temperature=0.8
-                )
+                max_output_tokens=200,
+                temperature=0.8,
+                thinking_level=thinking_level
             )
-            return response.text.strip()
+            return response_text.strip()
         except Exception as e:
             logger.error(f"Error describing scene: {e}")
             return f"{chars} arrive at {location}, ready for adventure."
 
-    def handle_player_action(self, player_name, action, context=None):
+    def handle_player_action(self, player_name, action, context=None, thinking_level: Optional[str] = None):
         """Handle and narrate a player action"""
         if not self.is_available():
             return f"{player_name} {action}."
@@ -456,19 +571,18 @@ class GeminiNarrativeEngine:
             prompt = f"Narrate in 1-2 sentences: {player_name} {action}. Make it engaging."
             if context:
                 prompt += f" Context: {context}"
-            response = self.model.generate_content(
+            response_text = self._generate_text(
                 prompt,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=150,
-                    temperature=0.8
-                )
+                max_output_tokens=150,
+                temperature=0.8,
+                thinking_level=thinking_level
             )
-            return response.text.strip()
+            return response_text.strip()
         except Exception as e:
             logger.error(f"Error handling player action: {e}")
             return f"{player_name} {action}."
 
-    def describe_combat(self, attacker, target, damage=0, success=True):
+    def describe_combat(self, attacker, target, damage=0, success=True, thinking_level: Optional[str] = None):
         """Describe a combat action"""
         if not self.is_available():
             if success:
@@ -482,14 +596,13 @@ class GeminiNarrativeEngine:
             else:
                 prompt = f"In 1 sentence, describe: {attacker} attacks {target} but misses. Make it dramatic."
 
-            response = self.model.generate_content(
+            response_text = self._generate_text(
                 prompt,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=100,
-                    temperature=0.8
-                )
+                max_output_tokens=100,
+                temperature=0.8,
+                thinking_level=thinking_level
             )
-            return response.text.strip()
+            return response_text.strip()
         except Exception as e:
             logger.error(f"Error describing combat: {e}")
             if success:

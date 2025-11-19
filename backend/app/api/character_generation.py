@@ -6,11 +6,12 @@ from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+from ..config import settings
 from ..models.character_enhancement import (
     CharacterGenerationRequest, CharacterGenerationResponse,
     CharacterEnhancementRequest, CharacterEnhancementResponse,
     CharacterRetrievalResponse, ErrorResponse, HealthCheckResponse,
-    CharacterType, CharacterTone, EnhancementType
+    CharacterType, CharacterTone, EnhancementType, ThinkingLevel
 )
 from ..services.gemini_client import GeminiClient, GeminiError, QuotaExceededError, GenerationTimeoutError
 from ..services.gemini_character_enhancer import GeminiCharacterEnhancer
@@ -42,7 +43,12 @@ def get_gemini_client() -> GeminiClient:
                 status_code=500,
                 detail="Gemini API key not configured"
             )
-        _gemini_client = GeminiClient(api_key=api_key, timeout=30)
+        _gemini_client = GeminiClient(
+            api_key=api_key,
+            timeout=30,
+            text_model=settings.GEMINI_MODEL,
+            thinking_level=settings.GEMINI_THINKING_LEVEL
+        )
     return _gemini_client
 
 
@@ -126,13 +132,16 @@ async def generate_character(
         ai_enhanced = False
         enhancement_reason = None
 
+        requested_thinking_level = request.thinking_level.value if request.thinking_level else None
+
         # Enhance with AI if requested
         if request.enhance_with_ai:
             try:
                 enhancer = get_character_enhancer()
                 enhancement, cache_hit = await enhancer.enhance_character(
                     character,
-                    EnhancementType.FULL
+                    EnhancementType.FULL,
+                    thinking_level=requested_thinking_level
                 )
                 ai_enhanced = True
 
@@ -186,11 +195,13 @@ async def enhance_character(request: CharacterEnhancementRequest):
 
     try:
         enhancer = get_character_enhancer()
+        requested_thinking_level = request.thinking_level.value if request.thinking_level else None
 
         # Enhance character
         enhancement, cache_hit = await enhancer.enhance_character(
             request.character_data,
-            request.enhancement_type
+            request.enhancement_type,
+            thinking_level=requested_thinking_level
         )
 
         # Add enhancement to character data

@@ -7,6 +7,7 @@ A Flask microservice that securely handles Gemini API image generation requests.
 import os
 import base64
 from io import BytesIO
+from typing import Optional
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -28,10 +29,38 @@ if not GEMINI_API_KEY:
     print("WARNING: GEMINI_API_KEY not found in environment variables!")
     print("Please create a .env file with your API key.")
 
+# Media resolution helpers
+MEDIA_RESOLUTION_LEVELS = {
+    "media_resolution_low",
+    "media_resolution_medium",
+    "media_resolution_high"
+}
+
+
+def normalize_media_resolution(value: Optional[str], default: str = "media_resolution_high") -> str:
+    """Normalize user-provided media resolution values."""
+    if not value:
+        return default
+
+    normalized = str(value).strip().lower()
+    if not normalized.startswith("media_resolution_"):
+        normalized = f"media_resolution_{normalized}"
+
+    if normalized not in MEDIA_RESOLUTION_LEVELS:
+        return default
+
+    return normalized
+
+
+DEFAULT_MEDIA_RESOLUTION = normalize_media_resolution(os.getenv("GEMINI_MEDIA_RESOLUTION"))
+
 # Initialize Gemini client
 client = None
 if GEMINI_API_KEY:
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    client = genai.Client(
+        api_key=GEMINI_API_KEY,
+        http_options={"api_version": "v1alpha"}
+    )
 
 # Simple rate limiting (in-memory, not production-ready)
 request_times = []
@@ -205,7 +234,8 @@ def generate_scene():
         "description": "fantasy knight with sword and shield, cinematic lighting",
         "base_sprite": "base64_image_data" (optional - if provided, will enhance this image),
         "style": "photorealistic" (optional),
-        "aspect_ratio": "1:1" (optional)
+        "aspect_ratio": "1:1" (optional),
+        "media_resolution": "high" (optional - low/high, default high)
     }
     """
     if not client:
@@ -221,6 +251,10 @@ def generate_scene():
         description = data['description']
         base_sprite = data.get('baseSprite')  # Base64 encoded sprite image
         style = data.get('style', 'photorealistic')
+        requested_resolution = normalize_media_resolution(
+            data.get('media_resolution'),
+            default=DEFAULT_MEDIA_RESOLUTION
+        )
 
         # Start timing
         start_time = time.time()
@@ -239,6 +273,9 @@ def generate_scene():
 
         # Prepare contents for Gemini
         contents = []
+        generation_config = types.GenerateContentConfig(
+            media_resolution={"level": requested_resolution}
+        )
 
         # If base sprite provided, include it for image-to-image enhancement
         if base_sprite:
@@ -249,9 +286,15 @@ def generate_scene():
             # Decode base64 to bytes
             image_bytes = base64.b64decode(base_sprite)
 
-            # Add image first, then prompt (order matters for image editing)
-            from google.genai import types
-            contents.append(types.Part.from_bytes(data=image_bytes, mime_type='image/png'))
+            contents.append(
+                types.Part(
+                    inline_data=types.Blob(
+                        mime_type='image/png',
+                        data=image_bytes
+                    ),
+                    media_resolution={"level": requested_resolution}
+                )
+            )
 
         # Add text prompt
         contents.append(prompt)
@@ -259,7 +302,8 @@ def generate_scene():
         # Generate image using Gemini 2.5 Flash Image Preview
         response = client.models.generate_content(
             model='gemini-2.5-flash-image-preview',
-            contents=contents
+            contents=contents,
+            config=generation_config
         )
 
         # Extract image from response
@@ -338,4 +382,3 @@ if __name__ == '__main__':
         print("="*60 + "\n")
 
     app.run(debug=True, host='0.0.0.0', port=5000)
-

@@ -2,7 +2,7 @@
 from google import genai
 from google.genai import types
 import time
-from typing import Tuple
+from typing import Tuple, Optional
 
 
 class GeminiError(Exception):
@@ -23,7 +23,15 @@ class GenerationTimeoutError(GeminiError):
 class GeminiClient:
     """Wrapper for Gemini API with error handling and timeout management"""
 
-    def __init__(self, api_key: str, timeout: int = 30):
+    def __init__(
+        self,
+        api_key: str,
+        timeout: int = 30,
+        *,
+        text_model: Optional[str] = None,
+        image_model: Optional[str] = None,
+        thinking_level: str = "high"
+    ):
         """
         Initialize Gemini client
 
@@ -31,13 +39,20 @@ class GeminiClient:
             api_key: Gemini API key
             timeout: Maximum generation time in seconds
         """
-        self.client = genai.Client(api_key=api_key)
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options={"api_version": "v1alpha"}
+        )
         self.timeout = timeout
+        self.text_model = text_model or "gemini-3-pro-preview"
+        self.image_model = image_model or "gemini-2.5-flash-image"
+        self.default_thinking_level = self._validate_thinking_level(thinking_level)
 
     def generate_image(
         self,
         prompt: str,
-        aspect_ratio: str = "16:9"
+        aspect_ratio: str = "16:9",
+        model: Optional[str] = None
     ) -> Tuple[bytes, int]:
         """
         Generate image from prompt
@@ -61,8 +76,9 @@ class GeminiClient:
         try:
             # Note: Simplified API call without config
             # google-genai 0.2.2 doesn't support aspect_ratio via config
+            target_model = model or self.image_model
             response = self.client.models.generate_content(
-                model='gemini-2.5-flash-image',
+                model=target_model,
                 contents=[prompt]
             )
 
@@ -91,14 +107,16 @@ class GeminiClient:
     def generate_text(
         self,
         prompt: str,
-        model: str = "gemini-2.5-flash"
+        model: Optional[str] = None,
+        thinking_level: Optional[str] = None
     ) -> Tuple[str, int]:
         """
         Generate text from prompt using Gemini
 
         Args:
             prompt: Text prompt for generation
-            model: Gemini model to use (default: gemini-2.5-flash)
+            model: Gemini model to use (defaults to configured text model)
+            thinking_level: Override default Gemini thinking level ("low" or "high")
 
         Returns:
             Tuple of (generated_text, generation_time_ms)
@@ -111,9 +129,23 @@ class GeminiClient:
         start = time.time()
 
         try:
+            target_model = model or self.text_model
+            level = self._validate_thinking_level(thinking_level) if thinking_level else self.default_thinking_level
+            config = None
+            if level:
+                try:
+                    config = types.GenerateContentConfig(thinking_level=level)
+                except Exception as e:
+                    # Fallback for older SDK versions that don't support thinking_level
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"⚠️ 'thinking_level' not supported by installed SDK version: {e}")
+                    config = None
+
             response = self.client.models.generate_content(
-                model=model,
-                contents=[prompt]
+                model=target_model,
+                contents=[prompt],
+                config=config
             )
 
             # Extract text from response
@@ -145,7 +177,8 @@ class GeminiClient:
     def generate_character_enhancement(
         self,
         character_data: dict,
-        enhancement_type: str = "full"
+        enhancement_type: str = "full",
+        thinking_level: Optional[str] = None
     ) -> Tuple[dict, int]:
         """
         Generate character enhancement using specialized prompts
@@ -153,6 +186,7 @@ class GeminiClient:
         Args:
             character_data: Character data dictionary
             enhancement_type: Type of enhancement ("backstory", "personality", "quests", "full")
+            thinking_level: Optional Gemini thinking level override
 
         Returns:
             Tuple of (enhancement_data, generation_time_ms)
@@ -176,7 +210,10 @@ class GeminiClient:
                 prompt = self._build_full_enhancement_prompt(character_data)
 
             # Generate text
-            text_response, text_time = self.generate_text(prompt)
+            text_response, text_time = self.generate_text(
+                prompt,
+                thinking_level=thinking_level
+            )
 
             # Parse response into structured data
             enhancement_data = self._parse_enhancement_response(text_response, enhancement_type)
@@ -217,6 +254,17 @@ Generate 3-4 rich paragraphs covering:
 
 Style: Engaging fantasy writing, character-driven narrative.
 """
+
+    def _validate_thinking_level(self, level: Optional[str]) -> Optional[str]:
+        """Ensure thinking level values are valid."""
+        if level is None:
+            return "high"
+
+        normalized = str(level).strip().lower()
+        allowed = {"low", "high"}
+        if normalized not in allowed:
+            return "high"
+        return normalized
 
     def _build_personality_prompt(self, character_data: dict) -> str:
         """Build personality analysis prompt"""

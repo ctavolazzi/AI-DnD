@@ -14,11 +14,13 @@ A simple web application that generates pixel art sprites with PixelLab and enha
 
 ```bash
 # Install Python dependencies
-pip install flask flask-cors pillow pixellab python-dotenv google-generativeai
+pip install flask flask-cors pillow pixellab python-dotenv google-genai
 
 # Set API keys
 export PIXELLAB_API_KEY="your-pixellab-api-key"
 export GEMINI_API_KEY="your-gemini-api-key"
+# Optional: control Gemini image analysis resolution (low|medium|high)
+export GEMINI_MEDIA_RESOLUTION="media_resolution_high"
 ```
 
 ### Start Servers
@@ -193,4 +195,3 @@ Part of the AI-DnD project. See main repository for license details.
 ---
 
 **Enjoy creating and enhancing sprites!** 🎨✨
-

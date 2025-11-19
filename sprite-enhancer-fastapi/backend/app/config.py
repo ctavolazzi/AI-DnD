@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     # API Keys
     pixellab_api_key: Optional[str] = None
     gemini_api_key: Optional[str] = None
+    gemini_model: str = "gemini-3-pro-preview"
+    gemini_media_resolution: str = "media_resolution_high"
+    gemini_thinking_level: str = "high"
 
     # Storage
     storage_backend: str = "local"  # "local" or "s3"
@@ -44,4 +47,3 @@ class Settings(BaseSettings):
 
 # Create global settings instance
 settings = Settings()
-

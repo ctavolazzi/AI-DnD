@@ -174,7 +174,7 @@ The system is now **production-ready** with the following features:
 - `GET /ai/engine-status` - System status monitoring
 
 ### **Dependencies**
-- `google-generativeai` - Gemini API integration
+- `google-genai` - Gemini API integration
 - `flask` - Web server framework
 - `flask-cors` - Cross-origin resource sharing
 - `asyncio` - Asynchronous operations

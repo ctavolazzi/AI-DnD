@@ -36,12 +36,22 @@ class EnhancementType(str, Enum):
     FULL = "full"
 
 
+class ThinkingLevel(str, Enum):
+    """Gemini thinking levels"""
+    LOW = "low"
+    HIGH = "high"
+
+
 class CharacterGenerationRequest(BaseModel):
     """Request model for character generation"""
     character_type: CharacterType = Field(default=CharacterType.HERO, description="Type of character to generate")
     tone: CharacterTone = Field(default=CharacterTone.FANTASY, description="Tone/style of character")
     level: int = Field(default=1, ge=1, le=20, description="Character level")
     enhance_with_ai: bool = Field(default=True, description="Whether to enhance with AI")
+    thinking_level: Optional[ThinkingLevel] = Field(
+        default=None,
+        description="Gemini thinking level override ('low' for faster responses)"
+    )
 
 
 class CharacterEnhancementRequest(BaseModel):
@@ -50,6 +60,10 @@ class CharacterEnhancementRequest(BaseModel):
     enhancement_type: EnhancementType = Field(default=EnhancementType.FULL, description="Type of enhancement")
     include_quests: bool = Field(default=True, description="Whether to include quest hooks")
     include_voice: bool = Field(default=True, description="Whether to include character voice examples")
+    thinking_level: Optional[ThinkingLevel] = Field(
+        default=None,
+        description="Gemini thinking level override ('low' for faster responses)"
+    )
 
 
 class EnhancedBackstory(BaseModel):

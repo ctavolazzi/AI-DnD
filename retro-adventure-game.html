@@ -90,24 +90,124 @@
             --hp-red: #8b2500;
         }
 
-        /* Theme: Cyber Terminal - Neon Green Cyberpunk */
+        /* Theme: Cyber Terminal - Neon Green Cyberpunk (VCR/CRT Style) */
         [data-theme="cyber"] {
-            --bg-deep-brown: #000;
-            --bg-darker-brown: #0a0e0a;
+            --bg-deep-brown: #051005;
+            --bg-darker-brown: #020502;
             --panel-parchment: #001a00;
-            --panel-parchment-dark: #001100;
-            --border-wood: #0a0;
-            --border-bronze: #0f0;
-            --primary-gold: #0ff;
-            --accent-amber: #ff0;
-            --text-dark: #0f0;
-            --text-light: #0f0;
-            --text-cream: #0f0;
-            --accent-brown: #0a0;
-            --alert-rust: #f00;
-            --hp-green: #0f0;
-            --hp-yellow: #ff0;
-            --hp-red: #f00;
+            --panel-parchment-dark: #000d00;
+            --border-wood: #003300;
+            --border-bronze: #00ff00;
+            --primary-gold: #00ff00;
+            --accent-amber: #ccff00;
+            --text-dark: #00aa00;
+            --text-light: #00ff00;
+            --text-cream: #00dd00;
+            --accent-brown: #004400;
+            --alert-rust: #ff0000;
+            --hp-green: #00ff00;
+            --hp-yellow: #ffff00;
+            --hp-red: #ff0000;
+            --stat-blue: #0088ff;
+            --quest-complete: #00ff00;
+
+            /* CRT Glow */
+            text-shadow: 0 0 2px rgba(0, 255, 0, 0.4), 0 0 4px rgba(0, 255, 0, 0.2);
+        }
+
+        /* CRT Overlay Effects for Cyber Theme */
+        [data-theme="cyber"] .game-container {
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.9); /* Strong vignette */
+            border: 2px solid #111;
+            border-radius: 16px; /* CRT Tube corners */
+        }
+
+        /* Scanlines */
+        [data-theme="cyber"] .game-container::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%,
+                rgba(0, 0, 0, 0.25) 50%
+            ),
+            linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.06),
+                rgba(0, 255, 0, 0.02),
+                rgba(0, 0, 255, 0.06)
+            );
+            z-index: 1000;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* CRT Flicker */
+        [data-theme="cyber"] .game-container::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: rgba(0, 255, 0, 0.02);
+            opacity: 0;
+            z-index: 1000;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        [data-theme="cyber"] .panel {
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2), inset 0 0 20px rgba(0, 255, 0, 0.1);
+            background: rgba(0, 20, 0, 0.95);
+            border-radius: 4px;
+        }
+
+        [data-theme="cyber"] .panel-title {
+            background: #003300;
+            border-bottom: 2px solid #00ff00;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+            letter-spacing: 3px;
+        }
+
+        [data-theme="cyber"] .nav-button {
+            background: #001100;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+
+        [data-theme="cyber"] .nav-button:hover {
+            background: #003300;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+        }
+
+        /* VCR Tracking Animation */
+        @keyframes vcr-track {
+            0% { top: 0; opacity: 0; }
+            10% { top: 10%; opacity: 0.1; }
+            20% { top: 100%; opacity: 0; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        [data-theme="cyber"] body::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background: rgba(0, 255, 0, 0.2);
+            animation: vcr-track 5s linear infinite;
+            pointer-events: none;
+            z-index: 2000;
         }
 
         /* Theme: Gold Box - Royal Blue & Gold */
@@ -189,16 +289,130 @@
 
         .game-container {
             display: grid;
-            grid-template-columns: 70fr 30fr;  /* 70% main area, 30% sidebar */
-            grid-template-rows: 70px 1fr auto;  /* Header, content area, actions */
-            gap: 16px;  /* Increased from 12px for better spacing */
-            padding: 10px;
+            /* Use CSS variable set by LayoutManager, fallback to 300px */
+            grid-template-columns: var(--sidebar-width, 300px) 1fr var(--sidebar-width, 300px);
+            grid-template-rows: var(--header-height, 60px) 1fr;
+            gap: 16px;
+            padding: 16px;
             height: 100vh;
             background: var(--bg-deep-brown);
             background-image:
                 repeating-linear-gradient(0deg, transparent, transparent 2px,
                 rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
-            overflow: auto;  /* hidden → auto to allow scroll if needed */
+            overflow: hidden;
+            margin: 0;
+            width: 100vw;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1200px) {
+            .game-container {
+                grid-template-columns: 250px 1fr 250px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 50px 1fr auto;
+                padding: 8px;
+                gap: 8px;
+            }
+
+            .left-sidebar, .right-sidebar {
+                display: none; /* Hidden by default on mobile */
+                position: fixed;
+                top: 50px;
+                bottom: 60px;
+                width: 280px;
+                background: var(--bg-deep-brown);
+                z-index: 100;
+                padding: 16px;
+                border-right: 2px solid var(--border-bronze);
+                box-shadow: 4px 0 8px rgba(0,0,0,0.5);
+                overflow-y: auto;
+                transition: transform 0.3s ease;
+            }
+
+            .left-sidebar {
+                left: 0;
+                transform: translateX(-100%);
+            }
+
+            .right-sidebar {
+                right: 0;
+                border-left: 2px solid var(--border-bronze);
+                border-right: none;
+                transform: translateX(100%);
+            }
+
+            .left-sidebar.active { transform: translateX(0); }
+            .right-sidebar.active { transform: translateX(0); }
+
+            .main-area {
+                grid-column: 1;
+                grid-row: 2;
+            }
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            grid-column: 1;
+            grid-row: 2 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Main Center Area */
+        .main-area {
+            grid-column: 2;
+            grid-row: 2 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            grid-column: 3;
+            grid-row: 2 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Scene Viewer - Now Central */
+        .scene-viewer-panel {
+            flex: 0 0 auto; /* Fixed flex based on height */
+            height: var(--scene-height, 300px); /* Set by JS */
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+            max-height: none; /* Remove limit */
+            transition: height 0.2s ease;
+        }
+
+        .scene-viewer-content {
+            background: #000; /* Cinematic black background */
+        }
+
+        .scene-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Fill the frame */
+        }
+
+        /* Viewport/Log - Below Scene */
+        .viewport-container {
+            flex: 1;
+            min-height: 200px;
         }
 
         .panel {
@@ -2053,7 +2267,7 @@
         }
     </style>
 </head>
-<body data-theme="blackwhite">
+<body data-theme="cyber">
     <div class="game-container">
         <!-- Header -->
         <div class="header panel">
@@ -2061,9 +2275,65 @@
             <div class="subtitle">AN AI-POWERED DUNGEON & DRAGONS ADVENTURE</div>
         </div>
 
-        <!-- Main Gameplay Area (70% - Left Side) -->
+        <!-- Left Sidebar (Map & Navigation) -->
+        <div class="left-sidebar">
+            <!-- Map Section -->
+            <div class="center-map panel">
+                <div class="panel-title">MAP</div>
+                <div class="map-panel">
+                    <div class="map-display">
+                        <div class="map-grid" id="map"></div>
+                    </div>
+                    <div class="map-hud" id="map-hud">Hover a tile to see details…</div>
+                    <div class="map-legend">
+                        <div class="map-legend-title">MAP LEGEND</div>
+                        <div class="map-legend-items">
+                            <div class="map-legend-item">
+                                <div class="map-legend-symbol legend-unexplored">?</div>
+                                <span style="color: var(--text-light);">Unexplored</span>
+                            </div>
+                            <div class="map-legend-item">
+                                <div class="map-legend-symbol legend-visited">🍺</div>
+                                <span style="color: var(--text-light);">Visited</span>
+                            </div>
+                            <div class="map-legend-item">
+                                <div class="map-legend-symbol legend-blocked">⛔</div>
+                                <span style="color: var(--text-light);">Blocked</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Panel -->
+            <div class="navigation-panel panel">
+                <div class="panel-title">NAVIGATION</div>
+                <div class="navigation">
+                    <button class="nav-button" id="north">▲<br>NORTH</button>
+                    <button class="nav-button" id="west">◄<br>WEST</button>
+                    <button class="nav-button" id="examine">👁<br>LOOK</button>
+                    <button class="nav-button" id="east">►<br>EAST</button>
+                    <button class="nav-button" id="south">▼<br>SOUTH</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Gameplay Area (Center) -->
         <div class="main-area">
-            <!-- Adventure Log -->
+            <!-- Scene Viewer (Top) -->
+            <div class="scene-viewer-panel panel">
+                <div class="panel-title">SCENE VIEWER 🍌</div>
+                <div class="scene-viewer-content">
+                    <img id="scene-image" class="scene-image" alt="Generated scene">
+                    <div id="scene-loading" class="scene-loading">
+                        Generating scene with Nano Banana
+                    </div>
+                    <div id="scene-error" class="scene-error"></div>
+                    <div id="scene-fallback" class="scene-fallback"></div>
+                </div>
+            </div>
+
+            <!-- Adventure Log (Middle) -->
             <div class="viewport-container panel">
                 <div class="panel-title">ADVENTURE LOG</div>
                 <div class="current-location-indicator" id="current-location">
@@ -2080,63 +2350,16 @@
                 </div>
             </div>
 
-            <!-- Map Section (Center) -->
-            <div class="center-map panel">
-                <div class="panel-title">MAP</div>
-                <div class="map-panel">
-                    <div class="map-display">
-                        <div class="map-grid" id="map"></div>
-                    </div>
-                    <div class="map-hud" id="map-hud">Hover a tile to see details…</div>
-                    <div class="map-legend">
-                        <div class="map-legend-title">MAP LEGEND</div>
-                        <div class="map-legend-items">
-                            <div class="map-legend-item">
-                                <div class="map-legend-symbol legend-unexplored">?</div>
-                                <span style="color: var(--text-light);">Unexplored (Can Enter)</span>
-                            </div>
-                            <div class="map-legend-item">
-                                <div class="map-legend-symbol legend-visited">🍺</div>
-                                <span style="color: var(--text-light);">Visited</span>
-                            </div>
-                            <div class="map-legend-item">
-                                <div class="map-legend-symbol legend-wall">▲</div>
-                                <span style="color: var(--text-light);">Blocked Direction</span>
-                            </div>
-                            <div class="map-legend-item">
-                                <div class="map-legend-symbol legend-blocked">⛔</div>
-                                <span style="color: var(--text-light);">Fully Blocked</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Actions & Navigation (Side by Side) -->
-            <div class="actions-navigation-container">
-                <!-- Actions Panel -->
-                <div class="contextual-actions-panel panel">
-                    <div class="panel-title">ACTIONS</div>
-                    <div class="contextual-actions" id="contextual-actions">
-                        <!-- Dynamically populated based on context -->
-                    </div>
-                </div>
-
-                <!-- Navigation Panel -->
-                <div class="navigation-panel panel">
-                    <div class="panel-title">NAVIGATION</div>
-                    <div class="navigation">
-                        <button class="nav-button" id="north">▲<br>NORTH</button>
-                        <button class="nav-button" id="west">◄<br>WEST</button>
-                        <button class="nav-button" id="examine">👁<br>LOOK</button>
-                        <button class="nav-button" id="east">►<br>EAST</button>
-                        <button class="nav-button" id="south">▼<br>SOUTH</button>
-                    </div>
+            <!-- Actions Panel (Bottom) -->
+            <div class="contextual-actions-panel panel">
+                <div class="panel-title">ACTIONS</div>
+                <div class="contextual-actions" id="contextual-actions">
+                    <!-- Dynamically populated based on context -->
                 </div>
             </div>
         </div>
 
-        <!-- Player Status Sidebar (30% - Right Side) -->
+        <!-- Right Sidebar (Character & Status) -->
         <div class="right-sidebar">
             <!-- Character Panel (Top) -->
             <div class="character-panel panel">
@@ -2168,20 +2391,7 @@
                 </div>
             </div>
 
-            <!-- Scene Viewer (Middle) -->
-            <div class="scene-viewer-panel panel">
-                <div class="panel-title">SCENE VIEWER 🍌</div>
-                <div class="scene-viewer-content">
-                    <img id="scene-image" class="scene-image" alt="Generated scene">
-                    <div id="scene-loading" class="scene-loading">
-                        Generating scene with Nano Banana
-                    </div>
-                    <div id="scene-error" class="scene-error"></div>
-                    <div id="scene-fallback" class="scene-fallback"></div>
-                </div>
-            </div>
-
-            <!-- Tabbed Panel (Bottom) - Inventory/Map/Quest Log -->
+            <!-- Tabbed Panel (Bottom) - Inventory/Quest Log -->
             <div class="tabbed-panel panel">
                 <div class="panel-title">REFERENCE</div>
 
@@ -2223,8 +2433,6 @@
                     </div>
                 </div>
 
-                <!-- Map tab removed: map is now always visible in main area -->
-
                 <!-- Tab Content: Quest Log -->
                 <div class="tab-content" id="tab-quest">
                     <div class="quest-panel">
@@ -2249,6 +2457,58 @@
             </div>
         </div>
     </div>
+
+    <!-- Mobile HUD Controls -->
+    <div class="hud-controls">
+        <button class="hud-btn left" id="toggle-map-nav">
+            <span class="icon">🗺️</span>
+            <span class="label">MAP & NAV</span>
+        </button>
+        <button class="hud-btn right" id="toggle-char-stats">
+            <span class="icon">👤</span>
+            <span class="label">STATUS</span>
+        </button>
+    </div>
+
+    <style>
+        .hud-controls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: var(--bg-darker-brown);
+            border-top: 2px solid var(--border-bronze);
+            z-index: 200;
+            padding: 8px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @media (max-width: 900px) {
+            .hud-controls { display: flex; }
+        }
+
+        .hud-btn {
+            background: var(--panel-parchment);
+            border: 2px solid var(--border-wood);
+            color: var(--text-dark);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .hud-btn:active {
+            transform: translateY(2px);
+            background: var(--primary-gold);
+        }
+    </style>
 
     <!-- Mobile Action Buttons -->
     <div class="mobile-buttons">
@@ -3108,6 +3368,68 @@
         }
 
         // ============================================================
+        // LAYOUT MANAGER - DYNAMIC RESPONSIVE SYSTEM
+        // ============================================================
+        class LayoutManager {
+            constructor() {
+                this.root = document.documentElement;
+                this.container = document.querySelector('.game-container');
+                this.init();
+            }
+
+            init() {
+                window.addEventListener('resize', () => this.updateLayout());
+                this.updateLayout(); // Initial calculation
+                console.log('📐 LayoutManager initialized');
+            }
+
+            updateLayout() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                // Define layout constraints
+                const headerHeight = 60;
+                const padding = 32; // 16px * 2
+                const gap = 16;
+
+                // Calculate available space
+                const availableHeight = height - headerHeight - padding;
+                const availableWidth = width - padding;
+
+                // Dynamic Sidebar Width Calculation
+                // Target: 25% of width, constrained between 250px and 350px
+                let sidebarWidth = Math.floor(availableWidth * 0.25);
+                sidebarWidth = Math.max(250, Math.min(350, sidebarWidth));
+
+                // Apply to CSS variables
+                this.root.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
+                this.root.style.setProperty('--header-height', `${headerHeight}px`);
+
+                // Dynamic Scene/Log Split
+                // Target: Scene takes 60% of available main area height
+                // Main area height is roughly availableHeight (minus internal gaps)
+                const mainAreaHeight = availableHeight;
+                const sceneHeight = Math.floor(mainAreaHeight * 0.55); // 55% scene
+                const logHeight = mainAreaHeight - sceneHeight - gap - 100; // Remaining for log (minus actions)
+
+                this.root.style.setProperty('--scene-height', `${sceneHeight}px`);
+                this.root.style.setProperty('--log-height', `${Math.max(150, logHeight)}px`);
+
+                // Debug info
+                // console.log(`Layout: W=${width} H=${height} Sidebar=${sidebarWidth} Scene=${sceneHeight}`);
+            }
+        }
+
+        // Initialize Layout Manager when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const layoutManager = new LayoutManager();
+        });
+
+        // ============================================================
+        // END LAYOUT MANAGER
+        // ============================================================
+
+        // ============================================================
         // NANO BANANA IMAGE GENERATOR
         // ============================================================
 
@@ -3472,6 +3794,65 @@
 
         // ============================================================
         // END NANO BANANA IMAGE GENERATOR
+        // ============================================================
+
+        // ============================================================
+        // LAYOUT MANAGER - DYNAMIC RESPONSIVE SYSTEM
+        // ============================================================
+        class LayoutManager {
+            constructor() {
+                this.root = document.documentElement;
+                this.container = document.querySelector('.game-container');
+                this.init();
+            }
+
+            init() {
+                window.addEventListener('resize', () => this.updateLayout());
+                this.updateLayout(); // Initial calculation
+                console.log('📐 LayoutManager initialized');
+            }
+
+            updateLayout() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                
+                // Define layout constraints
+                const headerHeight = 60;
+                const padding = 32; // 16px * 2
+                const gap = 16;
+                
+                // Calculate available space
+                const availableHeight = height - headerHeight - padding;
+                const availableWidth = width - padding;
+
+                // Dynamic Sidebar Width Calculation
+                // Target: 25% of width, constrained between 250px and 350px
+                let sidebarWidth = Math.floor(availableWidth * 0.25);
+                sidebarWidth = Math.max(250, Math.min(350, sidebarWidth));
+
+                // Apply to CSS variables
+                this.root.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
+                this.root.style.setProperty('--header-height', `${headerHeight}px`);
+
+                // Dynamic Scene/Log Split
+                // Target: Scene takes 60% of available main area height
+                // Main area height is roughly availableHeight (minus internal gaps)
+                const mainAreaHeight = availableHeight;
+                const sceneHeight = Math.floor(mainAreaHeight * 0.55); // 55% scene
+                const logHeight = mainAreaHeight - sceneHeight - gap - 100; // Remaining for log (minus actions)
+
+                this.root.style.setProperty('--scene-height', `${sceneHeight}px`);
+                this.root.style.setProperty('--log-height', `${Math.max(150, logHeight)}px`);
+            }
+        }
+
+        // Initialize Layout Manager when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const layoutManager = new LayoutManager();
+        });
+
+        // ============================================================
+        // END LAYOUT MANAGER
         // ============================================================
 
         // Game State
@@ -5479,6 +5860,23 @@
         // END ITEM IMAGE GENERATION
         // ============================================================
 
+        // Mobile Menu Toggles
+        document.getElementById('toggle-map-nav').addEventListener('click', () => {
+            document.querySelector('.left-sidebar').classList.toggle('active');
+            document.querySelector('.right-sidebar').classList.remove('active'); // Close other
+        });
+
+        document.getElementById('toggle-char-stats').addEventListener('click', () => {
+            document.querySelector('.right-sidebar').classList.toggle('active');
+            document.querySelector('.left-sidebar').classList.remove('active'); // Close other
+        });
+
+        // Close menus when clicking outside (on main area)
+        document.querySelector('.main-area').addEventListener('click', () => {
+            document.querySelector('.left-sidebar').classList.remove('active');
+            document.querySelector('.right-sidebar').classList.remove('active');
+        });
+
         // ============================================================
         // THEME SWITCHER
         // ============================================================
@@ -5499,7 +5897,7 @@
         }
 
         // Load saved theme on page load
-        const savedTheme = localStorage.getItem('dnd-theme') || 'blackwhite';
+        const savedTheme = localStorage.getItem('dnd-theme') || 'cyber';
         document.body.dataset.theme = savedTheme;
 
         // Add theme dropdown to header (after page loads)
