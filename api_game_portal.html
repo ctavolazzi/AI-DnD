@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-DnD API Control Room</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --bg: #f7f7fb;
+            --card: #ffffff;
+            --text: #1f2a37;
+            --muted: #6b7280;
+            --accent: #3b82f6;
+            --accent-dark: #1e3a8a;
+            --border: #e5e7eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 24px;
+            background: linear-gradient(120deg, #1f2937 0%, #111827 60%, #0f172a 100%);
+            color: white;
+        }
+
+        header h1 {
+            margin: 0 0 6px;
+            font-size: 1.9rem;
+        }
+
+        header p {
+            margin: 0;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .app {
+            max-width: 1200px;
+            margin: -40px auto 60px auto;
+            padding: 0 20px 60px;
+        }
+
+        .panel {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 24px;
+            margin-top: 20px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+            border: 1px solid var(--border);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 1rem;
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid.two {
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+
+        .grid.three {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.25);
+        }
+
+        button.secondary {
+            background: #0f172a;
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        .session-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .session-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .session-card:hover,
+        .session-card.active {
+            border-color: var(--accent);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        }
+
+        .session-card small {
+            display: block;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .session-card .status {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            color: var(--success);
+            gap: 4px;
+        }
+
+        .status::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .log {
+            font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+            background: #0f172a;
+            color: #e5e7eb;
+            border-radius: 10px;
+            padding: 16px;
+            height: 140px;
+            overflow: auto;
+        }
+
+        .characters-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .character-card {
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .hp-bar {
+            height: 8px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .hp-bar span {
+            display: block;
+            height: 100%;
+            background: var(--success);
+        }
+
+        .events-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .events-list li {
+            border-bottom: 1px solid var(--border);
+            padding: 10px 0;
+        }
+
+        .events-list li:last-child {
+            border-bottom: none;
+        }
+
+        .empty-state {
+            padding: 20px;
+            text-align: center;
+            color: var(--muted);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .images-grid img {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 700px) {
+            header {
+                text-align: center;
+            }
+
+            .panel {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AI-DnD API Control Room</h1>
+        <p>Experiment with the FastAPI backend from 475aaff7-48ec-4b66-b275-fb91003dab2a.pdf in real time.</p>
+    </header>
+
+    <main class="app">
+        <section class="panel" id="connectionPanel">
+            <h2>Connect to the API</h2>
+            <div class="grid two">
+                <div>
+                    <label for="baseUrl">Base URL</label>
+                    <input id="baseUrl" type="url" value="http://localhost:8000" placeholder="http://localhost:8000">
+                </div>
+                <div>
+                    <label>&nbsp;</label>
+                    <div class="grid two">
+                        <button id="healthBtn">Check Health</button>
+                        <button id="docsBtn" class="secondary" type="button">Open Swagger</button>
+                    </div>
+                </div>
+            </div>
+            <pre class="log" id="healthLog">Use the buttons above to verify the server is running.</pre>
+        </section>
+
+        <section class="panel" id="createPanel">
+            <h2>Start a New Game Session</h2>
+            <form id="createSessionForm" class="grid three">
+                <div>
+                    <label for="sessionName">Name</label>
+                    <input id="sessionName" name="name" value="New Adventure" required>
+                </div>
+                <div>
+                    <label for="difficulty">Difficulty</label>
+                    <select id="difficulty" name="difficulty">
+                        <option value="relaxed">relaxed</option>
+                        <option value="medium" selected>medium</option>
+                        <option value="hard">hard</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="aiModel">AI Model</label>
+                    <select id="aiModel" name="ai_model">
+                        <option value="mistral" selected>mistral</option>
+                        <option value="gemini">gemini</option>
+                        <option value="llama">llama</option>
+                    </select>
+                </div>
+                <div>
+                    <label>&nbsp;</label>
+                    <button type="submit">Create Session</button>
+                </div>
+            </form>
+            <div id="createSessionStatus" class="empty-state" style="margin-top: 16px;">No session created yet.</div>
+        </section>
+
+        <section class="panel" id="sessionsPanel">
+            <div class="panel-header">
+                <h2>Existing Sessions</h2>
+                <div class="grid two">
+                    <button id="refreshSessions">Refresh List</button>
+                    <button id="loadActiveSessions" class="secondary">Load Active State</button>
+                </div>
+            </div>
+            <div id="sessionList" class="empty-state">Click “Refresh List” to pull data.</div>
+        </section>
+
+        <section class="panel" id="sessionDetails" hidden>
+            <div class="panel-header">
+                <div>
+                    <h2 id="sessionTitle">Session Details</h2>
+                    <p id="sessionMeta" style="margin: 0; color: var(--muted);"></p>
+                </div>
+                <div class="grid two">
+                    <button id="saveStateBtn" class="secondary" type="button">Save Snapshot</button>
+                    <button id="loadStateBtn" class="secondary" type="button">Load Snapshot</button>
+                </div>
+            </div>
+
+            <div class="grid two">
+                <div>
+                    <h3>Quick Character</h3>
+                    <form id="quickCharacterForm" class="grid two">
+                        <div>
+                            <label>Name</label>
+                            <input name="name" value="Aria">
+                        </div>
+                        <div>
+                            <label>Class</label>
+                            <select name="class">
+                                <option value="Fighter">Fighter</option>
+                                <option value="Wizard" selected>Wizard</option>
+                                <option value="Rogue">Rogue</option>
+                                <option value="Cleric">Cleric</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>HP</label>
+                            <input name="hp" type="number" value="30" min="1">
+                        </div>
+                        <div>
+                            <label>Max HP</label>
+                            <input name="max_hp" type="number" value="30" min="1">
+                        </div>
+                        <div>
+                            <label>Attack</label>
+                            <input name="attack" type="number" value="10" min="1">
+                        </div>
+                        <div>
+                            <label>Defense</label>
+                            <input name="defense" type="number" value="5" min="0">
+                        </div>
+                        <div>
+                            <label>&nbsp;</label>
+                            <button type="submit">Create Character</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div>
+                    <h3>Advance Turn</h3>
+                    <form id="advanceTurnForm">
+                        <label>Event Summary (optional)</label>
+                        <input name="summary" placeholder="Heroes explore the Ember Ruins">
+                        <label style="margin-top: 10px; display:block;">Description</label>
+                        <textarea name="description" placeholder="Add extra color that will be logged with the turn."></textarea>
+                        <button type="submit" style="margin-top: 10px;">Advance Turn</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="grid three" style="margin-top: 24px;">
+                <div>
+                    <h3>Characters</h3>
+                    <div id="characterList" class="characters-list"></div>
+                </div>
+                <div>
+                    <h3>Current Location</h3>
+                    <div id="locationCard" class="empty-state">No location data yet.</div>
+                </div>
+                <div>
+                    <h3>Recent Events</h3>
+                    <ul id="eventsList" class="events-list"></ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px;">
+                <h3>Dashboard Snapshot</h3>
+                <div id="dashboardCard" class="empty-state">Click a session card to view dashboard data.</div>
+            </div>
+        </section>
+
+        <section class="panel" id="imagesPanel">
+            <div class="panel-header">
+                <h2>Featured Image Cache</h2>
+                <button id="refreshImages" type="button">Refresh Images</button>
+            </div>
+            <div id="imageGrid" class="empty-state">No cached images were found. Generate some via the API first.</div>
+        </section>
+    </main>
+
+    <script>
+        const state = {
+            sessions: [],
+            activeSession: null,
+            baseUrlInput: document.getElementById('baseUrl')
+        };
+
+        const healthLog = document.getElementById('healthLog');
+        const sessionList = document.getElementById('sessionList');
+        const sessionDetails = document.getElementById('sessionDetails');
+        const sessionTitle = document.getElementById('sessionTitle');
+        const sessionMeta = document.getElementById('sessionMeta');
+        const characterList = document.getElementById('characterList');
+        const locationCard = document.getElementById('locationCard');
+        const eventsList = document.getElementById('eventsList');
+        const dashboardCard = document.getElementById('dashboardCard');
+        const createSessionStatus = document.getElementById('createSessionStatus');
+        const imageGrid = document.getElementById('imageGrid');
+
+        function formatDate(dateString) {
+            if (!dateString) return '—';
+            const date = new Date(dateString);
+            if (Number.isNaN(date.getTime())) return dateString;
+            return date.toLocaleString();
+        }
+
+        function getBaseUrl() {
+            const value = state.baseUrlInput.value.trim();
+            if (!value) {
+                throw new Error('Base URL is empty');
+            }
+            return value.replace(/\/$/, '');
+        }
+
+        async function apiFetch(path, options = {}) {
+            const base = getBaseUrl();
+            const url = `${base}${path}`;
+            const opts = { ...options };
+
+            opts.headers = {
+                'Accept': 'application/json',
+                ...(options.headers || {})
+            };
+
+            if (opts.body && typeof opts.body !== 'string') {
+                opts.headers['Content-Type'] = 'application/json';
+                opts.body = JSON.stringify(opts.body);
+            }
+
+            const response = await fetch(url, opts);
+            const contentType = response.headers.get('content-type') || '';
+
+            if (!response.ok) {
+                const errorPayload = contentType.includes('application/json') ? await response.json() : await response.text();
+                throw new Error(typeof errorPayload === 'string' ? errorPayload : JSON.stringify(errorPayload));
+            }
+
+            if (response.status === 204) {
+                return null;
+            }
+
+            if (contentType.includes('application/json')) {
+                return await response.json();
+            }
+
+            return await response.text();
+        }
+
+        function log(message, target = healthLog) {
+            const now = new Date().toLocaleTimeString();
+            target.textContent = `[${now}] ${message}\n${target.textContent}`.slice(0, 1600);
+        }
+
+        async function checkHealth() {
+            try {
+                log('Checking /health ...');
+                const payload = await apiFetch('/health');
+                log(JSON.stringify(payload, null, 2));
+            } catch (error) {
+                log(`Error: ${error.message}`);
+            }
+        }
+
+        async function createSession(event) {
+            event.preventDefault();
+            const form = event.target;
+            const body = {
+                name: form.name.value || 'New Adventure',
+                difficulty: form.difficulty.value,
+                ai_model: form.ai_model.value
+            };
+
+            try {
+                createSessionStatus.textContent = 'Creating session ...';
+                const session = await apiFetch('/api/v1/game/sessions', {
+                    method: 'POST',
+                    body
+                });
+                createSessionStatus.textContent = `Session ${session.name} created (ID: ${session.id}).`;
+                await loadSessions();
+                selectSession(session.id);
+            } catch (error) {
+                createSessionStatus.textContent = `Failed to create session: ${error.message}`;
+            }
+        }
+
+        function renderSessions() {
+            if (!state.sessions.length) {
+                sessionList.className = 'empty-state';
+                sessionList.textContent = 'No sessions found. Create one above.';
+                return;
+            }
+
+            sessionList.className = 'session-list';
+            sessionList.innerHTML = state.sessions.map((session) => {
+                const activeClass = state.activeSession === session.id ? 'session-card active' : 'session-card';
+                return `
+                    <div class="${activeClass}" data-session="${session.id}">
+                        <strong>${session.name}</strong>
+                        <small>ID: ${session.id}</small>
+                        <small>Turns: ${session.turn_count} · Characters: ${session.character_count}</small>
+                        <span class="status">${session.status}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadSessions() {
+            try {
+                sessionList.className = 'empty-state';
+                sessionList.textContent = 'Loading sessions ...';
+                const sessions = await apiFetch('/api/v1/frontend/sessions?limit=20');
+                state.sessions = sessions;
+                renderSessions();
+            } catch (error) {
+                sessionList.className = 'empty-state';
+                sessionList.textContent = `Unable to load sessions: ${error.message}`;
+            }
+        }
+
+        async function selectSession(sessionId) {
+            if (!sessionId) return;
+            state.activeSession = sessionId;
+            renderSessions();
+
+            try {
+                sessionDetails.hidden = false;
+                sessionTitle.textContent = 'Loading session ...';
+                sessionMeta.textContent = '';
+                characterList.innerHTML = '';
+                locationCard.textContent = 'Loading location ...';
+                eventsList.innerHTML = '';
+                dashboardCard.textContent = 'Loading dashboard ...';
+
+                const [stateSummary, dashboard] = await Promise.all([
+                    apiFetch(`/api/v1/frontend/sessions/${sessionId}/state`),
+                    apiFetch(`/api/v1/frontend/sessions/${sessionId}/dashboard`)
+                ]);
+
+                sessionTitle.textContent = stateSummary.session.name;
+                sessionMeta.textContent = `Turns: ${stateSummary.session.turn_count} · Characters: ${stateSummary.characters.length}`;
+
+                renderCharacters(stateSummary.characters);
+                renderLocation(stateSummary.current_location);
+                renderEvents(stateSummary.recent_events);
+                renderDashboard(dashboard);
+            } catch (error) {
+                sessionTitle.textContent = 'Unable to load session';
+                sessionMeta.textContent = error.message;
+            }
+        }
+
+        function renderCharacters(characters) {
+            if (!characters || !characters.length) {
+                characterList.innerHTML = '<div class="empty-state">No characters yet.</div>';
+                return;
+            }
+
+            characterList.innerHTML = characters.map((character) => {
+                const hpPercent = Math.max(0, Math.min(100, Math.round((character.hp / character.max_hp) * 100)));
+                return `
+                    <article class="character-card">
+                        <strong>${character.name}</strong>
+                        <div>${character.char_class} · ${character.alive ? 'Alive' : 'Defeated'}</div>
+                        <div class="hp-bar"><span style="width:${hpPercent}%"></span></div>
+                        <small>${character.hp} / ${character.max_hp} HP</small>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function renderLocation(location) {
+            if (!location) {
+                locationCard.className = 'empty-state';
+                locationCard.textContent = 'No location selected. Use quick actions to move the party.';
+                return;
+            }
+
+            locationCard.className = 'character-card';
+            locationCard.innerHTML = `
+                <strong>${location.name}</strong>
+                <div style="margin: 6px 0; font-size: 0.9rem; color: var(--muted);">${location.location_type}</div>
+                <p style="margin: 0;">${location.description}</p>
+            `;
+        }
+
+        function renderEvents(events) {
+            if (!events || !events.length) {
+                eventsList.innerHTML = '<li class="empty-state">No events logged yet.</li>';
+                return;
+            }
+
+            eventsList.innerHTML = events.map((event) => `
+                <li>
+                    <strong>${event.type}</strong>
+                    <div style="color: var(--muted); font-size: 0.85rem;">Turn ${event.turn} · ${formatDate(event.timestamp)}</div>
+                    <div>${event.description || event.summary}</div>
+                </li>
+            `).join('');
+        }
+
+        function renderDashboard(dashboard) {
+            const stats = dashboard.statistics;
+            dashboardCard.className = 'character-card';
+            dashboardCard.innerHTML = `
+                <strong>${dashboard.session_name}</strong>
+                <div style="display:flex; gap: 14px; flex-wrap: wrap; margin-top: 12px;">
+                    <div><small>Characters</small><div style="font-size:1.4rem;">${stats.characters}</div></div>
+                    <div><small>Locations</small><div style="font-size:1.4rem;">${stats.locations}</div></div>
+                    <div><small>Events</small><div style="font-size:1.4rem;">${stats.events}</div></div>
+                    <div><small>Turns</small><div style="font-size:1.4rem;">${stats.turns}</div></div>
+                </div>
+                <div style="margin-top:12px; font-size:0.9rem; color:var(--muted);">Status: ${dashboard.status} · Last played ${formatDate(dashboard.last_played)}</div>
+            `;
+        }
+
+        async function quickCharacter(event) {
+            event.preventDefault();
+            if (!state.activeSession) {
+                alert('Select a session first.');
+                return;
+            }
+
+            const form = event.target;
+            const data = Object.fromEntries(new FormData(form));
+            data.hp = Number(data.hp);
+            data.max_hp = Number(data.max_hp);
+            data.attack = Number(data.attack);
+            data.defense = Number(data.defense);
+
+            try {
+                await apiFetch(`/api/v1/frontend/sessions/${state.activeSession}/quick-action?action=create_character`, {
+                    method: 'POST',
+                    body: { data }
+                });
+                form.reset();
+                await selectSession(state.activeSession);
+            } catch (error) {
+                alert(`Failed to create character: ${error.message}`);
+            }
+        }
+
+        async function advanceTurn(event) {
+            event.preventDefault();
+            if (!state.activeSession) {
+                alert('Select a session first.');
+                return;
+            }
+
+            const form = event.target;
+            const summary = form.summary.value.trim();
+            const description = form.description.value.trim();
+
+            const eventsPayload = [];
+            if (summary || description) {
+                eventsPayload.push({
+                    type: 'story',
+                    summary: summary || description,
+                    description: description || summary
+                });
+            }
+
+            try {
+                await apiFetch(`/api/v1/game/sessions/${state.activeSession}/turns/next`, {
+                    method: 'POST',
+                    body: { events: eventsPayload }
+                });
+                form.reset();
+                await selectSession(state.activeSession);
+            } catch (error) {
+                alert(`Failed to advance turn: ${error.message}`);
+            }
+        }
+
+        async function saveState() {
+            if (!state.activeSession) return;
+            try {
+                const response = await apiFetch(`/api/v1/game/sessions/${state.activeSession}/save`, { method: 'POST' });
+                alert(`Snapshot saved at turn ${response.turn}.`);
+            } catch (error) {
+                alert(`Save failed: ${error.message}`);
+            }
+        }
+
+        async function loadState() {
+            if (!state.activeSession) return;
+            try {
+                const response = await apiFetch(`/api/v1/game/sessions/${state.activeSession}/load`, { method: 'POST' });
+                alert(`State loaded. Turn ${response.turn}.`);
+                await selectSession(state.activeSession);
+            } catch (error) {
+                alert(`Load failed: ${error.message}`);
+            }
+        }
+
+        async function loadImages() {
+            try {
+                imageGrid.className = 'empty-state';
+                imageGrid.textContent = 'Loading images ...';
+                const images = await apiFetch('/api/v1/images/search?page_size=6');
+                if (!images.items.length) {
+                    imageGrid.className = 'empty-state';
+                    imageGrid.textContent = 'No cached images were found.';
+                    return;
+                }
+
+                const base = getBaseUrl();
+                imageGrid.className = 'images-grid';
+                imageGrid.innerHTML = images.items.map((item) => {
+                    const src = item.storage_path_thumbnail ? `${base}/${item.storage_path_thumbnail}` : `${base}/${item.storage_path_full}`;
+                    return `
+                        <figure>
+                            <img src="${src}" alt="${item.subject_name}">
+                            <figcaption style="font-size:0.85rem; margin-top:6px;">${item.subject_name}</figcaption>
+                        </figure>
+                    `;
+                }).join('');
+            } catch (error) {
+                imageGrid.className = 'empty-state';
+                imageGrid.textContent = `Unable to load images: ${error.message}`;
+            }
+        }
+
+        function openDocs() {
+            try {
+                const docsUrl = `${getBaseUrl()}/docs`;
+                window.open(docsUrl, '_blank');
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function handleSessionClick(event) {
+            const card = event.target.closest('[data-session]');
+            if (!card) return;
+            const sessionId = card.getAttribute('data-session');
+            selectSession(sessionId);
+        }
+
+        document.getElementById('healthBtn').addEventListener('click', checkHealth);
+        document.getElementById('docsBtn').addEventListener('click', openDocs);
+        document.getElementById('createSessionForm').addEventListener('submit', createSession);
+        document.getElementById('refreshSessions').addEventListener('click', loadSessions);
+        document.getElementById('loadActiveSessions').addEventListener('click', () => state.activeSession && selectSession(state.activeSession));
+        document.getElementById('quickCharacterForm').addEventListener('submit', quickCharacter);
+        document.getElementById('advanceTurnForm').addEventListener('submit', advanceTurn);
+        document.getElementById('saveStateBtn').addEventListener('click', saveState);
+        document.getElementById('loadStateBtn').addEventListener('click', loadState);
+        document.getElementById('refreshImages').addEventListener('click', loadImages);
+        sessionList.addEventListener('click', handleSessionClick);
+
+        // Auto-connect when the page first loads
+        checkHealth();
+        loadSessions();
+        loadImages();
+    </script>
+</body>
+</html>

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results History - AI-DnD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #202122;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #a7d7f9;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            font-weight: 400;
+            color: #000;
+            border-bottom: 1px solid #a7d7f9;
+            padding-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #54595d;
+            font-size: 0.875em;
+            margin-top: 5px;
+        }
+
+        .timeline {
+            background: white;
+            border: 1px solid #a7d7f9;
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .test-run {
+            border-bottom: 1px solid #a7d7f9;
+            position: relative;
+        }
+
+        .test-run:last-child {
+            border-bottom: none;
+        }
+
+        .test-run-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            transition: background 0.2s;
+        }
+
+        .test-run-header:hover {
+            background: #eaecf0;
+        }
+
+        .test-run-header.expanded {
+            background: #eaecf0;
+            border-bottom: 1px solid #a7d7f9;
+        }
+
+        .test-run-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .test-run-date {
+            font-weight: 600;
+            color: #000;
+            font-size: 1.1em;
+        }
+
+        .test-run-id {
+            color: #54595d;
+            font-size: 0.9em;
+            font-family: monospace;
+        }
+
+        .test-run-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-badge {
+            padding: 4px 12px;
+            border-radius: 2px;
+            font-size: 0.875em;
+            font-weight: 500;
+        }
+
+        .stat-badge.passed {
+            background: #d5f4e6;
+            color: #14866d;
+        }
+
+        .stat-badge.failed {
+            background: #fee7e6;
+            color: #b32424;
+        }
+
+        .stat-badge.skipped {
+            background: #fff3cd;
+            color: #8b6914;
+        }
+
+        .expand-icon {
+            font-size: 1.2em;
+            color: #54595d;
+            transition: transform 0.3s;
+        }
+
+        .test-run-header.expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+
+        .test-run-content {
+            display: none;
+            padding: 20px;
+            background: white;
+        }
+
+        .test-run-content.expanded {
+            display: block;
+        }
+
+        .content-section {
+            margin-bottom: 30px;
+        }
+
+        .content-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #000;
+            border-bottom: 1px solid #a7d7f9;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #a7d7f9;
+            border-radius: 2px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.875em;
+            color: #54595d;
+            text-transform: uppercase;
+        }
+
+        .stat-card.success .value { color: #14866d; }
+        .stat-card.failure .value { color: #b32424; }
+        .stat-card.warning .value { color: #8b6914; }
+
+        .test-list {
+            margin-top: 15px;
+        }
+
+        .test-item {
+            padding: 10px 15px;
+            border-left: 3px solid #a7d7f9;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-item.passed {
+            border-left-color: #14866d;
+        }
+
+        .test-item.failed {
+            border-left-color: #b32424;
+        }
+
+        .test-item.skipped {
+            border-left-color: #8b6914;
+        }
+
+        .test-name {
+            font-weight: 500;
+            color: #000;
+        }
+
+        .test-class {
+            color: #54595d;
+            font-size: 0.875em;
+            margin-left: 10px;
+        }
+
+        .test-status {
+            padding: 3px 10px;
+            border-radius: 2px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .image-item {
+            border: 1px solid #a7d7f9;
+            border-radius: 2px;
+            overflow: hidden;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .image-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-item .caption {
+            padding: 8px;
+            font-size: 0.875em;
+            color: #54595d;
+            text-align: center;
+        }
+
+        .metadata-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .metadata-table td {
+            padding: 8px 12px;
+            border: 1px solid #a7d7f9;
+        }
+
+        .metadata-table td:first-child {
+            background: #f8f9fa;
+            font-weight: 500;
+            width: 30%;
+        }
+
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #a7d7f9;
+            border-radius: 2px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875em;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #54595d;
+        }
+
+        .empty-state h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #000;
+        }
+
+        .load-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #3366cc;
+            color: white;
+            text-decoration: none;
+            border-radius: 2px;
+            font-weight: 500;
+        }
+
+        .load-button:hover {
+            background: #2a4d99;
+        }
+
+        .toc {
+            background: #f8f9fa;
+            border: 1px solid #a7d7f9;
+            border-radius: 2px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        .toc-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc-list li {
+            margin: 5px 0;
+        }
+
+        .toc-list a {
+            color: #3366cc;
+            text-decoration: none;
+        }
+
+        .toc-list a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Test Results History</h1>
+            <div class="subtitle">Comprehensive test run archive with visual data and detailed results</div>
+        </div>
+
+        <div id="loading" class="empty-state">
+            <h2>Loading Test Results...</h2>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h2>No Test Results Found</h2>
+            <p>Run tests to generate results:</p>
+            <code>python3 test_gemini_narrative.py 2>&1 | tee test_output.log</code>
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="toc" id="toc"></div>
+            <div class="timeline" id="timeline"></div>
+        </div>
+    </div>
+
+    <script>
+        let testRuns = [];
+
+        // Scan for test results
+        async function scanTestResults() {
+            const runs = [];
+
+            // Load from index file
+            try {
+                const indexResponse = await fetch('http://localhost:8080/test_results_index.json');
+                if (indexResponse.ok) {
+                    const index = await indexResponse.json();
+
+                    for (const item of index) {
+                        // Load log file if available
+                        let logText = '';
+                        if (item.logs && item.logs.length > 0) {
+                            try {
+                                const logResponse = await fetch(`http://localhost:8080/${item.logs[0]}`);
+                                if (logResponse.ok) {
+                                    logText = await logResponse.text();
+                                }
+                            } catch (e) {
+                                console.log(`Could not load log: ${item.logs[0]}`);
+                            }
+                        }
+
+                        // Try to load comprehensive test results JSON
+                        let comprehensiveData = null;
+                        try {
+                            const jsonPath = `${item.directory}/comprehensive_test_results.json`;
+                            const jsonResponse = await fetch(`http://localhost:8080/${jsonPath}`);
+                            if (jsonResponse.ok) {
+                                comprehensiveData = await jsonResponse.json();
+                            }
+                        } catch (e) {
+                            // Not a comprehensive test, use log parsing
+                        }
+
+                        // Parse log or use index/comprehensive data
+                        let parsed;
+                        if (comprehensiveData) {
+                            // Use comprehensive test results
+                            parsed = {
+                                id: item.id,
+                                date: comprehensiveData.start_time || item.date,
+                                tests: comprehensiveData.tests || [],
+                                summary: {
+                                    total: comprehensiveData.tests?.length || item.total_tests || 0,
+                                    duration: comprehensiveData.tests?.reduce((sum, t) => sum + (t.duration || 0), 0) || item.duration || 0,
+                                    passed: comprehensiveData.tests?.filter(t => t.status === 'passed').length || item.passed || 0,
+                                    failed: comprehensiveData.tests?.filter(t => t.status === 'failed').length || item.failed || 0,
+                                    skipped: comprehensiveData.tests?.filter(t => t.status === 'skipped').length || item.skipped || 0
+                                },
+                                images: comprehensiveData.images_generated || item.images || [],
+                                function_calls: comprehensiveData.function_calls || [],
+                                rawLog: comprehensiveData.summary ? JSON.stringify(comprehensiveData.summary, null, 2) : 'Comprehensive test data'
+                            };
+                        } else if (logText) {
+                            parsed = parseTestLog(logText, item.date);
+                        } else {
+                            // Use index summary data
+                            parsed = {
+                                id: item.id,
+                                date: item.date,
+                                tests: [],
+                                summary: {
+                                    total: item.total_tests || 0,
+                                    duration: item.duration || 0,
+                                    passed: item.passed || 0,
+                                    failed: item.failed || 0,
+                                    skipped: item.skipped || 0
+                                },
+                                rawLog: 'Log file not available'
+                            };
+                        }
+
+                        parsed.id = item.id;
+                        parsed.date = parsed.date || item.date;
+                        parsed.directory = item.directory;
+                        if (!parsed.images || parsed.images.length === 0) {
+                            parsed.images = item.images || [];
+                        }
+                        parsed.reports = item.reports || [];
+
+                        runs.push(parsed);
+                    }
+                }
+            } catch (e) {
+                console.log('Could not load index, trying direct log load');
+            }
+
+            // Also try to load current test_output.log
+            try {
+                const response = await fetch('http://localhost:8080/test_output.log');
+                if (response.ok) {
+                    const logText = await response.text();
+                    const parsed = parseTestLog(logText, new Date().toISOString());
+                    parsed.id = 'current';
+                    parsed.date = new Date().toISOString();
+                    parsed.images = [];
+                    runs.unshift(parsed); // Add most recent first
+                }
+            } catch (e) {
+                console.log('Could not load current test log');
+            }
+
+            return runs;
+        }
+
+        function parseTestLog(logText, dateStr) {
+            const tests = [];
+            const lines = logText.split('\n');
+            let currentTest = null;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const testMatch = line.match(/^(\w+) \((__main__\.\w+)\)/);
+
+                if (testMatch) {
+                    if (currentTest) tests.push(currentTest);
+                    currentTest = {
+                        name: testMatch[1],
+                        class: testMatch[2],
+                        status: 'unknown',
+                        output: ''
+                    };
+                } else if (line.trim() === 'ok') {
+                    if (currentTest) currentTest.status = 'ok';
+                } else if (line.trim().startsWith('ERROR')) {
+                    if (currentTest) currentTest.status = 'error';
+                } else if (line.trim().startsWith("skipped")) {
+                    if (currentTest) {
+                        currentTest.status = 'skipped';
+                        currentTest.skipReason = line.match(/skipped '(.+)'/)?.[1];
+                    }
+                }
+            }
+            if (currentTest) tests.push(currentTest);
+
+            const summaryMatch = logText.match(/Ran (\d+) tests? in ([\d.]+)s/);
+            const skippedMatch = logText.match(/skipped=(\d+)/);
+            const errorMatch = logText.match(/FAILED.*?\(errors=(\d+)/);
+
+            return {
+                id: dateStr || new Date().toISOString().replace(/[:.]/g, '-'),
+                date: dateStr || new Date().toISOString(),
+                tests: tests,
+                summary: {
+                    total: summaryMatch ? parseInt(summaryMatch[1]) : tests.length,
+                    duration: summaryMatch ? parseFloat(summaryMatch[2]) : 0,
+                    passed: tests.filter(t => t.status === 'ok').length,
+                    failed: errorMatch ? parseInt(errorMatch[1]) : tests.filter(t => t.status === 'error').length,
+                    skipped: skippedMatch ? parseInt(skippedMatch[1]) : tests.filter(t => t.status === 'skipped').length
+                },
+                rawLog: logText
+            };
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Unknown Date';
+            try {
+                // Handle YYYYMMDD_HHMMSS format
+                if (dateStr.match(/^\d{8}_\d{6}$/)) {
+                    const year = dateStr.substring(0, 4);
+                    const month = dateStr.substring(4, 6);
+                    const day = dateStr.substring(6, 8);
+                    const hour = dateStr.substring(9, 11);
+                    const min = dateStr.substring(11, 13);
+                    return `${year}-${month}-${day} ${hour}:${min}`;
+                }
+                return new Date(dateStr).toLocaleString();
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function renderTOC() {
+            const tocEl = document.getElementById('toc');
+            tocEl.innerHTML = `
+                <div class="toc-title">Contents</div>
+                <ul class="toc-list">
+                    ${testRuns.map((run, i) => `
+                        <li><a href="#run-${run.id}" onclick="scrollToRun('${run.id}'); return false;">
+                            ${formatDate(run.date)} - ${run.summary.total} tests
+                        </a></li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+
+        function renderTimeline() {
+            const timelineEl = document.getElementById('timeline');
+            timelineEl.innerHTML = testRuns.map(run => `
+                <div class="test-run" id="run-${run.id}">
+                    <div class="test-run-header" onclick="toggleRun('${run.id}')">
+                        <div class="test-run-title">
+                            <span class="test-run-date">${formatDate(run.date)}</span>
+                            <span class="test-run-id">${run.id}</span>
+                        </div>
+                        <div class="test-run-stats">
+                            <span class="stat-badge passed">${run.summary.passed} passed</span>
+                            ${run.summary.failed > 0 ? `<span class="stat-badge failed">${run.summary.failed} failed</span>` : ''}
+                            ${run.summary.skipped > 0 ? `<span class="stat-badge skipped">${run.summary.skipped} skipped</span>` : ''}
+                            <span class="expand-icon">▶</span>
+                        </div>
+                    </div>
+                    <div class="test-run-content" id="content-${run.id}">
+                        <div class="content-section">
+                            <div class="section-title">Summary Statistics</div>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="value">${run.summary.total}</div>
+                                    <div class="label">Total Tests</div>
+                                </div>
+                                <div class="stat-card success">
+                                    <div class="value">${run.summary.passed}</div>
+                                    <div class="label">Passed</div>
+                                </div>
+                                <div class="stat-card failure">
+                                    <div class="value">${run.summary.failed}</div>
+                                    <div class="label">Failed</div>
+                                </div>
+                                <div class="stat-card warning">
+                                    <div class="value">${run.summary.skipped}</div>
+                                    <div class="label">Skipped</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="value">${run.summary.duration.toFixed(2)}s</div>
+                                    <div class="label">Duration</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="value">${Math.round((run.summary.passed / (run.summary.total - run.summary.skipped)) * 100)}%</div>
+                                    <div class="label">Success Rate</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${run.images && run.images.length > 0 ? `
+                        <div class="content-section">
+                            <div class="section-title">Generated Images (${run.images.length})</div>
+                            <div class="image-gallery">
+                                ${run.images.map(img => `
+                                    <div class="image-item" onclick="openImageModal('${img.path}', '${img.caption}')">
+                                        <img src="http://localhost:8080/${img.path}" alt="${img.caption}"
+                                             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\'%3E%3Crect fill=\'%23f0f0f0\' width=\'200\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EImage%3C/text%3E%3C/svg%3E'"
+                                             loading="lazy">
+                                        <div class="caption">${img.caption}</div>
+                                        ${img.type ? `<div style="font-size:0.75em;color:#54595d;margin-top:4px;">${img.type}</div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <div class="content-section">
+                            <div class="section-title">Test Cases</div>
+                            <div class="test-list">
+                                ${run.tests.map(test => `
+                                    <div class="test-item ${test.status}">
+                                        <div>
+                                            <span class="test-name">${test.name}</span>
+                                            <span class="test-class">${test.class}</span>
+                                        </div>
+                                        <span class="test-status ${test.status}">${test.status}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="content-section">
+                            <div class="section-title">Metadata</div>
+                            <table class="metadata-table">
+                                <tr>
+                                    <td>Test Run ID</td>
+                                    <td>${run.id}</td>
+                                </tr>
+                                <tr>
+                                    <td>Date</td>
+                                    <td>${formatDate(run.date)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Tests</td>
+                                    <td>${run.summary.total}</td>
+                                </tr>
+                                <tr>
+                                    <td>Duration</td>
+                                    <td>${run.summary.duration.toFixed(2)} seconds</td>
+                                </tr>
+                                ${run.directory ? `
+                                <tr>
+                                    <td>Directory</td>
+                                    <td>${run.directory}</td>
+                                </tr>
+                                ` : ''}
+                                ${run.images && run.images.length > 0 ? `
+                                <tr>
+                                    <td>Images</td>
+                                    <td>${run.images.length} images (${[...new Set(run.images.map(i => i.type))].join(', ')})</td>
+                                </tr>
+                                ` : ''}
+                                ${run.reports && run.reports.length > 0 ? `
+                                <tr>
+                                    <td>Reports</td>
+                                    <td>${run.reports.map(r => `<a href="http://localhost:8080/${r}" target="_blank">${r.split('/').pop()}</a>`).join(', ')}</td>
+                                </tr>
+                                ` : ''}
+                            </table>
+                        </div>
+
+                        ${run.function_calls && run.function_calls.length > 0 ? `
+                        <div class="content-section">
+                            <div class="section-title">Function Call Trace (${run.function_calls.length} calls)</div>
+                            <div style="max-height:400px;overflow-y:auto;">
+                                <table class="metadata-table" style="font-size:0.85em;">
+                                    <thead style="background:#f8f9fa;position:sticky;top:0;">
+                                        <tr>
+                                            <td style="font-weight:600;">Function</td>
+                                            <td style="font-weight:600;">Duration</td>
+                                            <td style="font-weight:600;">Status</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${run.function_calls.slice(0, 50).map(call => `
+                                            <tr>
+                                                <td style="font-family:monospace;">${call.function}</td>
+                                                <td>${(call.duration * 1000).toFixed(2)}ms</td>
+                                                <td>${call.error ? '<span style="color:#b32424;">Error</span>' : '<span style="color:#14866d;">OK</span>'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                ${run.function_calls.length > 50 ? `<p style="padding:10px;color:#54595d;font-size:0.9em;">... and ${run.function_calls.length - 50} more calls</p>` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <div class="content-section">
+                            <div class="section-title">Full Log Output</div>
+                            <div class="log-output">${escapeHtml(run.rawLog ? run.rawLog.substring(0, 5000) : 'No log available')}${run.rawLog && run.rawLog.length > 5000 ? '\n\n... (truncated, see full log in file)' : ''}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleRun(id) {
+            const header = document.querySelector(`#run-${id} .test-run-header`);
+            const content = document.getElementById(`content-${id}`);
+
+            header.classList.toggle('expanded');
+            content.classList.toggle('expanded');
+        }
+
+        function scrollToRun(id) {
+            const element = document.getElementById(`run-${id}`);
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Auto-expand
+            const header = element.querySelector('.test-run-header');
+            if (!header.classList.contains('expanded')) {
+                toggleRun(id);
+            }
+        }
+
+        function openImageModal(path, caption) {
+            // Simple modal - could be enhanced
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+            modal.onclick = () => modal.remove();
+            modal.innerHTML = `
+                <div style="max-width:90%;max-height:90%;text-align:center;">
+                    <img src="http://localhost:8080/${path}" style="max-width:100%;max-height:80vh;object-fit:contain;">
+                    <div style="color:white;margin-top:20px;">${caption}</div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        async function init() {
+            document.getElementById('loading').style.display = 'block';
+
+            testRuns = await scanTestResults();
+
+            if (testRuns.length === 0) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            renderTOC();
+            renderTimeline();
+        }
+
+        init();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,134 @@
+{
+  "start_time": "2025-11-19T14:33:20.540016",
+  "tests": [
+    {
+      "name": "character_creation_Fighter",
+      "status": "passed",
+      "duration": 0.0006220340728759766,
+      "data": {
+        "character_id": "char_fighter_1763591600",
+        "name": "Test Fighter",
+        "class": "Fighter",
+        "hp": 21,
+        "has_dict": true,
+        "has_db_dict": true
+      }
+    },
+    {
+      "name": "character_creation_Wizard",
+      "status": "passed",
+      "duration": 0.0011599063873291016,
+      "data": {
+        "character_id": "char_wizard_1763591600",
+        "name": "Test Wizard",
+        "class": "Wizard",
+        "hp": 41,
+        "has_dict": true,
+        "has_db_dict": true
+      }
+    },
+    {
+      "name": "character_creation_Rogue",
+      "status": "passed",
+      "duration": 0.0013308525085449219,
+      "data": {
+        "character_id": "char_rogue_1763591600",
+        "name": "Test Rogue",
+        "class": "Rogue",
+        "hp": 31,
+        "has_dict": true,
+        "has_db_dict": true
+      }
+    },
+    {
+      "name": "game_engine",
+      "status": "passed",
+      "duration": 0.002287149429321289,
+      "data": {
+        "players": 2,
+        "enemies": 1,
+        "combat_result": {
+          "damage_dealt": 0,
+          "loot_collected": {}
+        }
+      }
+    },
+    {
+      "name": "gemini_narrative",
+      "status": "passed",
+      "duration": 0.12047696113586426,
+      "data": {
+        "available": true,
+        "model": "gemini-3-pro-preview",
+        "thinking_level": "low",
+        "capabilities": [
+          "narrative_generation",
+          "decision_matrix",
+          "story_branch_analysis",
+          "npc_behavior_generation",
+          "adaptive_storytelling"
+        ]
+      }
+    },
+    {
+      "name": "api_gemini_client",
+      "status": "passed",
+      "duration": 2.355747699737549,
+      "data": {
+        "text_generated": true,
+        "response_time_ms": 2243,
+        "text_preview": "Hello"
+      }
+    },
+    {
+      "name": "image_generation",
+      "status": "passed",
+      "duration": 5.995741844177246,
+      "data": {
+        "image_generated": true,
+        "image_path": "test_results/20251119_143320/images/test_image_1763591609.png",
+        "size_bytes": 1080931,
+        "duration_ms": 5869
+      }
+    },
+    {
+      "name": "full_game_flow",
+      "status": "passed",
+      "duration": 0.01600193977355957,
+      "data": {
+        "party_size": 2,
+        "enemies": 2,
+        "combat_actions": 2,
+        "combat_results": [
+          {
+            "damage_dealt": 17,
+            "loot_collected": {}
+          },
+          {
+            "damage_dealt": 15,
+            "loot_collected": {}
+          }
+        ]
+      }
+    }
+  ],
+  "images_generated": [
+    {
+      "path": "test_results/20251119_143320/images/test_image_1763591609.png",
+      "caption": "Test Fantasy Sword",
+      "type": "item",
+      "size_bytes": 1080931,
+      "generation_time_ms": 5869
+    }
+  ],
+  "function_calls": [],
+  "errors": [],
+  "summary": {
+    "total_calls": 0,
+    "total_duration": 0,
+    "errors": 0,
+    "calls_by_module": {},
+    "slowest_calls": []
+  },
+  "end_time": "2025-11-19T14:33:29.131393"
+}

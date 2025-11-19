@@ -1,0 +1,93 @@
+INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+test_api_error_handling (__main__.TestErrorHandling)
+Test API error handling ... skipped 'Server not running'
+test_gemini_unavailable_fallback (__main__.TestErrorHandling)
+Test fallback when Gemini is unavailable ... INFO:narrative_engine:✅ Using Gemini Narrative Engine
+ok
+test_invalid_json_response (__main__.TestErrorHandling)
+Test handling of invalid JSON responses ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ERROR:gemini_narrative_engine:❌ Error generating decision matrix: Expecting value: line 1 column 1 (char 0)
+ok
+test_adaptive_story_generation (__main__.TestGeminiNarrativeEngine)
+Test adaptive story generation ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ok
+test_context_creation (__main__.TestGeminiNarrativeEngine)
+Test narrative context creation ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ok
+test_decision_matrix_generation (__main__.TestGeminiNarrativeEngine)
+Test decision matrix generation ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ok
+test_engine_initialization (__main__.TestGeminiNarrativeEngine)
+Test engine initialization ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ok
+test_engine_status (__main__.TestGeminiNarrativeEngine)
+Test engine status reporting ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ok
+test_narrative_response_generation (__main__.TestGeminiNarrativeEngine)
+Test narrative response generation with mocked Gemini ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ok
+test_npc_behavior_generation (__main__.TestGeminiNarrativeEngine)
+Test NPC behavior generation ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ok
+test_story_branch_analysis (__main__.TestGeminiNarrativeEngine)
+Test story branch analysis ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ok
+test_thinking_level_override (__main__.TestGeminiNarrativeEngine)
+Test that thinking level can be overridden per call ... INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+ok
+test_create_narrative_engine_gemini (__main__.TestNarrativeEngineIntegration)
+Test creating narrative engine with Gemini ... INFO:narrative_engine:✅ Using Gemini Narrative Engine
+ok
+test_create_narrative_engine_ollama (__main__.TestNarrativeEngineIntegration)
+Test creating narrative engine with Ollama fallback ... INFO:narrative_engine:Using Ollama model: ollama
+ok
+test_adaptive_story_endpoint (__main__.TestNarrativeServerAPI)
+Test adaptive story API endpoint ... skipped 'No session ID available'
+test_decision_matrix_endpoint (__main__.TestNarrativeServerAPI)
+Test decision matrix API endpoint ... skipped 'No session ID available'
+test_npc_behavior_endpoint (__main__.TestNarrativeServerAPI)
+Test NPC behavior API endpoint ... skipped 'No session ID available'
+test_server_health (__main__.TestNarrativeServerAPI)
+Test if server is running ... skipped 'Server not running - start with: python3 dnd_narrative_server.py'
+test_start_adventure (__main__.TestNarrativeServerAPI)
+Test starting a new adventure ... skipped 'Server not running - start with: python3 dnd_narrative_server.py'
+test_story_branches_endpoint (__main__.TestNarrativeServerAPI)
+Test story branches API endpoint ... skipped 'No session ID available'
+
+----------------------------------------------------------------------
+Ran 20 tests in 1.628s
+
+OK (skipped=7)
+INFO:gemini_narrative_engine:✅ Gemini API key loaded: AIzaSyDedl...
+INFO:gemini_narrative_engine:✅ Gemini Narrative Engine initialized successfully
+🧪 Gemini-Powered Narrative Decision Making - Test Suite
+============================================================
+
+📋 Running Unit Tests...
+
+🚀 Running Performance Tests...
+✅ Gemini engine available - testing performance
+
+🔗 Running Integration Test...
+❌ Server connection failed: HTTPConnectionPool(host='localhost', port=5002): Max retries exceeded with url: /ai/engine-status (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x1064ec490>: Failed to establish a new connection: [Errno 61] Connection refused'))
+💡 Start server with: python3 dnd_narrative_server.py
+
+🎉 Test Suite Complete!
+
+📝 To run the full system:
+1. Set GEMINI_API_KEY environment variable
+2. Start server: python3 dnd_narrative_server.py
+3. Open: dnd-narrative-theater.html
+4. Select Gemini 2.5 Flash and start adventure
+5. Use AI Decision Support features!

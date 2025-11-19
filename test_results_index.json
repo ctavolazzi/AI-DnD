@@ -1,0 +1,319 @@
+[
+  {
+    "id": "20251119_143320",
+    "directory": "test_results/20251119_143320",
+    "date": "2025-11-19T14:33:20",
+    "images": [
+      {
+        "path": "test_results/20251119_143320/images/test_image_1763591609.png",
+        "caption": "Test Image 1763591609",
+        "type": "other"
+      }
+    ],
+    "logs": [
+      "test_results/20251119_143320/comprehensive_test.log"
+    ],
+    "reports": []
+  },
+  {
+    "id": "20251119_143246",
+    "directory": "test_results/20251119_143246",
+    "date": "2025-11-19T14:32:46",
+    "images": [
+      {
+        "path": "test_results/20251119_143246/images/test_image_1763591574.png",
+        "caption": "Test Image 1763591574",
+        "type": "other"
+      }
+    ],
+    "logs": [
+      "test_results/20251119_143246/comprehensive_test.log"
+    ],
+    "reports": []
+  },
+  {
+    "id": "20251119_143158",
+    "directory": "test_results/20251119_143158",
+    "date": "2025-11-19T14:31:58",
+    "images": [
+      {
+        "path": "test_results/20251119_143158/images/test_image_1763591529.png",
+        "caption": "Test Image 1763591529",
+        "type": "other"
+      }
+    ],
+    "logs": [
+      "test_results/20251119_143158/comprehensive_test_output.log",
+      "test_results/20251119_143158/comprehensive_test.log"
+    ],
+    "reports": []
+  },
+  {
+    "id": "20251119_143111",
+    "directory": "test_results/20251119_143111",
+    "date": "2025-11-19T14:31:11",
+    "images": [
+      {
+        "path": "test_results/20251119_143111/images/test_image_1763591477.png",
+        "caption": "Test Image 1763591477",
+        "type": "other"
+      }
+    ],
+    "logs": [
+      "test_results/20251119_143111/comprehensive_test.log"
+    ],
+    "reports": []
+  },
+  {
+    "id": "20251119_142122",
+    "directory": "test_results/20251119_142122",
+    "date": "2025-11-19T14:21:22",
+    "images": [],
+    "logs": [
+      "test_results/20251119_142122/test_output.log"
+    ],
+    "reports": [],
+    "total_tests": 20,
+    "duration": 1.628,
+    "skipped": 7,
+    "passed": 13,
+    "failed": 0
+  },
+  {
+    "id": "test_results_20251028_195345",
+    "directory": "test_results_20251028_195345",
+    "date": "2025-10-28T19:53:45",
+    "images": [
+      {
+        "path": "test_results_20251028_195345/images/basic_characters/character_cute_dragon_companion.png",
+        "caption": "Character Cute Dragon Companion",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_195345/images/basic_characters/character_pixel_art_robot_character.png",
+        "caption": "Character Pixel Art Robot Character",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_195345/images/basic_characters/character_medieval_knight_with_sword_and.png",
+        "caption": "Character Medieval Knight With Sword And",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_195345/images/basic_characters/character_fantasy_wizard_with_blue_robes.png",
+        "caption": "Character Fantasy Wizard With Blue Robes",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_195345/images/basic_characters/character_warrior_character.png",
+        "caption": "Character Warrior Character",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_195345/images/characters/fantasy_wizard_with_staff_pixflux_20251028_182823.png",
+        "caption": "Fantasy Wizard With Staff Pixflux 20251028 182823",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_195345/images/characters/fantasy_warrior_pixflux_20251028_182843.png",
+        "caption": "Fantasy Warrior Pixflux 20251028 182843",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_195345/images/characters/medieval_knight_with_sword_bitforge_20251028_182833.png",
+        "caption": "Medieval Knight With Sword Bitforge 20251028 182833",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_195345/images/animations/warrior_walk_sprite_sheet_20251028_182859.png",
+        "caption": "Warrior Walk Sprite Sheet 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_195345/images/animations/fantasy_warrior_walk_20251028_182859/frame_01_20251028_182859.png",
+        "caption": "Frame 01 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_195345/images/animations/fantasy_warrior_walk_20251028_182859/frame_03_20251028_182859.png",
+        "caption": "Frame 03 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_195345/images/animations/fantasy_warrior_walk_20251028_182859/frame_02_20251028_182859.png",
+        "caption": "Frame 02 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_195345/images/animations/fantasy_warrior_walk_20251028_182859/frame_04_20251028_182859.png",
+        "caption": "Frame 04 20251028 182859",
+        "type": "animation"
+      }
+    ],
+    "logs": [
+      "test_results_20251028_195345/logs/comprehensive_test_20251028_195345.log"
+    ],
+    "reports": [
+      "test_results_20251028_195345/reports/enhanced_test_results_display.html",
+      "test_results_20251028_195345/reports/test_results_20251028_195345.html"
+    ]
+  },
+  {
+    "id": "test_results_20251028_194853",
+    "directory": "test_results_20251028_194853",
+    "date": "2025-10-28T19:48:53",
+    "images": [
+      {
+        "path": "test_results_20251028_194853/images/basic_characters/character_cute_dragon_companion.png",
+        "caption": "Character Cute Dragon Companion",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194853/images/basic_characters/character_pixel_art_robot_character.png",
+        "caption": "Character Pixel Art Robot Character",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194853/images/basic_characters/character_medieval_knight_with_sword_and.png",
+        "caption": "Character Medieval Knight With Sword And",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194853/images/basic_characters/character_fantasy_wizard_with_blue_robes.png",
+        "caption": "Character Fantasy Wizard With Blue Robes",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194853/images/basic_characters/character_warrior_character.png",
+        "caption": "Character Warrior Character",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194853/images/characters/fantasy_wizard_with_staff_pixflux_20251028_182823.png",
+        "caption": "Fantasy Wizard With Staff Pixflux 20251028 182823",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194853/images/characters/fantasy_warrior_pixflux_20251028_182843.png",
+        "caption": "Fantasy Warrior Pixflux 20251028 182843",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194853/images/characters/medieval_knight_with_sword_bitforge_20251028_182833.png",
+        "caption": "Medieval Knight With Sword Bitforge 20251028 182833",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194853/images/animations/warrior_walk_sprite_sheet_20251028_182859.png",
+        "caption": "Warrior Walk Sprite Sheet 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_194853/images/animations/fantasy_warrior_walk_20251028_182859/frame_01_20251028_182859.png",
+        "caption": "Frame 01 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_194853/images/animations/fantasy_warrior_walk_20251028_182859/frame_03_20251028_182859.png",
+        "caption": "Frame 03 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_194853/images/animations/fantasy_warrior_walk_20251028_182859/frame_02_20251028_182859.png",
+        "caption": "Frame 02 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_194853/images/animations/fantasy_warrior_walk_20251028_182859/frame_04_20251028_182859.png",
+        "caption": "Frame 04 20251028 182859",
+        "type": "animation"
+      }
+    ],
+    "logs": [
+      "test_results_20251028_194853/logs/comprehensive_test_20251028_194853.log"
+    ],
+    "reports": [
+      "test_results_20251028_194853/reports/test_results_20251028_194853.html",
+      "test_results_20251028_194853/reports/enhanced_test_results_display.html"
+    ]
+  },
+  {
+    "id": "test_results_20251028_194214",
+    "directory": "test_results_20251028_194214",
+    "date": "2025-10-28T19:42:14",
+    "images": [
+      {
+        "path": "test_results_20251028_194214/images/basic_characters/character_cute_dragon_companion.png",
+        "caption": "Character Cute Dragon Companion",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194214/images/basic_characters/character_pixel_art_robot_character.png",
+        "caption": "Character Pixel Art Robot Character",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194214/images/basic_characters/character_medieval_knight_with_sword_and.png",
+        "caption": "Character Medieval Knight With Sword And",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194214/images/basic_characters/character_fantasy_wizard_with_blue_robes.png",
+        "caption": "Character Fantasy Wizard With Blue Robes",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194214/images/basic_characters/character_warrior_character.png",
+        "caption": "Character Warrior Character",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194214/images/characters/fantasy_wizard_with_staff_pixflux_20251028_182823.png",
+        "caption": "Fantasy Wizard With Staff Pixflux 20251028 182823",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194214/images/characters/fantasy_warrior_pixflux_20251028_182843.png",
+        "caption": "Fantasy Warrior Pixflux 20251028 182843",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194214/images/characters/medieval_knight_with_sword_bitforge_20251028_182833.png",
+        "caption": "Medieval Knight With Sword Bitforge 20251028 182833",
+        "type": "character"
+      },
+      {
+        "path": "test_results_20251028_194214/images/animations/warrior_walk_sprite_sheet_20251028_182859.png",
+        "caption": "Warrior Walk Sprite Sheet 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_194214/images/animations/fantasy_warrior_walk_20251028_182859/frame_01_20251028_182859.png",
+        "caption": "Frame 01 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_194214/images/animations/fantasy_warrior_walk_20251028_182859/frame_03_20251028_182859.png",
+        "caption": "Frame 03 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_194214/images/animations/fantasy_warrior_walk_20251028_182859/frame_02_20251028_182859.png",
+        "caption": "Frame 02 20251028 182859",
+        "type": "animation"
+      },
+      {
+        "path": "test_results_20251028_194214/images/animations/fantasy_warrior_walk_20251028_182859/frame_04_20251028_182859.png",
+        "caption": "Frame 04 20251028 182859",
+        "type": "animation"
+      }
+    ],
+    "logs": [
+      "test_results_20251028_194214/logs/comprehensive_test_20251028_194214.log"
+    ],
+    "reports": [
+      "test_results_20251028_194214/reports/test_results_20251028_194214.html",
+      "test_results_20251028_194214/reports/enhanced_test_results_display.html"
+    ]
+  }
+]

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results Viewer - AI-DnD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls input, .controls select {
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .controls input:focus, .controls select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-wrapper label {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .file-input-wrapper label:hover {
+            background: #218838;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            color: #6c757d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card.success .value { color: #28a745; }
+        .stat-card.failure .value { color: #dc3545; }
+        .stat-card.skipped .value { color: #ffc107; }
+
+        .test-list {
+            padding: 30px;
+        }
+
+        .test-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .test-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .test-item-header {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .test-item-header h3 {
+            color: #212529;
+            font-size: 1.2em;
+        }
+
+        .test-item-header .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status.ok { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.skipped { background: #fff3cd; color: #856404; }
+
+        .test-item-body {
+            padding: 20px;
+            display: none;
+        }
+
+        .test-item.expanded .test-item-body {
+            display: block;
+        }
+
+        .test-item-body pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            border: 1px solid #e9ecef;
+        }
+
+        .test-item-body .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .metadata-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metadata-item strong {
+            display: block;
+            color: #667eea;
+            margin-bottom: 5px;
+            font-size: 0.85em;
+            text-transform: uppercase;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .no-results h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .timestamp {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .file-info {
+            padding: 15px 30px;
+            background: #e7f3ff;
+            border-bottom: 2px solid #b3d9ff;
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Test Results Viewer</h1>
+            <p>AI-DnD Test Suite Results Dashboard</p>
+        </div>
+
+        <div class="controls">
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept=".log,.txt" onchange="handleFileSelect(event)">
+                <label for="fileInput">📁 Load Test Log</label>
+            </div>
+            <input type="text" id="searchInput" placeholder="🔍 Search tests..." style="flex: 1; min-width: 200px;" oninput="renderTests()">
+            <select id="statusFilter" onchange="currentStatus = this.value; renderTests();">
+                <option value="all">All Status</option>
+                <option value="ok">Passed</option>
+                <option value="error">Failed</option>
+                <option value="skipped">Skipped</option>
+            </select>
+            <button onclick="loadFromServer()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                🌐 Load from Server
+            </button>
+        </div>
+
+        <div id="fileInfo" class="file-info" style="display: none;">
+            <strong>Loaded:</strong> <span id="fileName"></span>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="value" id="totalTests">-</div>
+                <div class="label">Total Tests</div>
+            </div>
+            <div class="stat-card success">
+                <div class="value" id="passedTests">-</div>
+                <div class="label">Passed</div>
+            </div>
+            <div class="stat-card failure">
+                <div class="value" id="failedTests">-</div>
+                <div class="label">Failed</div>
+            </div>
+            <div class="stat-card skipped">
+                <div class="value" id="skippedTests">-</div>
+                <div class="label">Skipped</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="successRate">-</div>
+                <div class="label">Success Rate</div>
+            </div>
+        </div>
+
+        <div class="test-list" id="testList">
+            <div class="no-results">
+                <h2>No Test Results Loaded</h2>
+                <p>Click "📁 Load Test Log" to select a test output file, or</p>
+                <p>Run: <code>python3 test_gemini_narrative.py 2>&1 | tee test_output.log</code></p>
+                <p style="margin-top: 20px;">Then load the <code>test_output.log</code> file</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allTests = [];
+        let currentStatus = 'all';
+        let currentLogText = '';
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileInfo').style.display = 'block';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentLogText = e.target.result;
+                const parsed = parseTestLog(currentLogText);
+                allTests = parsed.tests;
+                updateStats(parsed.summary);
+                renderTests();
+            };
+            reader.readAsText(file);
+        }
+
+        // Load from server (if running test_results_server.py)
+        async function loadFromServer() {
+            const testListEl = document.getElementById('testList');
+            testListEl.innerHTML = '<div class="loading">Loading from server...</div>';
+
+            try {
+                const response = await fetch('http://localhost:8080/test_output.log');
+                if (!response.ok) throw new Error('Server not responding');
+
+                const logText = await response.text();
+                currentLogText = logText;
+                document.getElementById('fileName').textContent = 'test_output.log (from server)';
+                document.getElementById('fileInfo').style.display = 'block';
+
+                const parsed = parseTestLog(logText);
+                allTests = parsed.tests;
+                updateStats(parsed.summary);
+                renderTests();
+            } catch (error) {
+                testListEl.innerHTML = `
+                    <div class="no-results">
+                        <h2>Server Not Available</h2>
+                        <p>Start the test results server with:</p>
+                        <p><code>python3 test_results_server.py</code></p>
+                        <p style="margin-top: 20px; color: #dc3545;">Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Parse test output log
+        function parseTestLog(logText) {
+            const tests = [];
+            const lines = logText.split('\n');
+            let currentTest = null;
+            let inTestOutput = false;
+            let testOutput = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+
+                // Match test start: "test_name (__main__.TestClass)"
+                const testMatch = line.match(/^(\w+) \((__main__\.\w+)\)/);
+                if (testMatch) {
+                    // Save previous test
+                    if (currentTest) {
+                        currentTest.output = testOutput.join('\n');
+                        tests.push(currentTest);
+                    }
+
+                    // Start new test
+                    currentTest = {
+                        name: testMatch[1],
+                        class: testMatch[2],
+                        status: 'unknown',
+                        output: '',
+                        timestamp: new Date().toISOString()
+                    };
+                    testOutput = [];
+                    inTestOutput = true;
+                    continue;
+                }
+
+                // Match test status
+                if (line.trim() === 'ok') {
+                    if (currentTest) currentTest.status = 'ok';
+                    inTestOutput = false;
+                } else if (line.trim().startsWith('ERROR')) {
+                    if (currentTest) currentTest.status = 'error';
+                } else if (line.trim().startsWith("skipped")) {
+                    if (currentTest) {
+                        currentTest.status = 'skipped';
+                        currentTest.skipReason = line.match(/skipped '(.+)'/)?.[1] || 'Unknown reason';
+                    }
+                }
+
+                // Collect output
+                if (inTestOutput && currentTest) {
+                    testOutput.push(line);
+                }
+            }
+
+            // Save last test
+            if (currentTest) {
+                currentTest.output = testOutput.join('\n');
+                tests.push(currentTest);
+            }
+
+            // Extract summary stats
+            const summaryMatch = logText.match(/Ran (\d+) tests? in ([\d.]+)s/);
+            const okMatch = logText.match(/(\d+) tests?.*?OK/);
+            const errorMatch = logText.match(/FAILED.*?\(errors=(\d+)/);
+            const skippedMatch = logText.match(/skipped=(\d+)/);
+
+            return {
+                tests: tests,
+                summary: {
+                    total: summaryMatch ? parseInt(summaryMatch[1]) : tests.length,
+                    duration: summaryMatch ? parseFloat(summaryMatch[2]) : 0,
+                    passed: okMatch ? parseInt(okMatch[1]) : tests.filter(t => t.status === 'ok').length,
+                    failed: errorMatch ? parseInt(errorMatch[1]) : tests.filter(t => t.status === 'error').length,
+                    skipped: skippedMatch ? parseInt(skippedMatch[1]) : tests.filter(t => t.status === 'skipped').length
+                }
+            };
+        }
+
+        // Update statistics
+        function updateStats(summary) {
+            document.getElementById('totalTests').textContent = summary.total;
+            document.getElementById('passedTests').textContent = summary.passed;
+            document.getElementById('failedTests').textContent = summary.failed;
+            document.getElementById('skippedTests').textContent = summary.skipped;
+
+            const successRate = summary.total > 0
+                ? Math.round((summary.passed / (summary.total - summary.skipped)) * 100)
+                : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+        }
+
+        // Render tests
+        function renderTests() {
+            const testListEl = document.getElementById('testList');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let filteredTests = allTests.filter(test => {
+                const matchesSearch = test.name.toLowerCase().includes(searchTerm) ||
+                                     test.class.toLowerCase().includes(searchTerm);
+                const matchesStatus = currentStatus === 'all' || test.status === currentStatus;
+                return matchesSearch && matchesStatus;
+            });
+
+            if (filteredTests.length === 0) {
+                testListEl.innerHTML = '<div class="no-results"><h2>No tests match your filters</h2></div>';
+                return;
+            }
+
+            testListEl.innerHTML = filteredTests.map((test, index) => {
+                const statusClass = test.status === 'ok' ? 'ok' : test.status === 'error' ? 'error' : 'skipped';
+                return `
+                    <div class="test-item" onclick="toggleTest(${index})">
+                        <div class="test-item-header">
+                            <div>
+                                <h3>${test.name}</h3>
+                                <span class="timestamp">${test.class}</span>
+                            </div>
+                            <span class="status ${statusClass}">${test.status}</span>
+                        </div>
+                        <div class="test-item-body">
+                            <div class="metadata">
+                                <div class="metadata-item">
+                                    <strong>Status</strong>
+                                    ${test.status}
+                                </div>
+                                ${test.skipReason ? `
+                                <div class="metadata-item">
+                                    <strong>Skip Reason</strong>
+                                    ${test.skipReason}
+                                </div>
+                                ` : ''}
+                                <div class="metadata-item">
+                                    <strong>Timestamp</strong>
+                                    ${test.timestamp}
+                                </div>
+                            </div>
+                            ${test.output ? `
+                            <pre>${escapeHtml(test.output)}</pre>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Store filtered tests for toggle
+            window.filteredTests = filteredTests;
+        }
+
+        function toggleTest(index) {
+            const items = document.querySelectorAll('.test-item');
+            if (items[index]) {
+                items[index].classList.toggle('expanded');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

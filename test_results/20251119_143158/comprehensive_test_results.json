@@ -1,0 +1,113 @@
+{
+  "start_time": "2025-11-19T14:31:58.989092",
+  "tests": [
+    {
+      "name": "character_creation_Fighter",
+      "status": "passed",
+      "duration": 0.0012149810791015625,
+      "data": {
+        "character_id": "char_fighter_1763591518",
+        "name": "Test Fighter",
+        "class": "Fighter",
+        "hp": 30,
+        "has_dict": true,
+        "has_db_dict": true
+      }
+    },
+    {
+      "name": "character_creation_Wizard",
+      "status": "passed",
+      "duration": 0.001971006393432617,
+      "data": {
+        "character_id": "char_wizard_1763591518",
+        "name": "Test Wizard",
+        "class": "Wizard",
+        "hp": 28,
+        "has_dict": true,
+        "has_db_dict": true
+      }
+    },
+    {
+      "name": "character_creation_Rogue",
+      "status": "passed",
+      "duration": 0.0024199485778808594,
+      "data": {
+        "character_id": "char_rogue_1763591518",
+        "name": "Test Rogue",
+        "class": "Rogue",
+        "hp": 43,
+        "has_dict": true,
+        "has_db_dict": true
+      }
+    },
+    {
+      "name": "game_engine",
+      "status": "failed",
+      "error": "Invalid character class: warrior",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/ctavolazzi/Code/AI-DnD/comprehensive_test_runner.py\", line 203, in test_game_engine\n    player1 = Character(\"Hero\", \"warrior\", character_id=\"p1\")\n  File \"/Users/ctavolazzi/Code/AI-DnD/dnd_game.py\", line 43, in __init__\n    raise GameError(f\"Invalid character class: {char_class}\")\ndnd_game.GameError: Invalid character class: warrior\n"
+    },
+    {
+      "name": "gemini_narrative",
+      "status": "passed",
+      "duration": 0.10692787170410156,
+      "data": {
+        "available": true,
+        "model": "gemini-3-pro-preview",
+        "thinking_level": "low",
+        "capabilities": [
+          "narrative_generation",
+          "decision_matrix",
+          "story_branch_analysis",
+          "npc_behavior_generation",
+          "adaptive_storytelling"
+        ]
+      }
+    },
+    {
+      "name": "api_gemini_client",
+      "status": "passed",
+      "duration": 2.91188907623291,
+      "data": {
+        "text_generated": true,
+        "response_time_ms": 2812,
+        "text_preview": "Hello"
+      }
+    },
+    {
+      "name": "image_generation",
+      "status": "passed",
+      "duration": 7.402813196182251,
+      "data": {
+        "image_generated": true,
+        "image_path": "test_results/20251119_143158/images/test_image_1763591529.png",
+        "size_bytes": 992803,
+        "duration_ms": 7267
+      }
+    },
+    {
+      "name": "full_game_flow",
+      "status": "failed",
+      "error": "'DnDGame' object has no attribute 'add_player'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/ctavolazzi/Code/AI-DnD/comprehensive_test_runner.py\", line 432, in test_full_game_flow\n    game.add_player(char)\nAttributeError: 'DnDGame' object has no attribute 'add_player'\n"
+    }
+  ],
+  "images_generated": [
+    {
+      "path": "test_results/20251119_143158/images/test_image_1763591529.png",
+      "caption": "Test Fantasy Sword",
+      "type": "item",
+      "size_bytes": 992803,
+      "generation_time_ms": 7267
+    }
+  ],
+  "function_calls": [],
+  "errors": [],
+  "summary": {
+    "total_calls": 0,
+    "total_duration": 0,
+    "errors": 0,
+    "calls_by_module": {},
+    "slowest_calls": []
+  },
+  "end_time": "2025-11-19T14:32:09.524345"
+}

@@ -1,0 +1,75 @@
+{
+  "start_time": "2025-11-19T14:31:11.594885",
+  "tests": [
+    {
+      "name": "character_creation",
+      "status": "failed",
+      "error": "Invalid character class: warrior",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/ctavolazzi/Code/AI-DnD/comprehensive_test_runner.py\", line 152, in test_character_creation\n    char = Character(\n  File \"/Users/ctavolazzi/Code/AI-DnD/dnd_game.py\", line 43, in __init__\n    raise GameError(f\"Invalid character class: {char_class}\")\ndnd_game.GameError: Invalid character class: warrior\n"
+    },
+    {
+      "name": "game_engine",
+      "status": "failed",
+      "error": "Invalid character class: warrior",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/ctavolazzi/Code/AI-DnD/comprehensive_test_runner.py\", line 203, in test_game_engine\n    player1 = Character(\"Hero\", \"warrior\", character_id=\"p1\")\n  File \"/Users/ctavolazzi/Code/AI-DnD/dnd_game.py\", line 43, in __init__\n    raise GameError(f\"Invalid character class: {char_class}\")\ndnd_game.GameError: Invalid character class: warrior\n"
+    },
+    {
+      "name": "gemini_narrative",
+      "status": "passed",
+      "duration": 0.15541505813598633,
+      "data": {
+        "available": true,
+        "model": "gemini-3-pro-preview",
+        "thinking_level": "low",
+        "capabilities": [
+          "narrative_generation",
+          "decision_matrix",
+          "story_branch_analysis",
+          "npc_behavior_generation",
+          "adaptive_storytelling"
+        ]
+      }
+    },
+    {
+      "name": "api_gemini_client",
+      "status": "failed",
+      "error": "Text generation failed: 1 validation error for GenerateContentConfig\nthinking_level\n  Extra inputs are not permitted [type=extra_forbidden, input_value='high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/extra_forbidden"
+    },
+    {
+      "name": "image_generation",
+      "status": "passed",
+      "duration": 5.855770111083984,
+      "data": {
+        "image_generated": true,
+        "image_path": "test_results/20251119_143111/images/test_image_1763591477.png",
+        "size_bytes": 957559,
+        "duration_ms": 5770
+      }
+    },
+    {
+      "name": "full_game_flow",
+      "status": "failed",
+      "error": "Invalid character class: warrior",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/ctavolazzi/Code/AI-DnD/comprehensive_test_runner.py\", line 428, in test_full_game_flow\n    Character(\"Aragorn\", \"warrior\", character_id=\"p1\"),\n  File \"/Users/ctavolazzi/Code/AI-DnD/dnd_game.py\", line 43, in __init__\n    raise GameError(f\"Invalid character class: {char_class}\")\ndnd_game.GameError: Invalid character class: warrior\n"
+    }
+  ],
+  "images_generated": [
+    {
+      "path": "test_results/20251119_143111/images/test_image_1763591477.png",
+      "caption": "Test Fantasy Sword",
+      "type": "item",
+      "size_bytes": 957559,
+      "generation_time_ms": 5770
+    }
+  ],
+  "function_calls": [],
+  "errors": [],
+  "summary": {
+    "total_calls": 0,
+    "total_duration": 0,
+    "errors": 0,
+    "calls_by_module": {},
+    "slowest_calls": []
+  },
+  "end_time": "2025-11-19T14:31:17.821481"
+}
