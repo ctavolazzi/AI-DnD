@@ -5,6 +5,6 @@ from .game_session import GameSession
 from .character import Character
 from .location import Location
 from .event import Event
+from .log_event import LogEvent
 
-__all__ = ["ImageAsset", "SceneCache", "GameSession", "Character", "Location", "Event"]
-
+__all__ = ["ImageAsset", "SceneCache", "GameSession", "Character", "Location", "Event", "LogEvent"]

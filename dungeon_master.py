@@ -13,6 +13,7 @@ from game_event_manager import GameEventManager
 from game_manager import GameManager
 from quest_system import QuestManager, QuestObjective
 from world_builder import WorldManager
+from backend.app.core.providers import TimeProvider, LogProvider
 
 class DungeonMaster:
     """
@@ -20,7 +21,13 @@ class DungeonMaster:
     Currently handles one run at a time, but designed for future extension to multiple runs.
     """
 
-    def __init__(self, vault_path: str = "ai-dnd-test-vault", model: str = "mistral"):
+    def __init__(
+        self,
+        vault_path: str = "ai-dnd-test-vault",
+        model: str = "mistral",
+        time_provider: Optional[TimeProvider] = None,
+        log_provider: Optional[LogProvider] = None
+    ):
         """
         Initialize the Dungeon Master for a specific vault.
 
@@ -39,6 +46,8 @@ class DungeonMaster:
         self.world_manager = None
         self.game = None
         self.logger = logging.getLogger("dungeon_master")
+        self.time_provider = time_provider
+        self.log_provider = log_provider
 
         # Ensure the vault exists
         if not os.path.exists(vault_path):
@@ -323,7 +332,11 @@ aliases: [📊 Dashboard]
         """Initialize the D&D game engine."""
         try:
             self.logger.info("\nInitializing D&D Game...")
-            self.game = DnDGame(model=self.model)
+            self.game = DnDGame(
+                model=self.model,
+                time_provider=self.time_provider,
+                log_provider=self.log_provider
+            )
 
             # Set starting location from world manager
             if self.world_manager:

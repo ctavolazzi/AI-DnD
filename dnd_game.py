@@ -1,10 +1,16 @@
 import random
 import logging
 import sys
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from narrative_engine import NarrativeEngine
 from items import Inventory, get_loot_from_enemy
 from spells import SpellBook, get_class_starting_spells
+from backend.app.core.providers import (
+    TimeProvider,
+    RealTimeProvider,
+    LogProvider,
+    FileLogProvider,
+)
 
 # Get logger without adding handlers (main.py will configure logging)
 logger = logging.getLogger("dnd_game")
@@ -14,10 +20,22 @@ class GameError(Exception):
     pass
 
 class Character:
-    def __init__(self, name: str, char_class: str, hp: int = None, max_hp: int = None, attack: int = None, defense: int = None):
+    def __init__(
+        self,
+        name: str,
+        char_class: str,
+        hp: int = None,
+        max_hp: int = None,
+        attack: int = None,
+        defense: int = None,
+        log_provider: Optional[LogProvider] = None,
+        character_id: Optional[str] = None,
+    ):
         self.name = name
         self.char_class = char_class
         self.team = None
+        self.log_provider = log_provider
+        self.id: Optional[str] = character_id
 
         # Validate character class
         valid_classes = ["Fighter", "Wizard", "Rogue", "Cleric", "Goblin", "Orc", "Skeleton", "Bandit"]
@@ -84,6 +102,29 @@ class Character:
         elif char_class == "Goblin":
             self.abilities["Fury"] = self._fury
 
+    def _log(
+        self,
+        message: str,
+        *,
+        level: str = "INFO",
+        metadata: Optional[Dict[str, Any]] = None,
+        exc_info: Optional[BaseException] = None,
+    ) -> None:
+        """Send character-scoped log messages through the active provider."""
+        details = {"character": self.name}
+        if metadata:
+            details.update(metadata)
+
+        if self.log_provider:
+            self.log_provider.log(getattr(logging, level.upper(), logging.INFO), message, extra=details)
+            return
+
+        log_fn = getattr(logger, level.lower(), logger.info)
+        if exc_info:
+            log_fn(message, exc_info=exc_info)
+        else:
+            log_fn(message)
+
     def _generate_ability_scores(self, char_class: str) -> dict:
         """Generate D&D ability scores based on class."""
         if char_class == "Fighter":
@@ -146,7 +187,7 @@ class Character:
         starting_spells = get_class_starting_spells(char_class)
         for spell_id in starting_spells:
             self.spellbook.learn_spell(spell_id)
-            logger.info(f"{self.name} learned spell: {spell_id}")
+            self._log(f"{self.name} learned spell: {spell_id}")
 
     def get_ability_modifier(self, ability: str) -> int:
         """Calculate D&D ability modifier from ability score."""
@@ -161,15 +202,16 @@ class Character:
         if advantage and not disadvantage:
             roll2 = random.randint(1, 20)
             result = max(roll1, roll2)
-            logger.info(f"Rolling with advantage: {roll1}, {roll2} -> {result}")
+            # Logging not static, need instance context or global log
+            # self._log(f"Rolling with advantage: {roll1}, {roll2} -> {result}")
             return result
         elif disadvantage and not advantage:
             roll2 = random.randint(1, 20)
             result = min(roll1, roll2)
-            logger.info(f"Rolling with disadvantage: {roll1}, {roll2} -> {result}")
+            # self._log(f"Rolling with disadvantage: {roll1}, {roll2} -> {result}")
             return result
         else:
-            logger.info(f"Rolling d20: {roll1}")
+            # self._log(f"Rolling d20: {roll1}")
             return roll1
 
     def ability_check(self, ability: str, dc: int, skill: str = None,
@@ -216,12 +258,12 @@ class Character:
 
         # Log the check
         proficiency_str = f" ({skill}, proficient)" if proficient else f" ({skill})" if skill else ""
-        logger.info(f"{self.name} {ability} check{proficiency_str}: {roll} + {modifier} = {total} vs DC {dc} -> {'SUCCESS' if success else 'FAILURE'}")
+        self._log(f"{self.name} {ability} check{proficiency_str}: {roll} + {modifier} = {total} vs DC {dc} -> {'SUCCESS' if success else 'FAILURE'}")
 
         if roll == 20:
-            logger.info(f"NATURAL 20! Critical success!")
+            self._log("NATURAL 20! Critical success!")
         elif roll == 1:
-            logger.info(f"NATURAL 1! Critical failure!")
+            self._log("NATURAL 1! Critical failure!")
 
         return result
 
@@ -243,7 +285,7 @@ class Character:
         if amount is None:
             amount = max(5, int(self.max_mana * 0.1))
         self.mana = min(self.max_mana, self.mana + amount)
-        logger.debug(f"{self.name} regenerated {amount} mana ({self.mana}/{self.max_mana})")
+        self._log(f"{self.name} regenerated {amount} mana ({self.mana}/{self.max_mana})", level="DEBUG")
 
     def take_damage(self, damage: int) -> dict:
         """
@@ -256,53 +298,53 @@ class Character:
             raise ValueError("Damage cannot be negative.")
 
         old_hp = self.hp
-        logger.info(f"Damage Calculation:")
-        logger.info(f"- Incoming Damage: {damage}")
-        logger.info(f"- Target Defense: {self.defense}")
+        self._log("Damage Calculation:")
+        self._log(f"- Incoming Damage: {damage}")
+        self._log(f"- Target Defense: {self.defense}")
         actual_damage = max(0, damage - self.defense)
-        logger.info(f"- Final Damage: {damage} - {self.defense} = {actual_damage}")
+        self._log(f"- Final Damage: {damage} - {self.defense} = {actual_damage}")
         self.hp = max(0, old_hp - actual_damage)
 
         if actual_damage > 0:
-            logger.info(f"Result: {self.name} takes {actual_damage} damage! (HP: {old_hp} -> {self.hp})")
+            self._log(f"Result: {self.name} takes {actual_damage} damage! (HP: {old_hp} -> {self.hp})")
 
         result = {"died": False, "loot": {}}
 
         if self.hp <= 0:
             self.alive = False
-            logger.info(f"Critical Event: {self.name} has fallen!")
+            self._log(f"Critical Event: {self.name} has fallen!")
 
             # Generate loot if this is an enemy
             if self.team == "enemies":
                 loot = get_loot_from_enemy(self.char_class)
                 result["died"] = True
                 result["loot"] = loot
-                logger.info(f"Loot dropped: {loot}")
+                self._log(f"Loot dropped: {loot}")
 
         return result
 
     def _heavy_strike(self, target: "Character") -> dict:
-        logger.info(f"{self.name} performs Heavy Strike on {target.name}!")
+        self._log(f"{self.name} performs Heavy Strike on {target.name}!")
         damage = self.attack * 2
         return target.take_damage(damage)
 
     def _fireball(self, target: "Character") -> dict:
-        logger.info(f"{self.name} casts Fireball on {target.name}!")
+        self._log(f"{self.name} casts Fireball on {target.name}!")
         damage = random.randint(15, 20)
         return target.take_damage(damage)
 
     def _backstab(self, target: "Character") -> dict:
         original_defense = target.defense
         target.defense = max(0, target.defense - 2)
-        logger.info(f"{self.name} performs Backstab on {target.name}, reducing defense from {original_defense} to {target.defense}")
+        self._log(f"{self.name} performs Backstab on {target.name}, reducing defense from {original_defense} to {target.defense}")
         damage = int(self.attack * 1.5)
         return target.take_damage(damage)
 
     def _cheap_shot(self, target: "Character") -> dict:
         if random.random() < 0.3 and "stunned" not in target.status_effects:
             target.status_effects.append("stunned")
-            logger.info(f"{target.name} is stunned by {self.name}!")
-        logger.info(f"{self.name} performs Cheap Shot on {target.name}!")
+            self._log(f"{target.name} is stunned by {self.name}!")
+        self._log(f"{self.name} performs Cheap Shot on {target.name}!")
         damage = int(self.attack * 1.2)
         return target.take_damage(damage)
 
@@ -314,17 +356,17 @@ class Character:
         target.hp = min(target.max_hp, old_hp + heal_amount)
         actual_heal = target.hp - old_hp
         if actual_heal > 0:
-            logger.info(f"{self.name} heals {target.name} for {actual_heal} HP (from {old_hp} to {target.hp})")
+            self._log(f"{self.name} heals {target.name} for {actual_heal} HP (from {old_hp} to {target.hp})")
 
     def _bone_shield(self, target: "Character") -> dict:
         self.defense *= 2
-        logger.info(f"{self.name} uses Bone Shield to double defense to {self.defense}!")
+        self._log(f"{self.name} uses Bone Shield to double defense to {self.defense}!")
         return {"died": False, "loot": {}}
 
     def _rage(self, target: "Character") -> dict:
         self.attack += 3
         self.defense += 2
-        logger.info(f"{self.name} uses Rage! Attack +3, Defense +2")
+        self._log(f"{self.name} uses Rage! Attack +3, Defense +2")
         # Deal damage after increasing stats
         damage = int(self.attack * 1.5)  # Deal 150% damage like Backstab
         return target.take_damage(damage)
@@ -334,7 +376,7 @@ class Character:
         damage = self.attack - target.defense
         result1 = target.take_damage(damage)
         result2 = target.take_damage(damage)
-        logger.info(f"{self.name} uses Fury for a double attack on {target.name}!")
+        self._log(f"{self.name} uses Fury for a double attack on {target.name}!")
         # Return the second result as it includes death/loot if applicable
         return result2 if result2["died"] else result1
 
@@ -366,25 +408,25 @@ class Character:
                     for item_id, quantity in damage_result["loot"].items():
                         if self.inventory.add_item(item_id, quantity):
                             if item_id == "gold_coin":
-                                logger.info(f"{self.name} collected {quantity} gold!")
+                                self._log(f"{self.name} collected {quantity} gold!")
                             else:
-                                logger.info(f"{self.name} collected {quantity}x {item_id}")
+                                self._log(f"{self.name} collected {quantity}x {item_id}")
                         else:
-                            logger.info(f"{self.name}'s inventory is full! Couldn't collect {item_id}")
+                            self._log(f"{self.name}'s inventory is full! Couldn't collect {item_id}")
                     result["loot_collected"] = damage_result["loot"]
 
                 return result
 
             # Normal attack
-            logger.info(f"\n{self.name} prepares to attack {target.name}!")
-            logger.info(f"Combat Stats:")
-            logger.info(f"- Attacker ({self.name}): Attack = {self.attack}, HP = {self.hp}/{self.max_hp}")
-            logger.info(f"- Defender ({target.name}): Defense = {target.defense}, HP = {target.hp}/{target.max_hp}")
+            self._log(f"\n{self.name} prepares to attack {target.name}!")
+            self._log("Combat Stats:")
+            self._log(f"- Attacker ({self.name}): Attack = {self.attack}, HP = {self.hp}/{self.max_hp}")
+            self._log(f"- Defender ({target.name}): Defense = {target.defense}, HP = {target.hp}/{target.max_hp}")
 
             roll = random.randint(1, 6)
             damage = self.attack + roll
-            logger.info(f"Attack Roll: {roll}")
-            logger.info(f"Total Damage = {self.attack} (base) + {roll} (roll) = {damage}")
+            self._log(f"Attack Roll: {roll}")
+            self._log(f"Total Damage = {self.attack} (base) + {roll} (roll) = {damage}")
 
             damage_result = target.take_damage(damage)
             result["damage_dealt"] = damage
@@ -394,11 +436,11 @@ class Character:
                 for item_id, quantity in damage_result["loot"].items():
                     if self.inventory.add_item(item_id, quantity):
                         if item_id == "gold_coin":
-                            logger.info(f"{self.name} collected {quantity} gold!")
+                            self._log(f"{self.name} collected {quantity} gold!")
                         else:
-                            logger.info(f"{self.name} collected {quantity}x {item_id}")
+                            self._log(f"{self.name} collected {quantity}x {item_id}")
                     else:
-                        logger.info(f"{self.name}'s inventory is full! Couldn't collect {item_id}")
+                        self._log(f"{self.name}'s inventory is full! Couldn't collect {item_id}")
                 result["loot_collected"] = damage_result["loot"]
 
         return result
@@ -412,6 +454,7 @@ class Character:
     def to_dict(self) -> Dict[str, Any]:
         """Convert Character to dictionary for JSON serialization"""
         return {
+            "id": self.id,
             "name": self.name,
             "char_class": self.char_class,
             "team": self.team,
@@ -469,7 +512,7 @@ class Character:
         }
 
     @classmethod
-    def from_db_dict(cls, data: Dict[str, Any]) -> 'Character':
+    def from_db_dict(cls, data: Dict[str, Any], log_provider: Optional[LogProvider] = None) -> 'Character':
         """Create Character instance from backend Character model dictionary"""
         char = cls(
             name=data["name"],
@@ -477,7 +520,9 @@ class Character:
             hp=data.get("hp", data.get("max_hp", 30)),
             max_hp=data.get("max_hp", 30),
             attack=data.get("attack", 10),
-            defense=data.get("defense", 5)
+            defense=data.get("defense", 5),
+            log_provider=log_provider,
+            character_id=data.get("id")
         )
 
         # Set additional fields
@@ -637,8 +682,16 @@ class Character:
         return fixes
 
 class DnDGame:
-    def __init__(self, auto_create_characters: bool = True, model: str = "mistral"):
-        logger.info("Initializing DnDGame")
+    def __init__(
+        self,
+        auto_create_characters: bool = True,
+        model: str = "mistral",
+        time_provider: Optional[TimeProvider] = None,
+        log_provider: Optional[LogProvider] = None
+    ):
+        self.time_provider: TimeProvider = time_provider or RealTimeProvider()
+        self.log_provider: LogProvider = log_provider or FileLogProvider(logger=logger)
+        self._log("Initializing DnDGame")
         self.players: List[Character] = []
         self.enemies: List[Character] = []
         self.narrative_engine = NarrativeEngine(model)
@@ -647,6 +700,35 @@ class DnDGame:
         self.scene_counter = 0
         if auto_create_characters:
             self._create_characters(generate_intros=False)  # Don't generate intros during init
+        self.turn_delay = 0.0
+
+    def _log(
+        self,
+        message: str,
+        *,
+        level: str = "INFO",
+        metadata: Optional[Dict[str, Any]] = None,
+        exc_info: Optional[BaseException] = None
+    ) -> None:
+        """Route log output through the injected provider."""
+        details = {"component": "DnDGame"}
+        if metadata:
+            details.update(metadata)
+
+        if self.log_provider:
+            self.log_provider.log(getattr(logging, level.upper(), logging.INFO), message, extra=details)
+            return
+
+        log_fn = getattr(logger, level.lower(), logger.info)
+        if exc_info:
+            log_fn(message, exc_info=exc_info)
+        else:
+            log_fn(message)
+
+    def _pause(self) -> None:
+        """Throttle output pacing based on the injected time provider."""
+        if self.turn_delay > 0:
+            self.time_provider.sleep(self.turn_delay)
 
     def generate_character_introductions(self):
         """Generate narrative introductions for each character.
@@ -658,21 +740,29 @@ class DnDGame:
                 "enters the tavern",
                 f"A new {character.char_class} joining the adventure"
             )
-            logger.info(intro)
+            self._log(intro, metadata={"character": character.name})
             intros.append(intro)
         return intros
 
     def _create_characters(self, generate_intros: bool = False) -> None:
         try:
             self.players = [
-                Character(f"Hero {i+1}", random.choice(["Fighter", "Wizard", "Rogue", "Cleric"]))
+                Character(
+                    f"Hero {i+1}",
+                    random.choice(["Fighter", "Wizard", "Rogue", "Cleric"]),
+                    log_provider=self.log_provider
+                )
                 for i in range(2)
             ]
             for player in self.players:
                 player.team = "players"
 
             self.enemies = [
-                Character(f"Monster {i+1}", random.choice(["Goblin", "Orc", "Skeleton", "Bandit"]))
+                Character(
+                    f"Monster {i+1}",
+                    random.choice(["Goblin", "Orc", "Skeleton", "Bandit"]),
+                    log_provider=self.log_provider
+                )
                 for i in range(2)
             ]
             for enemy in self.enemies:
@@ -683,13 +773,14 @@ class DnDGame:
                 self.generate_character_introductions()
 
         except Exception as e:
-            logger.exception("Error creating characters")
+            self._log("Error creating characters", level="ERROR", exc_info=e)
             raise GameError(f"Failed to create characters: {str(e)}")
 
     def play_turn(self) -> None:
         if not self.players or not self.enemies:
             raise GameError("Cannot play turn with no characters")
 
+        self.scene_counter += 1
         all_characters = self.players + self.enemies
         random.shuffle(all_characters)
 
@@ -698,7 +789,7 @@ class DnDGame:
             self.current_location,
             [char.name for char in all_characters if char.alive]
         )
-        logger.info(scene_description)
+        self._log(scene_description)
 
         for char in all_characters:
             if not char.alive:
@@ -710,8 +801,9 @@ class DnDGame:
                     "themselves",
                     "struggles with the stun effect"
                 )
-                logger.info(status_desc)
+                self._log(status_desc)
                 char.status_effects.remove("stunned")
+                self._pause()
                 continue
 
             try:
@@ -727,7 +819,7 @@ class DnDGame:
                                 heal_target.name,
                                 "casts a healing spell on"
                             )
-                            logger.info(heal_desc)
+                            self._log(heal_desc)
                         continue
 
                 attack_target = self._select_attack_target(char)
@@ -742,10 +834,12 @@ class DnDGame:
                             "attacks",
                             damage_dealt
                         )
-                        logger.info(combat_desc)
+                        self._log(combat_desc)
 
             except Exception as e:
-                logger.exception(f"Error during {char.name}'s turn: {e}")
+                self._log(f"Error during {char.name}'s turn: {e}", level="ERROR", metadata={"character": char.name}, exc_info=e)
+            finally:
+                self._pause()
 
     def _select_heal_target(self, char: Character) -> Character:
         valid_targets = [p for p in self.players if p.alive and p.hp < p.max_hp] if char.team == "players" else [e for e in self.enemies if e.alive and e.hp < e.max_hp]
@@ -794,8 +888,8 @@ class DnDGame:
     def run_game(self) -> None:
         # Generate initial quest
         self.current_quest = self.narrative_engine.generate_quest()
-        logger.info("\nYour Quest:")
-        logger.info(self.current_quest)
+        self._log("\nYour Quest:")
+        self._log(self.current_quest)
 
         turn_count = 0
         while not self.is_game_over() and turn_count < 100:
@@ -805,10 +899,11 @@ class DnDGame:
                     party_level=1,
                     environment=self.current_location
                 )
-                logger.info("\nNew Encounter!")
-                logger.info(encounter)
+                self._log("\nNew Encounter!")
+                self._log(encounter)
 
             self.play_turn()
+            self._pause()
             turn_count += 1
 
         if any(char.alive for char in self.players):
@@ -817,14 +912,14 @@ class DnDGame:
                 "emerges victorious",
                 "Final battle concluded"
             )
-            logger.info(victory_desc)
+            self._log(victory_desc)
         else:
             defeat_desc = self.narrative_engine.handle_player_action(
                 "The party",
                 "has fallen",
                 "Final battle concluded"
             )
-            logger.info(defeat_desc)
+            self._log(defeat_desc)
 
 if __name__ == "__main__":
     try:

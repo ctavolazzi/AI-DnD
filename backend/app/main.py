@@ -13,9 +13,11 @@ from pathlib import Path
 from .config import settings
 from .database import engine, Base, get_db
 from .api import images_router, scenes_router, maintenance_router, migrate_router, game_router, game_logic_router, narrative_router, frontend_router, character_generation_router
+from .services.log_worker import LogWorker
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+log_worker = LogWorker()
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -66,6 +68,18 @@ if images_path.exists():
 frontend_path = Path("../retro-adventure-game.html")
 if frontend_path.parent.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_path.parent)), name="static")
+
+
+@app.on_event("startup")
+async def startup_services():
+    """Initialize background services."""
+    log_worker.start()
+
+
+@app.on_event("shutdown")
+async def shutdown_services():
+    """Tear down background services."""
+    log_worker.stop()
 
 
 @app.get("/")
@@ -174,4 +188,3 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
-

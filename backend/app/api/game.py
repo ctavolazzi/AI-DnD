@@ -16,6 +16,7 @@ from ..services.game_state_manager import (
     delete_session,
     get_all_active_sessions
 )
+from ..services.game_service import game_service
 
 router = APIRouter(prefix="/api/v1/game", tags=["game"])
 
@@ -198,6 +199,7 @@ async def delete_game_session(
 
     # Remove from memory
     delete_session(session_id)
+    game_service.clear_cache(session_id)
 
 
 # ========== Game State Management ==========

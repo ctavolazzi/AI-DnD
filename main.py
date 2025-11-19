@@ -23,6 +23,7 @@ import sys
 
 from dungeon_master import DungeonMaster
 from error_logger import log_exception, log_error
+from backend.app.core.providers import RealTimeProvider, FileLogProvider
 
 
 def main():
@@ -124,7 +125,17 @@ def main():
 
         print(f"🧙 Initializing Dungeon Master with model '{args.model}'...")
         logging.info(f"Initializing Dungeon Master with model {args.model}...")
-        dm = DungeonMaster(vault_path=args.vault, model=args.model)
+
+        # Inject Providers for CLI
+        time_provider = RealTimeProvider()
+        log_provider = FileLogProvider()
+
+        dm = DungeonMaster(
+            vault_path=args.vault,
+            model=args.model,
+            time_provider=time_provider,
+            log_provider=log_provider
+        )
 
         print(f"\n📜 Running game for {args.turns} turns...\n")
         logging.info(f"Running game for {args.turns} turns...")
