@@ -3815,12 +3815,12 @@
             updateLayout() {
                 const width = window.innerWidth;
                 const height = window.innerHeight;
-                
+
                 // Define layout constraints
                 const headerHeight = 60;
                 const padding = 32; // 16px * 2
                 const gap = 16;
-                
+
                 // Calculate available space
                 const availableHeight = height - headerHeight - padding;
                 const availableWidth = width - padding;
@@ -5876,6 +5876,39 @@
             document.querySelector('.left-sidebar').classList.remove('active');
             document.querySelector('.right-sidebar').classList.remove('active');
         });
+
+        // Mobile Menu Toggles
+        const toggleMapNav = document.getElementById('toggle-map-nav');
+        const toggleCharStats = document.getElementById('toggle-char-stats');
+
+        if (toggleMapNav) {
+            toggleMapNav.addEventListener('click', () => {
+                const leftSidebar = document.querySelector('.left-sidebar');
+                const rightSidebar = document.querySelector('.right-sidebar');
+                if (leftSidebar) leftSidebar.classList.toggle('active');
+                if (rightSidebar) rightSidebar.classList.remove('active');
+            });
+        }
+
+        if (toggleCharStats) {
+            toggleCharStats.addEventListener('click', () => {
+                const leftSidebar = document.querySelector('.left-sidebar');
+                const rightSidebar = document.querySelector('.right-sidebar');
+                if (rightSidebar) rightSidebar.classList.toggle('active');
+                if (leftSidebar) leftSidebar.classList.remove('active');
+            });
+        }
+
+        // Close menus when clicking outside (on main area)
+        const mainArea = document.querySelector('.main-area');
+        if (mainArea) {
+            mainArea.addEventListener('click', () => {
+                const leftSidebar = document.querySelector('.left-sidebar');
+                const rightSidebar = document.querySelector('.right-sidebar');
+                if (leftSidebar) leftSidebar.classList.remove('active');
+                if (rightSidebar) rightSidebar.classList.remove('active');
+            });
+        }
 
         // ============================================================
         // THEME SWITCHER
