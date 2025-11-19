@@ -1,15 +1,15 @@
 ---
-run_id: 20251018074525
-timestamp: 2025-10-27 12:33:19
-status: active
-turn_count: 13
+run_id: 20251119140449
+timestamp: 2025-11-19 14:38:18
+status: completed
+turn_count: 3
 ---
 
-# Current Game Run: 20251018074525
+# Current Game Run: 20251119140449
 
-Started: 2025-10-27 12:33:19
-Last Updated: 2025-10-27 12:33:35
-Current Turn: 13
+Started: 2025-11-19 14:38:18
+Last Updated: 2025-11-19 14:38:23
+Current Turn: 3
 
 ## Active Quest
 [[Main Quest]]
@@ -20,17 +20,17 @@ Current Turn: 13
 - [[Hero 2]]
 ## Events
 
-- [[Scene 13]]
-- [[Skill Check: Hero 1 - CHA]]
-- [[Hero 1's Choice - Turn 13]]
+- [[Skill Check: Hero 1 - Stealth (DEX)]]
+- [[Hero 1's Choice - Turn 3]]
 - [[Skill Check: Hero 2 - CHA]]
-- [[Hero 2's Choice - Turn 13]]
+- [[Hero 2's Choice - Turn 3]]
+- [[Adventure Conclusion]]
 ## Combat
 
 No combat has occurred yet.
 
 ## Sessions
 
-- [[Session 20251027]]
+- [[Session 20251119]]
 
 *This run is currently in progress. Content will be updated as the game progresses.*

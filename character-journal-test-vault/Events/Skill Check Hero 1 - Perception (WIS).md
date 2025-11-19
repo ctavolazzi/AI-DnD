@@ -1,19 +1,19 @@
 ---
 name: Skill Check: Hero 1 - Perception (WIS)
 type: Skill Check
-timestamp: 2025-10-27 12:33:32
+timestamp: 2025-11-19 14:04:52
 location: Unknown Location
 ---
 
 # Skill Check: Hero 1 - Perception (WIS)
 
-*2025-10-27 12:33:32 at [[Unknown Location]]*
+*2025-11-19 14:04:52 at [[Unknown Location]]*
 
 ## Summary
 Hero 1 makes a Perception (WIS) check
 
 ## Detailed Description
-Hero 1 rolled 17 vs DC 12: SUCCESS
+Hero 1 rolled 6 vs DC 12: FAILURE
 
 ## Participants
 - [[Hero 1]]

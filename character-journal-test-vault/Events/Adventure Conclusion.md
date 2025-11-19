@@ -1,13 +1,13 @@
 ---
 name: Adventure Conclusion
 type: Conclusion
-timestamp: 2025-10-27 12:31:15
+timestamp: 2025-11-19 14:38:23
 location: thornhaven_tavern
 ---
 
 # Adventure Conclusion
 
-*2025-10-27 12:31:15 at [[thornhaven_tavern]]*
+*2025-11-19 14:38:23 at [[thornhaven_tavern]]*
 
 ## Summary
 The adventure has concluded

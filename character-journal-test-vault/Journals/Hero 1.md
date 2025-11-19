@@ -1,6 +1,6 @@
 ---
 character: Hero 1
-date_created: 2025-10-27 12:33:19
+date_created: 2025-11-19 14:38:19
 class: 
 race: 
 ---
@@ -8,7 +8,7 @@ race:
 # Hero 1's Journal
 
 ## Journal Entries
-### 2025-10-27 12:33:19
+### 2025-11-19 14:38:19
 
 Dear Journal,
 
@@ -25,11 +25,11 @@ This relates to my quest: Main Quest. I should keep this in mind as I proceed.
 Until next time,
 Hero 1
 
-### 2025-10-27 12:33:19
+### 2025-11-19 14:38:19
 
 I am Hero 1.
 
-A brave Cleric on a grand adventure.
+A brave Rogue on a grand adventure.
 
 My journey begins now.
 
@@ -37,7 +37,7 @@ My journey begins now.
 *No journal entries yet*
 
 ## Internal Thoughts
-### 2025-10-27 12:33:19
+### 2025-11-19 14:38:19
 
 *Internal thoughts about Hero 1's Introduction*
 

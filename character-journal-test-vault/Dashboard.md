@@ -5,7 +5,7 @@ aliases: [📊 Dashboard]
 # Game Dashboard
 
 > **Status**: Active Run in Progress
-> **Last Updated**: 2025-10-27 12:33:35
+> **Last Updated**: 2025-11-19 14:38:23
 
 ## Current Game
 
@@ -14,7 +14,7 @@ aliases: [📊 Dashboard]
 ## Statistics
 - **Characters**: 2
 - **Locations Visited**: 1
-- **Events**: 65
+- **Events**: 16
 - **Combat Encounters**: 0
 
 ## Active Characters
@@ -22,9 +22,9 @@ aliases: [📊 Dashboard]
 - [[Hero 2]]
 
 ## Recent Events
-- [[Hero 1's Choice - Turn 13]]
 - [[Skill Check: Hero 2 - CHA]]
-- [[Hero 2's Choice - Turn 13]]
+- [[Hero 2's Choice - Turn 3]]
+- [[Adventure Conclusion]]
 
 ## Navigation
 - [[Start|📘 How to Follow]]

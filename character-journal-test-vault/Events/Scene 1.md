@@ -1,13 +1,13 @@
 ---
 name: Scene 1
 type: Scene
-timestamp: 2025-10-27 12:33:19
+timestamp: 2025-11-19 14:38:19
 location: thornhaven_tavern
 ---
 
 # Scene 1
 
-*2025-10-27 12:33:19 at [[thornhaven_tavern]]*
+*2025-11-19 14:38:19 at [[thornhaven_tavern]]*
 
 ## Summary
 A new scene unfolds

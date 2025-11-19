@@ -1,19 +1,19 @@
 ---
 name: Hero 1's Choice - Turn 2
 type: Player Choice
-timestamp: 2025-10-27 12:33:21
+timestamp: 2025-11-19 14:38:20
 location: thornhaven_tavern
 ---
 
 # Hero 1's Choice - Turn 2
 
-*2025-10-27 12:33:21 at [[thornhaven_tavern]]*
+*2025-11-19 14:38:20 at [[thornhaven_tavern]]*
 
 ## Summary
 Hero 1 makes a decision
 
 ## Detailed Description
-Choice: Investigate the surroundings carefully
+Choice: Move stealthily to scout ahead
 Outcome: 
 
 ## Participants

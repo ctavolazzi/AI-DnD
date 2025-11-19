@@ -1,27 +1,28 @@
 ---
 name: Hero 2
-class: Fighter
+class: Rogue
 status: Active
-hp: 30
-max_hp: 30
-attack: 5
-defense: 2
+hp: 48
+max_hp: 48
+attack: 10
+defense: 4
 team: Player
 ---
 
 # Hero 2
 
-> Active - HP: 30/30
+> Active - HP: 48/48
 
 ## Character Stats
-- **Class**: Fighter
-- **HP**: 30/30
-- **Attack**: 5
-- **Defense**: 2
+- **Class**: Rogue
+- **HP**: 48/48
+- **Attack**: 10
+- **Defense**: 4
 - **Status**: Active
 
 ## Abilities
-- **Heavy Strike**
+- **Backstab**
+- **Cheap Shot**
 
 ## Status Effects
 - No current status effects
@@ -30,7 +31,7 @@ team: Player
 - [[Hero 2's Journal]]
 
 ## Biography
-A brave Fighter on a grand adventure.
+A brave Rogue on a grand adventure.
 
 ## Inventory
 - No items

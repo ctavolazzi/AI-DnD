@@ -1,27 +1,28 @@
 ---
 name: Hero 1
-class: Cleric
+class: Rogue
 status: Active
-hp: 33
-max_hp: 33
-attack: 15
-defense: 4
+hp: 46
+max_hp: 46
+attack: 8
+defense: 3
 team: Player
 ---
 
 # Hero 1
 
-> Active - HP: 33/33
+> Active - HP: 46/46
 
 ## Character Stats
-- **Class**: Cleric
-- **HP**: 33/33
-- **Attack**: 15
-- **Defense**: 4
+- **Class**: Rogue
+- **HP**: 46/46
+- **Attack**: 8
+- **Defense**: 3
 - **Status**: Active
 
 ## Abilities
-- **Heal**
+- **Backstab**
+- **Cheap Shot**
 
 ## Status Effects
 - No current status effects
@@ -30,7 +31,7 @@ team: Player
 - [[Hero 1's Journal]]
 
 ## Biography
-A brave Cleric on a grand adventure.
+A brave Rogue on a grand adventure.
 
 ## Inventory
 - No items

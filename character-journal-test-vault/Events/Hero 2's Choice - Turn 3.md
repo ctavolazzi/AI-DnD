@@ -1,19 +1,19 @@
 ---
 name: Hero 2's Choice - Turn 3
 type: Player Choice
-timestamp: 2025-10-27 12:33:22
+timestamp: 2025-11-19 14:38:22
 location: thornhaven_tavern
 ---
 
 # Hero 2's Choice - Turn 3
 
-*2025-10-27 12:33:22 at [[thornhaven_tavern]]*
+*2025-11-19 14:38:22 at [[thornhaven_tavern]]*
 
 ## Summary
 Hero 2 makes a decision
 
 ## Detailed Description
-Choice: Investigate the surroundings carefully
+Choice: Try to communicate with any nearby beings
 Outcome: 
 
 ## Participants

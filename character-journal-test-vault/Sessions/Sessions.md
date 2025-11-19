@@ -1,7 +1,7 @@
 ---
 title: Sessions
-created: 2025-10-18 07:45:25
-updated: 2025-10-27 12:33:19
+created: 2025-11-19 14:04:49
+updated: 2025-11-19 14:38:19
 ---
 
 # Sessions
@@ -9,9 +9,8 @@ updated: 2025-10-27 12:33:19
 This is the central reference file for all sessions in the game. This file is automatically updated when new sessions are created or existing sessions are modified.
 
 ## List of Sessions
-- [[Session 20251027]] - Added on 2025-10-27
-- [[Session 20251027]] - Added on 2025-10-27
-- [[Session 20251018]] - Added on 2025-10-18
+- [[Session 20251119]] - Added on 2025-11-19
+- [[Session 20251119]] - Added on 2025-11-19
 
 *This section will be automatically populated as sessions are created.*
 

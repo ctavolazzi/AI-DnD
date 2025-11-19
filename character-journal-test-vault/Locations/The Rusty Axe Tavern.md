@@ -1,7 +1,7 @@
 ---
 name: The Rusty Axe Tavern
 type: LocationType.TAVERN
-discovered: 2025-10-27 12:33:19
+discovered: 2025-11-19 14:38:19
 ---
 
 # The Rusty Axe Tavern

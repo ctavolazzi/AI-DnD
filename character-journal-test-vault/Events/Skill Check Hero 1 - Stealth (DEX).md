@@ -1,19 +1,19 @@
 ---
 name: Skill Check: Hero 1 - Stealth (DEX)
 type: Skill Check
-timestamp: 2025-10-27 12:31:11
+timestamp: 2025-11-19 14:38:22
 location: Unknown Location
 ---
 
 # Skill Check: Hero 1 - Stealth (DEX)
 
-*2025-10-27 12:31:11 at [[Unknown Location]]*
+*2025-11-19 14:38:22 at [[Unknown Location]]*
 
 ## Summary
 Hero 1 makes a Stealth (DEX) check
 
 ## Detailed Description
-Hero 1 rolled 19 vs DC 13: SUCCESS
+Hero 1 rolled 6 vs DC 13: FAILURE
 
 ## Participants
 - [[Hero 1]]
