@@ -273,9 +273,7 @@ def generate_scene():
 
         # Prepare contents for Gemini
         contents = []
-        generation_config = types.GenerateContentConfig(
-            media_resolution={"level": requested_resolution}
-        )
+        generation_config = types.GenerateContentConfig()
 
         # If base sprite provided, include it for image-to-image enhancement
         if base_sprite:
@@ -291,8 +289,7 @@ def generate_scene():
                     inline_data=types.Blob(
                         mime_type='image/png',
                         data=image_bytes
-                    ),
-                    media_resolution={"level": requested_resolution}
+                    )
                 )
             )
 

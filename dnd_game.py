@@ -690,7 +690,7 @@ class DnDGame:
         log_provider: Optional[LogProvider] = None
     ):
         self.time_provider: TimeProvider = time_provider or RealTimeProvider()
-        self.log_provider: LogProvider = log_provider or FileLogProvider(logger=logger)
+        self.log_provider: LogProvider = log_provider or FileLogProvider()
         self._log("Initializing DnDGame")
         self.players: List[Character] = []
         self.enemies: List[Character] = []
