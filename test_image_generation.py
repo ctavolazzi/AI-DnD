@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Test Nano Banana image generation directly."""
 
-import requests
 import json
+import pytest
+import requests
 
 BASE_URL = "http://localhost:5000"
 
@@ -12,14 +13,19 @@ print("="*60 + "\n")
 # Test 1: Health check
 print("1️⃣ Checking server health...")
 try:
-    response = requests.get(f"{BASE_URL}/health")
+    response = requests.get(f"{BASE_URL}/health", timeout=5)
     if response.status_code == 200:
         print("✅ Server is healthy!\n")
     else:
-        print(f"⚠️  Server response: {response.status_code}\n")
+        pytest.skip(
+            f"Nano Banana backend responded with {response.status_code}; skipping manual image test",
+            allow_module_level=True,
+        )
 except Exception as e:
-    print(f"❌ Could not reach server: {e}\n")
-    exit(1)
+    pytest.skip(
+        f"Nano Banana backend unavailable ({e}); skipping manual image test",
+        allow_module_level=True,
+    )
 
 # Test 2: Generate a D&D scene
 print("2️⃣ Generating epic D&D scene...")
