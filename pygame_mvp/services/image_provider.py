@@ -3,12 +3,16 @@ Image Provider System
 
 Abstract interface and implementations for image generation.
 - MockImageProvider: Generates labeled placeholder images
-- APIImageProvider: Calls real API for AI-generated images
+- APIImageProvider: Calls PixelLab for AI-generated images (with graceful fallback)
 """
+
+import base64
+import os
+from io import BytesIO
+from typing import Dict, Tuple, Optional, Callable
 
 import pygame
 from abc import ABC, abstractmethod
-from typing import Dict, Tuple, Optional
 
 # Use absolute imports for standalone execution
 try:
@@ -225,63 +229,159 @@ class MockImageProvider(ImageProvider):
 
 class APIImageProvider(ImageProvider):
     """
-    Real image provider that calls the FastAPI backend.
+    Real image provider that calls the PixelLab API.
 
-    Note: This is a stub for future implementation.
-    Switch to this provider when ready for real API calls.
+    - Uses env var PIXELLAB_API_KEY
+    - Falls back to MockImageProvider if the SDK/key is unavailable
     """
 
-    def __init__(self, api_url: str = "http://localhost:8000/api/v1"):
+    def __init__(self, api_url: str = "http://localhost:8000/api/v1", api_key: Optional[str] = None):
         self.api_url = api_url
+        self.api_key = api_key or os.getenv("PIXELLAB_API_KEY")
         self._cache: Dict[Tuple, pygame.Surface] = {}
         self._fallback = MockImageProvider()
+        self._client = self._initialize_client()
 
-    def _fetch_image(self, endpoint: str, params: dict, width: int, height: int) -> pygame.Surface:
-        """
-        Fetch image from API.
+    def _initialize_client(self):
+        """Create PixelLab client if dependency and API key are available."""
+        if not self.api_key:
+            return None
 
-        TODO: Implement actual API call
-        - POST to endpoint with params
-        - Receive base64 image
-        - Decode to pygame.Surface
-        - Handle errors with fallback
-        """
-        # For now, return fallback placeholder
-        return self._fallback.get_scene_image(params.get("name", "Unknown"), width, height)
+        try:
+            import pixellab  # type: ignore
+        except Exception:
+            return None
+
+        try:
+            return pixellab.Client(secret=self.api_key)
+        except Exception:
+            return None
+
+    def _decode_surface(self, image_obj, width: int, height: int) -> Optional[pygame.Surface]:
+        """Convert a PixelLab image object (PIL or base64) into a pygame surface."""
+        if image_obj is None:
+            return None
+
+        try:
+            # Preferred: use PIL image if available
+            if hasattr(image_obj, "pil_image"):
+                pil_img = image_obj.pil_image().convert("RGBA")
+                surface = pygame.image.frombuffer(pil_img.tobytes(), pil_img.size, "RGBA")
+            else:
+                # Fallback: base64 blob on the response
+                encoded = getattr(image_obj, "base64", None)
+                if encoded is None and isinstance(image_obj, dict):
+                    encoded = image_obj.get("base64")
+                if not encoded:
+                    return None
+                raw_bytes = base64.b64decode(encoded)
+                surface = pygame.image.load(BytesIO(raw_bytes))
+                if pygame.display.get_init():
+                    surface = surface.convert_alpha()
+
+            if surface.get_width() != width or surface.get_height() != height:
+                surface = pygame.transform.smoothscale(surface, (width, height))
+            return surface
+        except Exception:
+            return None
+
+    def _fetch_with_cache(
+        self,
+        cache_key: Tuple,
+        generator: Callable[[], Optional[pygame.Surface]],
+        fallback_factory: Callable[[], pygame.Surface]
+    ) -> pygame.Surface:
+        """Return cached image or generate one, falling back to placeholders."""
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        surface: Optional[pygame.Surface] = None
+
+        if self._client:
+            try:
+                surface = generator()
+            except Exception:
+                surface = None
+
+        if surface is None:
+            surface = fallback_factory()
+
+        self._cache[cache_key] = surface
+        return surface
+
+    def _generate_pixflux(self, description: str, width: int, height: int, **kwargs) -> Optional[pygame.Surface]:
+        """Call PixelLab PixFlux and decode the response into a surface."""
+        if not self._client:
+            return None
+
+        response = self._client.generate_image_pixflux(
+            description=description,
+            image_size={"width": width, "height": height},
+            **kwargs
+        )
+        return self._decode_surface(response.image, width, height)
 
     def get_scene_image(self, scene_name: str, width: int, height: int) -> pygame.Surface:
         """Fetch scene image from API."""
-        return self._fetch_image(
-            f"{self.api_url}/images/scene",
-            {"name": scene_name, "width": width, "height": height},
-            width, height
+        prompt = f"{scene_name} - atmospheric fantasy scene, pixel art, dramatic lighting"
+        cache_key = ("scene", scene_name, width, height)
+        return self._fetch_with_cache(
+            cache_key,
+            lambda: self._generate_pixflux(prompt, width, height, detail="highly detailed"),
+            lambda: self._fallback.get_scene_image(scene_name, width, height)
         )
 
     def get_character_portrait(self, name: str, char_class: str, width: int, height: int) -> pygame.Surface:
         """Fetch character portrait from API."""
-        return self._fetch_image(
-            f"{self.api_url}/images/portrait",
-            {"name": name, "char_class": char_class, "width": width, "height": height},
-            width, height
+        prompt = (
+            f"portrait of {name}, {char_class.lower()}, pixel art bust, "
+            "simple background, clean outline"
+        )
+        cache_key = ("character", name, char_class, width, height)
+        return self._fetch_with_cache(
+            cache_key,
+            lambda: self._generate_pixflux(
+                prompt,
+                width,
+                height,
+                detail="highly detailed",
+                outline="single color black outline",
+                no_background=True
+            ),
+            lambda: self._fallback.get_character_portrait(name, char_class, width, height)
         )
 
     def get_item_image(self, item_name: str, width: int, height: int) -> pygame.Surface:
         """Fetch item image from API."""
-        return self._fetch_image(
-            f"{self.api_url}/images/item",
-            {"name": item_name, "width": width, "height": height},
-            width, height
+        prompt = f"{item_name}, pixel art item icon, centered, transparent background"
+        cache_key = ("item", item_name, width, height)
+        return self._fetch_with_cache(
+            cache_key,
+            lambda: self._generate_pixflux(
+                prompt,
+                width,
+                height,
+                detail="highly detailed",
+                no_background=True
+            ),
+            lambda: self._fallback.get_item_image(item_name, width, height)
         )
 
     def get_map_image(self, location_name: str, width: int, height: int) -> pygame.Surface:
         """Fetch map image from API."""
-        return self._fetch_image(
-            f"{self.api_url}/images/map",
-            {"name": location_name, "width": width, "height": height},
-            width, height
+        prompt = f"top-down map of {location_name}, pixel art, simple landmarks, readable"
+        cache_key = ("map", location_name, width, height)
+        return self._fetch_with_cache(
+            cache_key,
+            lambda: self._generate_pixflux(
+                prompt,
+                width,
+                height,
+                detail="medium detail"
+            ),
+            lambda: self._fallback.get_map_image(location_name, width, height)
         )
 
     def clear_cache(self) -> None:
         """Clear the image cache."""
         self._cache.clear()
-
