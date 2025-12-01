@@ -51,41 +51,41 @@ class PixelRPGApp:
     """
     Main application class managing state transitions and main loop.
     """
-    
+
     def __init__(self):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
-        
+
         # Create window
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Quest for the Golden Bunch")
-        
+
         self.clock = pygame.time.Clock()
         self.running = True
         self.state = AppState.TITLE
-        
+
         # Initialize components
         self._setup_title_screen()
         self._setup_game_manager()
-        
+
         # Print welcome message
         self._print_welcome()
-    
+
     def _setup_title_screen(self) -> None:
         """Initialize the title screen."""
         self.title_screen = TitleScreen(self.screen)
-        
+
         # Wire callbacks
         self.title_screen.on_new_game = self._start_new_game
         self.title_screen.on_load_game = self._load_game
         self.title_screen.on_options = self._show_options
         self.title_screen.on_quit = self._quit_game
-    
+
     def _setup_game_manager(self) -> None:
         """Initialize the game manager."""
         self.game_manager = PixelGameManager(self.screen)
-    
+
     def _print_welcome(self) -> None:
         """Print welcome message to console."""
         print("""
@@ -102,85 +102,85 @@ class PixelRPGApp:
 ║    [ESC]         - Menu / Close                              ║
 ╚══════════════════════════════════════════════════════════════╝
         """)
-    
+
     # ========================================================================
     # STATE TRANSITIONS
     # ========================================================================
-    
+
     def _start_new_game(self) -> None:
         """Start a new game."""
         print("Starting new game...")
-        
+
         # TODO: Add character creation screen
         # For now, use default character
         self.game_manager.start_new_game(
             player_name="Hero",
             player_class=CharacterClass.FIGHTER
         )
-        
+
         self.state = AppState.GAME
-    
+
     def _load_game(self) -> None:
         """Load a saved game."""
         print("Loading game...")
-        
+
         if self.game_manager.load_game(slot=1):
             self.state = AppState.GAME
         else:
             # No save found, start new game
             print("No save found, starting new game...")
             self._start_new_game()
-    
+
     def _show_options(self) -> None:
         """Show options menu."""
         print("Options menu not yet implemented")
         # TODO: Implement options screen
-    
+
     def _quit_game(self) -> None:
         """Quit the application."""
         print("Goodbye!")
         self.running = False
-    
+
     def _return_to_title(self) -> None:
         """Return to title screen."""
         self.state = AppState.TITLE
-    
+
     # ========================================================================
     # MAIN LOOP
     # ========================================================================
-    
+
     def run(self) -> None:
         """Main application loop."""
         while self.running:
             # Handle events
             self._handle_events()
-            
+
             # Update state
             self._update()
-            
+
             # Render
             self._render()
-            
+
             # Flip display
             pygame.display.flip()
-            
+
             # Cap framerate
             self.clock.tick(FPS)
-        
+
         # Cleanup
         pygame.quit()
-    
+
     def _handle_events(self) -> None:
         """Process all pygame events."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
                 continue
-            
+
             # Route events based on state
             if self.state == AppState.TITLE:
                 self.title_screen.handle_event(event)
-            
+
             elif self.state == AppState.GAME:
                 # Check for return to title
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -189,22 +189,22 @@ class PixelRPGApp:
                        not self.game_manager.inventory_screen.visible:
                         self._return_to_title()
                         continue
-                
+
                 self.game_manager.handle_event(event)
-    
+
     def _update(self) -> None:
         """Update game state."""
         if self.state == AppState.TITLE:
             self.title_screen.update()
-        
+
         elif self.state == AppState.GAME:
             self.game_manager.update()
-    
+
     def _render(self) -> None:
         """Render current state."""
         if self.state == AppState.TITLE:
             self.title_screen.render()
-        
+
         elif self.state == AppState.GAME:
             self.game_manager.render()
 

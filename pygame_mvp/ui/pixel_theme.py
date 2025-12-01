@@ -55,44 +55,44 @@ BANANA_YELLOW = (255, 230, 100)
 
 class PixelTheme:
     """Pixel art theme with warm parchment colors."""
-    
+
     def __init__(self):
         self.name = "pixel"
-        
+
         # Main backgrounds
         self.background = WOOD_DARK
         self.panel_bg = PARCHMENT_LIGHT
         self.panel_bg_dark = PARCHMENT_MEDIUM
         self.panel_border = WOOD_MEDIUM
         self.panel_header = WOOD_LIGHT
-        
+
         # Text
         self.text_primary = TEXT_DARK
         self.text_secondary = TEXT_MEDIUM
         self.text_highlight = TEXT_GOLD
         self.text_light = TEXT_LIGHT
-        
+
         # Buttons/Interactive
         self.button_bg = SLOT_BG
         self.button_hover = SLOT_HIGHLIGHT
         self.button_pressed = SLOT_BORDER
         self.button_border = WOOD_MEDIUM
-        
+
         # Stat bars
         self.hp_bar = HP_RED
         self.hp_bar_bg = HP_RED_DARK
         self.mana_bar = MP_BLUE
         self.mana_bar_bg = MP_BLUE_DARK
-        
+
         # Item slots
         self.slot_bg = SLOT_BG
         self.slot_border = SLOT_BORDER
         self.slot_highlight = GOLD_HIGHLIGHT
-        
+
         # Decorative
         self.vine_border = VINE_GREEN
         self.gold_accent = GOLD_HIGHLIGHT
-        
+
         # Title screen
         self.title_text = TEXT_GOLD
         self.title_shadow = WOOD_DARK

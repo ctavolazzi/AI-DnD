@@ -4,6 +4,7 @@ Lightweight UI manager for overlay screens (inventory, character sheet).
 This keeps the GameManager loop focused on logic while UI rendering lives here.
 """
 
+from enum import Enum
 from typing import List, Optional
 
 import pygame
@@ -17,10 +18,25 @@ except ImportError:  # pragma: no cover
     from ui.theme import get_theme
 
 
+class ScreenType(Enum):
+    """Overlay screens available to the UI manager."""
+    NONE = "none"
+    INVENTORY = "inventory"
+    CHARACTER = "character"
+
+
+# Docs refer to UIState; keep it as an alias to the existing enum.
+UIState = ScreenType
+
+
 class UIManager:
     """Manages toggleable overlay panels for the GameManager loop."""
 
-    def __init__(self, screen: pygame.Surface):
+    def __init__(
+        self,
+        screen: pygame.Surface,
+        initial_screen: Optional[ScreenType] = None,
+    ):
         self.screen = screen
         self.theme = get_theme()
         pygame.font.init()
@@ -29,8 +45,9 @@ class UIManager:
         self.small_font = pygame.font.Font(None, 18)
 
         # Panels toggle flags
-        self.show_inventory = False
-        self.show_character = False
+        self.active_screen: ScreenType = initial_screen or ScreenType.NONE
+        self.show_inventory = self.active_screen == ScreenType.INVENTORY
+        self.show_character = self.active_screen == ScreenType.CHARACTER
 
         # Layout defaults (right-side overlay)
         self.panel_width = 360
@@ -41,6 +58,15 @@ class UIManager:
     # ------------------------------------------------------------------ #
     # Event handling
     # ------------------------------------------------------------------ #
+    def handle_event(self, event: pygame.event.Event) -> bool:
+        """
+        Primary event hook. Returns True if the UI consumed the event.
+        """
+        return self.handle_key_event(event)
+
+    # Alias used in design docs
+    handle_input = handle_event
+
     def handle_key_event(self, event: pygame.event.Event) -> bool:
         """
         Toggle overlay visibility on keypress.
@@ -60,19 +86,32 @@ class UIManager:
 
     def toggle_inventory(self) -> None:
         """Toggle inventory overlay."""
-        self.show_inventory = not self.show_inventory
-        if self.show_inventory:
-            self.show_character = False  # show one overlay at a time
+        self.toggle_screen(ScreenType.INVENTORY)
 
     def toggle_character(self) -> None:
         """Toggle character sheet overlay."""
-        self.show_character = not self.show_character
-        if self.show_character:
-            self.show_inventory = False
+        self.toggle_screen(ScreenType.CHARACTER)
+
+    def toggle_screen(self, screen: ScreenType) -> None:
+        """Generic toggler for overlays."""
+        if self.active_screen == screen:
+            self.active_screen = ScreenType.NONE
+        else:
+            self.active_screen = screen
+
+        self.show_inventory = self.active_screen == ScreenType.INVENTORY
+        self.show_character = self.active_screen == ScreenType.CHARACTER
+
+    # Docs alias
+    toggle_state = toggle_screen
 
     # ------------------------------------------------------------------ #
     # Rendering
     # ------------------------------------------------------------------ #
+    def update(self, *_: object) -> None:
+        """Placeholder for parity with game loop update calls."""
+        return
+
     def render(
         self,
         player,
@@ -84,6 +123,9 @@ class UIManager:
             self._render_inventory(player)
         if self.show_character:
             self._render_character(player, quests, log_lines)
+
+    # Alias for docs
+    draw = render
 
     def _render_inventory(self, player) -> None:
         """Render a simple inventory list."""
@@ -191,3 +233,19 @@ class UIManager:
             self.screen.blit(text, (self.anchor_x + PADDING, y))
             y += text.get_height() + 4
 
+    # ------------------------------------------------------------------ #
+    # State aliases
+    # ------------------------------------------------------------------ #
+    @property
+    def state(self) -> ScreenType:
+        """Doc-friendly alias for active_screen."""
+        return self.active_screen
+
+    @state.setter
+    def state(self, value: Optional[ScreenType]) -> None:
+        if value is None:
+            self.active_screen = ScreenType.NONE
+        else:
+            self.active_screen = ScreenType(value)
+        self.show_inventory = self.active_screen == ScreenType.INVENTORY
+        self.show_character = self.active_screen == ScreenType.CHARACTER

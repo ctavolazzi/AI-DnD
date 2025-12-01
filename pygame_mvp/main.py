@@ -789,6 +789,7 @@ def run_manager_mode(use_api: bool = False) -> None:
 
     image_provider = APIImageProvider() if use_api else MockImageProvider()
     manager = GameManager(image_provider, screen)
+    ui = manager.ui_manager
     clock = pygame.time.Clock()
 
     running = True
@@ -796,11 +797,21 @@ def run_manager_mode(use_api: bool = False) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            else:
-                manager.handle_event(event)
+                continue
+
+            # UI gets first chance to consume inputs
+            if ui.handle_event(event):
+                continue
+
+            # Game logic handles remaining events
+            manager.handle_event(event)
 
         manager.update()
-        manager.render()
+
+        # Draw game layer then overlay UI on top
+        manager.render(include_ui=False)
+        ui.render(manager.player, manager.quest_tracker, manager.log_lines)
+
         pygame.display.flip()
         clock.tick(FPS)
 

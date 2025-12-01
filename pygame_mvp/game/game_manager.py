@@ -119,33 +119,35 @@ class GameManager:
     # ------------------------------------------------------------------ #
     # Input & Update
     # ------------------------------------------------------------------ #
-    def handle_event(self, event: pygame.event.Event) -> None:
+    def handle_event(self, event: pygame.event.Event) -> bool:
+        """Handle a pygame event. Returns True if consumed."""
         if self.state == GameState.EXPLORATION:
-            self._handle_exploration_event(event)
-        elif self.state == GameState.COMBAT:
-            self._handle_combat_event(event)
+            return self._handle_exploration_event(event)
+        if self.state == GameState.COMBAT:
+            return self._handle_combat_event(event)
+        return False
 
     def update(self) -> None:
         """Placeholder for per-frame updates (e.g., animations/timers)."""
-        return
+        self.ui_manager.update()
 
     # ------------------------------------------------------------------ #
     # Exploration
     # ------------------------------------------------------------------ #
-    def _handle_exploration_event(self, event: pygame.event.Event) -> None:
+    def _handle_exploration_event(self, event: pygame.event.Event) -> bool:
         if event.type != pygame.KEYDOWN:
-            return
+            return False
 
-        if self.ui_manager.handle_key_event(event):
-            return
+        if self.ui_manager.handle_event(event):
+            return True
 
         mods = pygame.key.get_mods()
         if event.key == pygame.K_s and (mods & pygame.KMOD_CTRL):
             self._save_game(slot=1, name="Quick Save")
-            return
+            return True
         if event.key == pygame.K_l and (mods & pygame.KMOD_CTRL):
             self._load_game(slot=1)
-            return
+            return True
 
         dx, dy = 0, 0
         if event.key in (pygame.K_UP, pygame.K_w):
@@ -159,6 +161,9 @@ class GameManager:
 
         if dx or dy:
             self._attempt_move(dx, dy)
+            return True
+
+        return False
 
     def _attempt_move(self, dx: int, dy: int) -> None:
         new_x = self.player_grid[0] + dx
@@ -231,12 +236,12 @@ class GameManager:
         self.combat_enemy_sprite = self._get_enemy_sprite(enemy_name)
         self._log(f"Combat started with {enemy_name}!")
 
-    def _handle_combat_event(self, event: pygame.event.Event) -> None:
+    def _handle_combat_event(self, event: pygame.event.Event) -> bool:
         if event.type != pygame.KEYDOWN:
-            return
+            return False
 
-        if self.ui_manager.handle_key_event(event):
-            return
+        if self.ui_manager.handle_event(event):
+            return True
 
         if event.key == pygame.K_SPACE:
             # Player attacks
@@ -253,10 +258,14 @@ class GameManager:
             if self.player.current_hp <= 0:
                 self._log("You fall in battle... Game Over?")
                 self._end_combat(victory=False)
+            return True
 
         elif event.key == pygame.K_ESCAPE:
             self._log("You flee the encounter.")
             self._end_combat(victory=False)
+            return True
+
+        return False
 
     def _get_enemy_sprite(self, enemy_name: str) -> pygame.Surface:
         """Fetch enemy art via the image provider (cached)."""
@@ -281,7 +290,7 @@ class GameManager:
     # ------------------------------------------------------------------ #
     # Rendering
     # ------------------------------------------------------------------ #
-    def render(self) -> None:
+    def render(self, include_ui: bool = True) -> None:
         self.screen.fill((18, 14, 12))
 
         if self.state == GameState.EXPLORATION:
@@ -291,7 +300,8 @@ class GameManager:
             self._render_combat()
 
         self._render_hud()
-        self.ui_manager.render(self.player, self.quest_tracker, self.log_lines)
+        if include_ui:
+            self.ui_manager.render(self.player, self.quest_tracker, self.log_lines)
 
     def _render_map(self) -> None:
         self.current_map.render(self.screen, self.map_offset_x, self.map_offset_y)
@@ -338,6 +348,19 @@ class GameManager:
         map_name = self.map_labels.get(self.current_map_name, self.current_map_name)
         map_label = self.hud_font.render(f"Map: {map_name}", True, (200, 180, 140))
         self.screen.blit(map_label, (PADDING, SCREEN_HEIGHT - 80))
+
+        # Player HP bar (always on HUD)
+        bar_width = 140
+        bar_height = 12
+        bar_x = PADDING
+        bar_y = SCREEN_HEIGHT - 110
+        current_hp = self.player.current_hp
+        max_hp = self.player.max_hp
+        ratio = max(0, min(1, current_hp / max_hp if max_hp else 0))
+        pygame.draw.rect(self.screen, (60, 40, 40), (bar_x, bar_y, bar_width, bar_height))
+        pygame.draw.rect(self.screen, (180, 50, 50), (bar_x, bar_y, int(bar_width * ratio), bar_height))
+        hp_text = self.hud_font.render(f"HP {current_hp}/{max_hp}", True, (230, 220, 210))
+        self.screen.blit(hp_text, (bar_x + bar_width + 10, bar_y - 2))
 
         # Active quests (top 2)
         active = self.quest_tracker.get_active_quests()[:2]

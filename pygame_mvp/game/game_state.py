@@ -37,11 +37,15 @@ class CharacterState:
 
     @property
     def hp_percent(self) -> float:
-        return self.hp / self.max_hp if self.max_hp > 0 else 0
+        if self.max_hp <= 0:
+            return 0.0
+        return self.hp / self.max_hp
 
     @property
     def mana_percent(self) -> float:
-        return self.mana / self.max_mana if self.max_mana > 0 else 0
+        if self.max_mana <= 0:
+            return 0.0
+        return self.mana / self.max_mana
 
 
 @dataclass
@@ -228,31 +232,28 @@ class GameState:
     # Inventory
     # =========================================================================
 
-    def add_item(self, item_id: str, quantity: int = 1) -> bool:
-        """Add item to inventory."""
-        if item_id == "gold_coin":
+    def add_item(self, item_obj_or_name: Any, quantity: int = 1) -> bool:
+        """Wrapper that delegates to InventoryState logic."""
+        if item_obj_or_name == "gold_coin":
             self.inventory.gold += quantity
             return True
 
-        current = self.inventory.items.get(item_id, 0)
-        self.inventory.items[item_id] = current + quantity
-        return True
+        if isinstance(item_obj_or_name, str):
+            item = InventoryItem(name=item_obj_or_name, quantity=quantity)
+        else:
+            item = item_obj_or_name
 
-    def remove_item(self, item_id: str, quantity: int = 1) -> bool:
-        """Remove item from inventory."""
-        if item_id == "gold_coin":
+        return self.inventory.add_item(item)
+
+    def remove_item(self, item_name: str, quantity: int = 1) -> bool:
+        """Wrapper that delegates to InventoryState logic."""
+        if item_name == "gold_coin":
             if self.inventory.gold >= quantity:
                 self.inventory.gold -= quantity
                 return True
             return False
 
-        current = self.inventory.items.get(item_id, 0)
-        if current >= quantity:
-            self.inventory.items[item_id] = current - quantity
-            if self.inventory.items[item_id] <= 0:
-                del self.inventory.items[item_id]
-            return True
-        return False
+        return self.inventory.remove_item(item_name, quantity)
 
     # =========================================================================
     # Game Flow
@@ -342,7 +343,22 @@ class GameState:
                 "description": self.location.description
             },
             "inventory": {
-                "items": self.inventory.items,
+                "items": [
+                    {
+                        "name": getattr(i, "name", ""),
+                        "quantity": getattr(i, "quantity", 1),
+                        "item_type": (
+                            getattr(i.item_type, "value", i.item_type)
+                            if hasattr(i, "item_type") else None
+                        ),
+                        # Legacy compatibility with earlier key name
+                        "type": (
+                            getattr(i.item_type, "value", i.item_type)
+                            if hasattr(i, "item_type") else None
+                        )
+                    }
+                    for i in self.inventory.items
+                ],
                 "gold": self.inventory.gold
             },
             "adventure_log": self.adventure_log[-50:],  # Save last 50 entries
@@ -392,7 +408,28 @@ class GameState:
         )
 
         inv_data = data.get("inventory", {})
-        state.inventory.items = inv_data.get("items", {})
+        items_data = inv_data.get("items", [])
+        reconstructed_items: List[Any] = []
+
+        if isinstance(items_data, dict):
+            # Backward compatibility for dict-based inventories
+            for name, qty in items_data.items():
+                reconstructed_items.append(InventoryItem(name=name, quantity=qty))
+        elif isinstance(items_data, list):
+            for entry in items_data:
+                if isinstance(entry, dict):
+                    type_value = entry.get("item_type") or entry.get("type")
+                    reconstructed_items.append(
+                        InventoryItem(
+                            name=entry.get("name", ""),
+                            quantity=entry.get("quantity", 1),
+                            item_type=type_value if type_value is not None else "consumable"
+                        )
+                    )
+                else:
+                    reconstructed_items.append(entry)
+
+        state.inventory.items = reconstructed_items
         state.inventory.gold = inv_data.get("gold", 0)
 
         state.adventure_log = data.get("adventure_log", [])
@@ -403,4 +440,3 @@ class GameState:
         state.quest.completed = quest_data.get("completed", False)
 
         return state
-
