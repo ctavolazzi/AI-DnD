@@ -15,11 +15,13 @@ from pygame_mvp.config import SCREEN_WIDTH, SCREEN_HEIGHT, PADDING
 from pygame_mvp.game.tile_map import (
     TileMap,
     PointOfInterest,
+    TileType,
     create_tavern_map,
     create_forest_map,
     create_level_1,
     create_level_2,
     create_level_3,
+    WALKABLE_TILES,
 )
 from pygame_mvp.game.systems import (
     Player,
@@ -36,7 +38,9 @@ from pygame_mvp.game.quests import (
     create_side_quests,
 )
 from pygame_mvp.game.save_system import SaveSystem
-from pygame_mvp.ui.ui_manager import UIManager
+from pygame_mvp.ui.pixel_hud import PixelGameHUD
+from pygame_mvp.ui.pixel_inventory import PixelInventoryScreen
+from pygame_mvp.ui.pixel_dialogue import PixelDialogueBox, DialogueSequence
 
 
 class GameState(Enum):
@@ -114,13 +118,32 @@ class GameManager:
         self.map_offset_y = PADDING
         self.hud_font = pygame.font.Font(None, 18)
         self.big_font = pygame.font.Font(None, 28)
-        self.ui_manager = UIManager(screen)
+
+        # Pixel HUD/Overlay components
+        self.hud = PixelGameHUD(screen)
+        self.inventory = PixelInventoryScreen(screen)
+        self.dialogue = PixelDialogueBox(screen)
+        self.dialogue_sequence = DialogueSequence(self.dialogue)
+
+        # Simple mana pool for the pixel HUD (Character lacks mana fields)
+        self.player.mana = getattr(self.player, "mana", 50)
+        self.player.max_mana = getattr(self.player, "max_mana", 50)
+
+        # Prime minimap and HUD with current state
+        self._sync_minimap()
+        self._update_hud_values()
 
     # ------------------------------------------------------------------ #
     # Input & Update
     # ------------------------------------------------------------------ #
     def handle_event(self, event: pygame.event.Event) -> bool:
         """Handle a pygame event. Returns True if consumed."""
+        # Overlays take priority
+        if self.dialogue.visible and self.dialogue.handle_event(event):
+            return True
+        if self.inventory.visible and self.inventory.handle_event(event):
+            return True
+
         if self.state == GameState.EXPLORATION:
             return self._handle_exploration_event(event)
         if self.state == GameState.COMBAT:
@@ -128,8 +151,10 @@ class GameManager:
         return False
 
     def update(self) -> None:
-        """Placeholder for per-frame updates (e.g., animations/timers)."""
-        self.ui_manager.update()
+        """Per-frame updates."""
+        self.dialogue.update()
+        self.hud.update()
+        self._update_hud_values()
 
     # ------------------------------------------------------------------ #
     # Exploration
@@ -138,15 +163,18 @@ class GameManager:
         if event.type != pygame.KEYDOWN:
             return False
 
-        if self.ui_manager.handle_event(event):
-            return True
-
         mods = pygame.key.get_mods()
         if event.key == pygame.K_s and (mods & pygame.KMOD_CTRL):
             self._save_game(slot=1, name="Quick Save")
             return True
         if event.key == pygame.K_l and (mods & pygame.KMOD_CTRL):
             self._load_game(slot=1)
+            return True
+        if event.key == pygame.K_i:
+            self._toggle_inventory()
+            return True
+        if event.key == pygame.K_t:
+            self._start_demo_dialogue()
             return True
 
         dx, dy = 0, 0
@@ -185,6 +213,9 @@ class GameManager:
         if self.current_map.encounters_enabled and random.random() < 0.1:
             self._trigger_combat(random.choice(["Goblin Scout", "Forest Wolf", "Skeleton"]))
 
+        # Update minimap marker immediately
+        self.hud.set_player_pos(*self.player_grid)
+
     def _handle_poi(self, poi: PointOfInterest) -> None:
         self._log(poi.name)
         self._log(poi.description)
@@ -221,6 +252,7 @@ class GameManager:
             self.current_map_name = dest_map
             self.current_map = self.map_builders[dest_map]()
             self.player_grid = [dest_x, dest_y]
+            self._sync_minimap()
             label = self.map_labels.get(dest_map, dest_map.replace("_", " ").title())
             self._log(f"Traveling to {label}...")
             self._update_quests(ObjectiveType.REACH, label)
@@ -240,7 +272,11 @@ class GameManager:
         if event.type != pygame.KEYDOWN:
             return False
 
-        if self.ui_manager.handle_event(event):
+        if event.key == pygame.K_i:
+            self._toggle_inventory()
+            return True
+        if event.key == pygame.K_t:
+            self._start_demo_dialogue()
             return True
 
         if event.key == pygame.K_SPACE:
@@ -299,9 +335,15 @@ class GameManager:
         elif self.state == GameState.COMBAT:
             self._render_combat()
 
-        self._render_hud()
+        # Pixel HUD and overlays
+        self.hud.render()
         if include_ui:
-            self.ui_manager.render(self.player, self.quest_tracker, self.log_lines)
+            if self.inventory.visible:
+                self.inventory.render()
+            if self.dialogue.visible:
+                self.dialogue.render()
+        # Keep text log/quest snippets for context
+        self._render_hud()
 
     def _render_map(self) -> None:
         self.current_map.render(self.screen, self.map_offset_x, self.map_offset_y)
@@ -349,19 +391,6 @@ class GameManager:
         map_label = self.hud_font.render(f"Map: {map_name}", True, (200, 180, 140))
         self.screen.blit(map_label, (PADDING, SCREEN_HEIGHT - 80))
 
-        # Player HP bar (always on HUD)
-        bar_width = 140
-        bar_height = 12
-        bar_x = PADDING
-        bar_y = SCREEN_HEIGHT - 110
-        current_hp = self.player.current_hp
-        max_hp = self.player.max_hp
-        ratio = max(0, min(1, current_hp / max_hp if max_hp else 0))
-        pygame.draw.rect(self.screen, (60, 40, 40), (bar_x, bar_y, bar_width, bar_height))
-        pygame.draw.rect(self.screen, (180, 50, 50), (bar_x, bar_y, int(bar_width * ratio), bar_height))
-        hp_text = self.hud_font.render(f"HP {current_hp}/{max_hp}", True, (230, 220, 210))
-        self.screen.blit(hp_text, (bar_x + bar_width + 10, bar_y - 2))
-
         # Active quests (top 2)
         active = self.quest_tracker.get_active_quests()[:2]
         yq = SCREEN_HEIGHT - 130
@@ -376,7 +405,7 @@ class GameManager:
                 yq += 16
 
         # Overlay toggle hint
-        hint = self.hud_font.render("[I] Inventory  [C] Character", True, (150, 140, 120))
+        hint = self.hud_font.render("[I] Inventory  [T] Dialogue", True, (150, 140, 120))
         self.screen.blit(hint, (SCREEN_WIDTH - 260, SCREEN_HEIGHT - 80))
 
         # Log
@@ -532,3 +561,47 @@ class GameManager:
 
     def _log(self, message: str) -> None:
         self.log_lines.append(message)
+
+    def _toggle_inventory(self) -> None:
+        """Toggle the pixel inventory overlay."""
+        if self.inventory.visible:
+            self.inventory.hide()
+        else:
+            self.inventory.set_player(self.player)
+            self.inventory.show()
+
+    def _start_demo_dialogue(self) -> None:
+        """Fire a short flavour dialogue for testing."""
+        self.dialogue_sequence = DialogueSequence(self.dialogue)
+        self.dialogue_sequence.add_line(
+            "WIZARD",
+            '"Greetings, traveler! Welcome to the pixel HUD integration."',
+            portrait_color=(100, 100, 180)
+        )
+        self.dialogue_sequence.add_line(
+            "WIZARD",
+            '"Your inventory is now fully banana-compliant."',
+            portrait_color=(100, 100, 180)
+        )
+        self.dialogue_sequence.start()
+
+    def _convert_tiles_for_minimap(self, tile_map: TileMap) -> list:
+        """Convert tile types to simple ints for the minimap (0 walkable, 1 blocked)."""
+        grid = []
+        for row in tile_map.tiles:
+            grid.append([0 if tile in WALKABLE_TILES else 1 for tile in row])
+        return grid
+
+    def _sync_minimap(self) -> None:
+        """Push current map data into the pixel HUD minimap."""
+        grid = self._convert_tiles_for_minimap(self.current_map)
+        self.hud.set_map_tiles(grid, self.current_map.width, self.current_map.height)
+        self.hud.set_player_pos(*self.player_grid)
+
+    def _update_hud_values(self) -> None:
+        """Refresh HUD values (HP/MP and minimap marker)."""
+        self.hud.set_hp(self.player.current_hp, self.player.max_hp)
+        mp = getattr(self.player, "mana", 0)
+        max_mp = getattr(self.player, "max_mana", 0)
+        self.hud.set_mp(mp, max_mp or max(mp, 1))
+        self.hud.set_player_pos(*self.player_grid)
