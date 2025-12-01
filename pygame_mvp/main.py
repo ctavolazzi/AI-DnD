@@ -21,19 +21,20 @@ import sys
 import random
 from pathlib import Path
 
-# Add project root to path for imports
-project_root = Path(__file__).parent.parent
+# Add project root so we can import the pygame_mvp package when running as a script.
+project_root = Path(__file__).resolve().parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 import pygame
 
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, GAME_TITLE, CURRENT_THEME, SHOW_FPS
-from game.game_state import GameState, GamePhase
-from game.game_loop import GameLoop
-from services.image_provider import MockImageProvider, APIImageProvider
-from services.narrative import NarrativeService
-from ui.screens import MainGameScreen
+# Prefer package imports to avoid colliding with root-level modules (e.g., config.py).
+from pygame_mvp.config import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, GAME_TITLE, CURRENT_THEME, SHOW_FPS
+from pygame_mvp.game.game_state import GameState, GamePhase
+from pygame_mvp.game.game_loop import GameLoop
+from pygame_mvp.services.image_provider import MockImageProvider, APIImageProvider
+from pygame_mvp.services.narrative import NarrativeService
+from pygame_mvp.ui.screens import MainGameScreen
 
 
 class PygameMVP:
@@ -325,4 +326,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
