@@ -45,12 +45,54 @@ class CharacterState:
 
 
 @dataclass
+class InventoryItem:
+    """A single inventory item."""
+    name: str
+    quantity: int = 1
+    item_type: str = "consumable"
+
+
+@dataclass
 class InventoryState:
     """State for inventory."""
-    items: Dict[str, int] = field(default_factory=dict)  # item_id: quantity
+    items: List[Any] = field(default_factory=list)  # List of InventoryItem or Item objects
     equipped: Dict[str, str] = field(default_factory=dict)  # slot: item_id
     gold: int = 0
     capacity: int = 20
+
+    def add_item(self, item) -> bool:
+        """Add an item to inventory."""
+        # Try to stack with existing
+        for existing in self.items:
+            if hasattr(existing, 'name') and hasattr(item, 'name'):
+                if existing.name == item.name and getattr(existing, 'stackable', True):
+                    existing.quantity = getattr(existing, 'quantity', 1) + getattr(item, 'quantity', 1)
+                    return True
+
+        if len(self.items) < self.capacity:
+            self.items.append(item)
+            return True
+        return False
+
+    def remove_item(self, item_name: str, quantity: int = 1) -> bool:
+        """Remove item from inventory."""
+        for item in self.items[:]:
+            if hasattr(item, 'name') and item.name == item_name:
+                item_qty = getattr(item, 'quantity', 1)
+                if item_qty > quantity:
+                    item.quantity = item_qty - quantity
+                    return True
+                elif item_qty == quantity:
+                    self.items.remove(item)
+                    return True
+        return False
+
+    def get_item(self, item_name: str) -> Optional[Any]:
+        """Get an item by name."""
+        for item in self.items:
+            if hasattr(item, 'name') and item.name == item_name:
+                return item
+        return None
 
 
 @dataclass

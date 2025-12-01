@@ -41,6 +41,17 @@ class Stats:
             self.constitution + other.constitution,
         )
 
+    @classmethod
+    def zero(cls) -> "Stats":
+        """Create a Stats object with all zeros (useful for bonuses)."""
+        return cls(0, 0, 0, 0)
+
+    @classmethod
+    def bonus(cls, strength: int = 0, dexterity: int = 0,
+              intelligence: int = 0, constitution: int = 0) -> "Stats":
+        """Create a bonus Stats object (defaults to 0 instead of 10)."""
+        return cls(strength, dexterity, intelligence, constitution)
+
 
 @dataclass
 class Item:
