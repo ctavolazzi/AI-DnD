@@ -321,6 +321,143 @@ class APIImageProvider(ImageProvider):
         )
         return self._decode_surface(response.image, width, height)
 
+    def _generate_bitforge(self, description: str, width: int, height: int, style_image: Optional[bytes] = None, **kwargs) -> Optional[pygame.Surface]:
+        """Call PixelLab Bitforge for style-based image generation."""
+        if not self._client:
+            return None
+
+        try:
+            params = {
+                "description": description,
+                "image_size": {"width": width, "height": height},
+            }
+
+            # Add style image if provided
+            if style_image:
+                import base64
+                params["style_image"] = {
+                    "type": "base64",
+                    "base64": base64.b64encode(style_image).decode()
+                }
+
+            params.update(kwargs)
+
+            response = self._client.generate_image_bitforge(**params)
+            return self._decode_surface(response.image, width, height)
+        except Exception:
+            return None
+
+    def _animate_with_text(self, description: str, action: str, width: int, height: int, **kwargs) -> Optional[list]:
+        """Call PixelLab text-based animation generation."""
+        if not self._client:
+            return None
+
+        try:
+            params = {
+                "description": description,
+                "action": action,
+                "image_size": {"width": width, "height": height},
+                "view": kwargs.get("view", "side"),
+                "direction": kwargs.get("direction", "south"),
+            }
+            params.update(kwargs)
+
+            response = self._client.animate_with_text(**params)
+            return [self._decode_surface(img, width, height) for img in response.images]
+        except Exception:
+            return None
+
+    def _animate_with_skeleton(self, reference_image: bytes, width: int, height: int, **kwargs) -> Optional[list]:
+        """Call PixelLab skeleton-based animation generation."""
+        if not self._client:
+            return None
+
+        try:
+            import base64
+            params = {
+                "reference_image": {
+                    "type": "base64",
+                    "base64": base64.b64encode(reference_image).decode()
+                },
+                "image_size": {"width": width, "height": height},
+            }
+            params.update(kwargs)
+
+            response = self._client.animate_with_skeleton(**params)
+            return [self._decode_surface(img, width, height) for img in response.images]
+        except Exception:
+            return None
+
+    def _rotate_character(self, from_image: bytes, from_direction: str, to_direction: str,
+                         width: int, height: int, **kwargs) -> Optional[pygame.Surface]:
+        """Call PixelLab rotation endpoint."""
+        if not self._client:
+            return None
+
+        try:
+            import base64
+            params = {
+                "from_image": {
+                    "type": "base64",
+                    "base64": base64.b64encode(from_image).decode()
+                },
+                "from_direction": from_direction,
+                "to_direction": to_direction,
+                "image_size": {"width": width, "height": height},
+                "from_view": kwargs.get("from_view", "side"),
+                "to_view": kwargs.get("to_view", "side"),
+            }
+            params.update(kwargs)
+
+            response = self._client.rotate(**params)
+            return self._decode_surface(response.image, width, height)
+        except Exception:
+            return None
+
+    def _inpaint_image(self, description: str, inpainting_image: bytes, mask_image: bytes,
+                      width: int, height: int, **kwargs) -> Optional[pygame.Surface]:
+        """Call PixelLab inpainting endpoint."""
+        if not self._client:
+            return None
+
+        try:
+            import base64
+            params = {
+                "description": description,
+                "inpainting_image": {
+                    "type": "base64",
+                    "base64": base64.b64encode(inpainting_image).decode()
+                },
+                "mask_image": {
+                    "type": "base64",
+                    "base64": base64.b64encode(mask_image).decode()
+                },
+                "image_size": {"width": width, "height": height},
+            }
+            params.update(kwargs)
+
+            response = self._client.inpaint(**params)
+            return self._decode_surface(response.image, width, height)
+        except Exception:
+            return None
+
+    def _estimate_skeleton(self, image: bytes) -> Optional[list]:
+        """Call PixelLab skeleton estimation endpoint."""
+        if not self._client:
+            return None
+
+        try:
+            import base64
+            response = self._client.estimate_skeleton(
+                image={
+                    "type": "base64",
+                    "base64": base64.b64encode(image).decode()
+                }
+            )
+            return response.keypoints
+        except Exception:
+            return None
+
     def get_scene_image(self, scene_name: str, width: int, height: int) -> pygame.Surface:
         """Fetch scene image from API."""
         prompt = f"{scene_name} - atmospheric fantasy scene, pixel art, dramatic lighting"
