@@ -45,6 +45,18 @@ python3 scripts/pixellab_actions.py --serve
 # Open: http://localhost:8080/pixellab_dashboard.html
 ```
 
+### 🍌 Play the Pixel HUD Manager Mode (Nano Banana Style)
+
+Jump into the pixel-art UI (title screen + HUD + inventory + dialogue) that now powers the GameManager loop:
+
+```bash
+python pygame_mvp/main.py --manager-mode
+```
+
+- Title Screen: pick **New Game** or **Load Game** (slot 1 quick-load).  
+- In-game controls: `WASD/Arrows` move, `I` toggles the pixel inventory overlay, `T` triggers sample dialogue, `Ctrl+S/Ctrl+L` quick save/load, `Esc` quits.  
+- HUD: Nano Banana-style HP/MP bars plus circular minimap; inventory uses the pixel grid/tabs; dialogue uses the vine/banana frame.
+
 -----
 
 ## Table of Contents
@@ -330,4 +342,3 @@ Contributions are welcome! To contribute:
 ## License
 
 This project is licensed under the **MIT License**. See the `LICENSE` file for details.
-
