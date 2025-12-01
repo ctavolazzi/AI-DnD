@@ -1,10 +1,17 @@
 """Application configuration using Pydantic Settings"""
-from pydantic_settings import BaseSettings
 from typing import Tuple
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="allow",  # Ignore unrelated env vars from other subsystems
+    )
 
     # Database
     DATABASE_URL: str = "sqlite:///./dnd_game.db"
@@ -20,7 +27,9 @@ class Settings(BaseSettings):
     CACHE_EXPIRY_DAYS: int = 7
 
     # API
-    GEMINI_API_KEY: str
+    # Provide a safe default so imports and tests don't fail when the key isn't configured.
+    # Production deployments should override this via environment variables.
+    GEMINI_API_KEY: str = "development-placeholder-key"
     GEMINI_MODEL: str = "gemini-3-pro-preview"
     GEMINI_THINKING_LEVEL: str = "high"
     GEMINI_MEDIA_RESOLUTION: str = "media_resolution_high"
@@ -32,11 +41,6 @@ class Settings(BaseSettings):
 
     # Backup
     BACKUP_RETENTION_DAYS: int = 30
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
-        extra = "allow"  # Ignore unrelated env vars from other subsystems
 
 
 # Global settings instance

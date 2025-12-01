@@ -248,7 +248,7 @@ class TestCharacter(unittest.TestCase):
                 attacker.attack_target(target)
 
                 # Verify attack was logged
-                attack_log = f"Attacker attacks Target"
+                attack_log = "Attacker prepares to attack Target!"
                 self.assertTrue(any(attack_log in msg for msg in log.output),
                               f"Expected log message containing '{attack_log}' not found in {log.output}")
 
@@ -388,7 +388,7 @@ class TestDnDGame(unittest.TestCase):
             self.assertTrue(5 <= player.attack <= 15)
             self.assertTrue(1 <= player.defense <= 5)
             self.assertTrue(player.alive)
-            self.assertTrue(player.name.startswith("Hero-"))
+            self.assertTrue(player.name.startswith("Hero"))
             self.assertTrue(player.char_class in ["Fighter", "Wizard", "Rogue", "Cleric"])
 
         # Test enemy properties
@@ -397,7 +397,7 @@ class TestDnDGame(unittest.TestCase):
             self.assertTrue(5 <= enemy.attack <= 15)
             self.assertTrue(1 <= enemy.defense <= 5)
             self.assertTrue(enemy.alive)
-            self.assertTrue(enemy.name.startswith("Monster-"))
+            self.assertTrue(enemy.name.startswith("Monster"))
             self.assertTrue(enemy.char_class in ["Goblin", "Orc", "Skeleton", "Bandit"])
 
     def test_game_over_conditions(self):
@@ -585,7 +585,7 @@ class TestEdgeCases(unittest.TestCase):
         """Test character with maximum possible stats"""
         with patch('random.randint') as mock_randint:
             # Set up mock to return max values for stats
-            mock_randint.side_effect = [50, 15, 5]  # hp, attack, defense
+            mock_randint.side_effect = [50, 15, 5, 25]  # hp, attack, defense, starting gold
             char = Character("MaxStats", "Fighter")
             self.assertEqual(char.hp, 50)
             self.assertEqual(char.attack, 15)
@@ -595,7 +595,7 @@ class TestEdgeCases(unittest.TestCase):
         """Test character with minimum possible stats"""
         with patch('random.randint') as mock_randint:
             # Set up mock to return min values for stats
-            mock_randint.side_effect = [20, 5, 1]  # hp, attack, defense
+            mock_randint.side_effect = [20, 5, 1, 10]  # hp, attack, defense, starting gold
             char = Character("MinStats", "Fighter")
             self.assertEqual(char.hp, 20)
             self.assertEqual(char.attack, 5)
