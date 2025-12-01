@@ -34,13 +34,14 @@ from pygame_mvp.config import (
     MAP_PANEL_X, MAP_PANEL_Y, MAP_PANEL_WIDTH, MAP_PANEL_HEIGHT, PADDING
 )
 from pygame_mvp.game.tile_map import (
-    TileMap, PointOfInterest, 
+    TileMap, PointOfInterest,
     create_tavern_map, create_forest_map,
     create_level_1, create_level_2, create_level_3,
     get_map, ALL_MAPS
 )
 from pygame_mvp.game.game_state import GameState, GamePhase
 from pygame_mvp.game.game_loop import GameLoop
+from pygame_mvp.game.game_manager import GameManager
 from pygame_mvp.services.image_provider import MockImageProvider, APIImageProvider
 from pygame_mvp.services.narrative import NarrativeService
 from pygame_mvp.ui.screens import MainGameScreen
@@ -779,6 +780,33 @@ class PygameMVP:
         self.loop.run()
 
 
+def run_manager_mode(use_api: bool = False) -> None:
+    """Run the lightweight GameManager-driven loop."""
+    pygame.init()
+    pygame.font.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption(f"{GAME_TITLE} (Manager Mode)")
+
+    image_provider = APIImageProvider() if use_api else MockImageProvider()
+    manager = GameManager(image_provider, screen)
+    clock = pygame.time.Clock()
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            else:
+                manager.handle_event(event)
+
+        manager.update()
+        manager.render()
+        pygame.display.flip()
+        clock.tick(FPS)
+
+    pygame.quit()
+
+
 def main():
     """Main entry point."""
     import argparse
@@ -788,7 +816,13 @@ def main():
     parser.add_argument("--use-ai", action="store_true", help="Use AI for narrative generation")
     parser.add_argument("--auto-play", action="store_true", help="AI plays the game automatically")
     parser.add_argument("--turns", type=int, default=25, help="Max turns for auto-play (default: 25)")
+    parser.add_argument("--manager-mode", action="store_true", help="Run the new GameManager-driven RPG loop")
     args = parser.parse_args()
+
+    if args.manager_mode:
+        print("Starting manager mode (RPG systems + PixelLab integration)...")
+        run_manager_mode(use_api=args.use_api)
+        return
 
     mode_str = "🤖 AUTO-PLAY MODE" if args.auto_play else "Manual (Human)"
 

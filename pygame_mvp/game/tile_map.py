@@ -55,10 +55,20 @@ class TileMap:
     A grid-based tile map with collision and events.
     """
 
-    def __init__(self, width: int, height: int, tile_size: int = 12):
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        tile_size: int = 12,
+        name: str = "map",
+        encounters_enabled: bool = True,
+        start_pos: Optional[Tuple[int, int]] = None
+    ):
         self.width = width  # tiles
         self.height = height  # tiles
         self.tile_size = tile_size
+        self.name = name
+        self.encounters_enabled = encounters_enabled
 
         # Initialize with floor tiles
         self.tiles: List[List[TileType]] = [
@@ -71,6 +81,12 @@ class TileMap:
 
         # Event callback
         self.on_poi_triggered: Optional[Callable[[PointOfInterest], None]] = None
+
+        # Starting position hint for player placement
+        if start_pos:
+            self.start_pos = start_pos
+        else:
+            self.start_pos = (width // 2, height // 2)
 
         # Pixel dimensions
         self.pixel_width = width * tile_size
@@ -119,6 +135,10 @@ class TileMap:
     def add_poi(self, poi: PointOfInterest) -> None:
         """Add a point of interest to the map."""
         self.pois.append(poi)
+
+    def get_poi(self, grid_x: int, grid_y: int) -> Optional[PointOfInterest]:
+        """Return a POI if present and triggerable at the grid location."""
+        return self.check_poi_collision(grid_x, grid_y)
 
     def check_poi_collision(self, grid_x: int, grid_y: int) -> Optional[PointOfInterest]:
         """Check if position triggers a POI."""
@@ -185,7 +205,7 @@ class TileMap:
 def create_tavern_map() -> TileMap:
     """Create the starting tavern map."""
     # 18x12 tiles fits nicely in the map panel
-    tilemap = TileMap(18, 10, tile_size=12)
+    tilemap = TileMap(18, 10, tile_size=12, name="tavern", encounters_enabled=False, start_pos=(8, 5))
 
     # Fill with floor
     for y in range(10):
@@ -259,7 +279,7 @@ def create_tavern_map() -> TileMap:
 
 def create_forest_map() -> TileMap:
     """Create a forest exploration map."""
-    tilemap = TileMap(18, 10, tile_size=12)
+    tilemap = TileMap(18, 10, tile_size=12, name="forest", encounters_enabled=True, start_pos=(2, 5))
     
     # Fill with grass
     for y in range(10):
@@ -337,7 +357,7 @@ def create_level_1() -> TileMap:
     A peaceful starting area with gentle introduction to exploration.
     Easy encounters, helpful NPCs, basic treasure.
     """
-    tilemap = TileMap(18, 10, tile_size=12)
+    tilemap = TileMap(18, 10, tile_size=12, name="level_1", encounters_enabled=True, start_pos=(1, 5))
     
     # Fill with grass (outdoor area)
     for y in range(10):
@@ -441,7 +461,7 @@ def create_level_2() -> TileMap:
     Underground cave system. Medium difficulty with tighter corridors,
     more enemies, and better loot.
     """
-    tilemap = TileMap(18, 10, tile_size=12)
+    tilemap = TileMap(18, 10, tile_size=12, name="level_2", encounters_enabled=True, start_pos=(1, 5))
     
     # Fill with walls (underground)
     for y in range(10):
@@ -581,7 +601,7 @@ def create_level_3() -> TileMap:
     Deep dungeon with the final boss. Difficult layout with multiple
     hazards, strong enemies, and legendary treasure.
     """
-    tilemap = TileMap(18, 10, tile_size=12)
+    tilemap = TileMap(18, 10, tile_size=12, name="level_3", encounters_enabled=True, start_pos=(1, 5))
     
     # Fill with walls
     for y in range(10):
@@ -739,4 +759,3 @@ def get_map(name: str) -> TileMap:
     if name in ALL_MAPS:
         return ALL_MAPS[name]()
     raise ValueError(f"Unknown map: {name}")
-
