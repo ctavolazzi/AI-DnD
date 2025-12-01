@@ -27,12 +27,28 @@ class TestStats:
     """Test the Stats dataclass and its operations."""
 
     def test_default_stats(self):
-        """Verify default stat values."""
+        """Verify default stat values (average human = 10)."""
         stats = Stats()
         assert stats.strength == 10
         assert stats.dexterity == 10
         assert stats.intelligence == 10
         assert stats.constitution == 10
+
+    def test_zero_stats(self):
+        """Verify Stats.zero() creates all-zero stats."""
+        stats = Stats.zero()
+        assert stats.strength == 0
+        assert stats.dexterity == 0
+        assert stats.intelligence == 0
+        assert stats.constitution == 0
+
+    def test_bonus_stats(self):
+        """Verify Stats.bonus() creates stats with specified bonuses."""
+        stats = Stats.bonus(strength=5)
+        assert stats.strength == 5
+        assert stats.dexterity == 0
+        assert stats.intelligence == 0
+        assert stats.constitution == 0
 
     def test_custom_stats(self):
         """Verify custom stat initialization."""
@@ -52,6 +68,11 @@ class TestStats:
         assert total.dexterity == 10
         assert total.intelligence == 10  # 10 + 0
         assert total.constitution == 12  # 10 + 2
+
+    def test_average_factory(self):
+        """Verify the average factory returns baseline 10s."""
+        avg = Stats.average()
+        assert (avg.strength, avg.dexterity, avg.intelligence, avg.constitution) == (10, 10, 10, 10)
 
 
 # =============================================================================
@@ -334,4 +355,3 @@ if __name__ == "__main__":
         print("pytest not installed, running standalone tests...")
         success = run_standalone_tests()
         sys.exit(0 if success else 1)
-

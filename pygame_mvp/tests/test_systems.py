@@ -20,8 +20,21 @@ from pygame_mvp.game.systems import (
 
 
 def test_stats_defaults():
+    """Stats() defaults to average human (10 each)."""
     s = Stats()
     assert (s.strength, s.dexterity, s.intelligence, s.constitution) == (10, 10, 10, 10)
+
+
+def test_stats_zero():
+    """Stats.zero() creates all-zero stats for bonuses."""
+    s = Stats.zero()
+    assert (s.strength, s.dexterity, s.intelligence, s.constitution) == (0, 0, 0, 0)
+
+
+def test_stats_bonus():
+    """Stats.bonus() creates stats with only specified bonuses."""
+    s = Stats.bonus(strength=5, dexterity=3)
+    assert (s.strength, s.dexterity, s.intelligence, s.constitution) == (5, 3, 0, 0)
 
 
 def test_stats_addition():
@@ -40,6 +53,11 @@ def test_character_hp_clamping():
     c.max_hp = 5
     assert c.max_hp == 5
     assert c.current_hp == 0
+
+
+def test_character_defaults_use_average_stats():
+    c = Character("Tester")
+    assert (c.base_stats.strength, c.base_stats.dexterity, c.base_stats.intelligence, c.base_stats.constitution) == (10, 10, 10, 10)
 
 
 @pytest.mark.parametrize(

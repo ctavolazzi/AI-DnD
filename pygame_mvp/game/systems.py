@@ -52,6 +52,11 @@ class Stats:
         """Create a bonus Stats object (defaults to 0 instead of 10)."""
         return cls(strength, dexterity, intelligence, constitution)
 
+    @classmethod
+    def average(cls) -> "Stats":
+        """Create a Stats object with average values (10 each)."""
+        return cls(10, 10, 10, 10)
+
 
 @dataclass
 class Item:
@@ -134,12 +139,40 @@ class Player(Character):
         super().__init__(name)
         self.char_class = char_class
         self.xp: int = 0
+        self.gold: int = 0
 
         # Class baselines (data-driven)
         cfg = CLASS_BASE_STATS.get(char_class, {"stats": Stats(), "hp": 20})
         self.base_stats = cfg["stats"]
         self.max_hp = cfg["hp"]
         self.current_hp = self.max_hp
+
+        # Mana based on class (wizards/clerics get more)
+        mana_config = {
+            CharacterClass.WIZARD: 100,
+            CharacterClass.CLERIC: 80,
+            CharacterClass.ROGUE: 40,
+            CharacterClass.FIGHTER: 30,
+        }
+        self._max_mana = mana_config.get(char_class, 50)
+        self._current_mana = self._max_mana
+
+    @property
+    def max_mana(self) -> int:
+        return self._max_mana
+
+    @max_mana.setter
+    def max_mana(self, value: int) -> None:
+        self._max_mana = max(0, value)
+        self._current_mana = min(self._current_mana, self._max_mana)
+
+    @property
+    def current_mana(self) -> int:
+        return self._current_mana
+
+    @current_mana.setter
+    def current_mana(self, value: int) -> None:
+        self._current_mana = max(0, min(value, self._max_mana))
 
 
 class CombatSystem:
