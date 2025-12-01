@@ -45,6 +45,7 @@ from pygame_mvp.game.game_manager import GameManager
 from pygame_mvp.services.image_provider import MockImageProvider, APIImageProvider
 from pygame_mvp.services.narrative import NarrativeService
 from pygame_mvp.ui.screens import MainGameScreen
+from pygame_mvp.ui.title_screen import TitleScreen
 
 
 class PlayerSprite:
@@ -781,16 +782,36 @@ class PygameMVP:
 
 
 def run_manager_mode(use_api: bool = False) -> None:
-    """Run the lightweight GameManager-driven loop."""
+    """Run the lightweight GameManager loop with the pixel UI/title screen."""
     pygame.init()
     pygame.font.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption(f"{GAME_TITLE} (Manager Mode)")
-
-    image_provider = APIImageProvider() if use_api else MockImageProvider()
-    manager = GameManager(image_provider, screen)
-    ui = manager.ui_manager
     clock = pygame.time.Clock()
+
+    # App state
+    STATE_TITLE = "title"
+    STATE_GAME = "game"
+    state = STATE_TITLE
+
+    # Title screen
+    title_screen = TitleScreen(screen)
+
+    manager: GameManager | None = None
+
+    def _boot_manager(load_slot: int | None = None) -> None:
+        nonlocal manager, state
+        image_provider = APIImageProvider() if use_api else MockImageProvider()
+        manager = GameManager(image_provider, screen)
+        if load_slot is not None:
+            manager._load_game(slot=load_slot)
+        state = STATE_GAME
+
+    # Wire callbacks
+    title_screen.on_new_game = lambda: _boot_manager()
+    title_screen.on_load_game = lambda: _boot_manager(load_slot=1)
+    title_screen.on_options = lambda: print("Options not implemented yet.")
+    title_screen.on_quit = lambda: pygame.event.post(pygame.event.Event(pygame.QUIT))
 
     running = True
     while running:
@@ -799,18 +820,20 @@ def run_manager_mode(use_api: bool = False) -> None:
                 running = False
                 continue
 
-            # UI gets first chance to consume inputs
-            if ui.handle_event(event):
-                continue
+            if state == STATE_TITLE:
+                title_screen.handle_event(event)
+            elif state == STATE_GAME and manager:
+                manager.handle_event(event)
 
-            # Game logic handles remaining events
-            manager.handle_event(event)
+        if state == STATE_TITLE:
+            title_screen.update()
+        elif state == STATE_GAME and manager:
+            manager.update()
 
-        manager.update()
-
-        # Draw game layer then overlay UI on top
-        manager.render(include_ui=False)
-        ui.render(manager.player, manager.quest_tracker, manager.log_lines)
+        if state == STATE_TITLE:
+            title_screen.render()
+        elif state == STATE_GAME and manager:
+            manager.render(include_ui=True)
 
         pygame.display.flip()
         clock.tick(FPS)
