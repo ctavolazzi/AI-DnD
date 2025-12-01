@@ -7,16 +7,18 @@ Tests the main game loop, event handling, and callbacks.
 
 import sys
 import os
+from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 # Set SDL to use dummy video driver for headless testing
 os.environ['SDL_VIDEODRIVER'] = 'dummy'
 
 import pygame
-from game.game_loop import GameLoop
-from game.game_state import GameState, GamePhase
+from pygame_mvp.game.game_loop import GameLoop
+from pygame_mvp.game.game_state import GameState, GamePhase, CharacterState
 
 
 def test_game_loop_initialization():
@@ -185,7 +187,7 @@ def test_update_game_over_detection():
     loop = GameLoop(state)
 
     # Create a losing scenario - all players dead
-    from game.game_state import CharacterState
+    # CharacterState imported at top of file
     player = CharacterState(
         name="Hero", char_class="Fighter",
         hp=0, max_hp=100, mana=10, max_mana=10,
@@ -214,7 +216,7 @@ def test_update_victory_detection():
     loop = GameLoop(state)
 
     # Create a winning scenario - all enemies dead, player alive
-    from game.game_state import CharacterState
+    # CharacterState imported at top of file
     player = CharacterState(
         name="Hero", char_class="Fighter",
         hp=50, max_hp=100, mana=10, max_mana=10,

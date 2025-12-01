@@ -110,16 +110,24 @@ def test_inventory_state():
 
     inventory = InventoryState()
 
-    assert inventory.items == {}
+    # Items is now a list (not dict)
+    assert inventory.items == []
     assert inventory.equipped == {}
     assert inventory.gold == 0
     assert inventory.capacity == 20
 
-    # Test adding items
-    inventory.items["potion"] = 5
-    inventory.items["sword"] = 1
+    # Test adding items using the new add_item method
+    from pygame_mvp.game.game_state import InventoryItem
+    potion = InventoryItem(name="potion", quantity=5)
+    sword = InventoryItem(name="sword", quantity=1)
+    inventory.add_item(potion)
+    inventory.add_item(sword)
     assert len(inventory.items) == 2
-    assert inventory.items["potion"] == 5
+    
+    # Test get_item
+    found_potion = inventory.get_item("potion")
+    assert found_potion is not None
+    assert found_potion.quantity == 5
 
     # Test equipping items
     inventory.equipped["weapon"] = "sword"
