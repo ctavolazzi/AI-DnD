@@ -36,6 +36,7 @@ from pygame_mvp.game.quests import (
     create_side_quests,
 )
 from pygame_mvp.game.save_system import SaveSystem
+from pygame_mvp.ui.ui_manager import UIManager
 
 
 class GameState(Enum):
@@ -113,6 +114,7 @@ class GameManager:
         self.map_offset_y = PADDING
         self.hud_font = pygame.font.Font(None, 18)
         self.big_font = pygame.font.Font(None, 28)
+        self.ui_manager = UIManager(screen)
 
     # ------------------------------------------------------------------ #
     # Input & Update
@@ -132,6 +134,9 @@ class GameManager:
     # ------------------------------------------------------------------ #
     def _handle_exploration_event(self, event: pygame.event.Event) -> None:
         if event.type != pygame.KEYDOWN:
+            return
+
+        if self.ui_manager.handle_key_event(event):
             return
 
         mods = pygame.key.get_mods()
@@ -230,6 +235,9 @@ class GameManager:
         if event.type != pygame.KEYDOWN:
             return
 
+        if self.ui_manager.handle_key_event(event):
+            return
+
         if event.key == pygame.K_SPACE:
             # Player attacks
             outcome = CombatSystem.calculate_attack(self.player, self.combat_enemy)
@@ -283,6 +291,7 @@ class GameManager:
             self._render_combat()
 
         self._render_hud()
+        self.ui_manager.render(self.player, self.quest_tracker, self.log_lines)
 
     def _render_map(self) -> None:
         self.current_map.render(self.screen, self.map_offset_x, self.map_offset_y)
@@ -342,6 +351,10 @@ class GameManager:
                 qt = self.hud_font.render(progress, True, (210, 210, 200))
                 self.screen.blit(qt, (PADDING, yq))
                 yq += 16
+
+        # Overlay toggle hint
+        hint = self.hud_font.render("[I] Inventory  [C] Character", True, (150, 140, 120))
+        self.screen.blit(hint, (SCREEN_WIDTH - 260, SCREEN_HEIGHT - 80))
 
         # Log
         y = SCREEN_HEIGHT - 60
