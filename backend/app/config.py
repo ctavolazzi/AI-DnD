@@ -20,7 +20,9 @@ class Settings(BaseSettings):
     CACHE_EXPIRY_DAYS: int = 7
 
     # API
-    GEMINI_API_KEY: str
+    # Provide a safe default so imports and tests don't fail when the key isn't configured.
+    # Production deployments should override this via environment variables.
+    GEMINI_API_KEY: str = "development-placeholder-key"
     GEMINI_MODEL: str = "gemini-3-pro-preview"
     GEMINI_THINKING_LEVEL: str = "high"
     GEMINI_MEDIA_RESOLUTION: str = "media_resolution_high"

@@ -14,21 +14,27 @@ from typing import Dict, Any, Optional
 from dataclasses import dataclass, asdict
 import traceback
 
-import pixellab
-from PIL import Image
+import pytest
+
+TEST_DIR = Path(__file__).parent
+OUTPUTS_DIR = TEST_DIR / "outputs"
+LOGS_DIR = TEST_DIR / "logs"
+
+try:
+    import pixellab
+    from PIL import Image
+except Exception as exc:  # pragma: no cover - import guarded for optional dependency
+    pytest.skip(f"pixellab dependency unavailable: {exc}", allow_module_level=True)
 
 
 # Configuration
 API_KEY = os.getenv("PIXELLAB_API_KEY")
 if not API_KEY:
-    raise ValueError(
-        "PIXELLAB_API_KEY environment variable not set.\n"
-        "Get your API key from https://www.pixellab.ai/vibe-coding\n"
-        "Then set it: export PIXELLAB_API_KEY=your-api-key"
+    pytest.skip(
+        "PIXELLAB_API_KEY environment variable not set."
+        " Set PIXELLAB_API_KEY to run PixelLab integration tests.",
+        allow_module_level=True,
     )
-TEST_DIR = Path(__file__).parent
-OUTPUTS_DIR = TEST_DIR / "outputs"
-LOGS_DIR = TEST_DIR / "logs"
 
 
 @dataclass
@@ -334,6 +340,18 @@ class PixelLabTester:
             self.logger.info("\n🎉 ALL TESTS PASSED!")
         else:
             self.logger.warning(f"\n⚠️  {failed_tests} TEST(S) FAILED")
+
+
+@pytest.fixture(scope="module")
+def pixel_lab_tester():
+  OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+  LOGS_DIR.mkdir(parents=True, exist_ok=True)
+  return PixelLabTester(api_key=API_KEY)
+
+
+def test_pixel_lab_client_initializes(pixel_lab_tester):
+  """Ensure the PixelLab client can initialize with provided credentials."""
+  assert pixel_lab_tester.initialize_client() is True
 
 
 def main():
