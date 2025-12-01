@@ -17,8 +17,53 @@ try:
 except ImportError:
     print("⚠️  Pygame not installed - creating mock")
     import sys
-    from unittest.mock import MagicMock
-    sys.modules['pygame'] = MagicMock()
+    from unittest.mock import MagicMock, Mock
+
+    # Create a more realistic pygame mock that returns actual values
+    pygame_mock = MagicMock()
+
+    # Mock pygame.Surface
+    class MockSurface:
+        def __init__(self, size):
+            self.width, self.height = size
+        def get_width(self):
+            return self.width
+        def get_height(self):
+            return self.height
+        def fill(self, color):
+            pass
+        def blit(self, source, dest):
+            pass
+        def convert_alpha(self):
+            return self
+        def convert(self):
+            return self
+
+    # Mock pygame.font.Font
+    class MockFont:
+        def __init__(self, name, size):
+            pass
+        def render(self, text, antialias, color, background=None):
+            # Return a mock surface with realistic dimensions
+            surface = MockSurface((len(text) * 8, 16))
+            surface.get_width = lambda: len(text) * 8
+            surface.get_height = lambda: 16
+            surface.get_rect = lambda centerx=0, top=0, centery=0, bottom=0: Mock(
+                centerx=0, top=0, centery=0, bottom=0, width=len(text) * 8, height=16
+            )
+            return surface
+
+    pygame_mock.Surface = MockSurface
+    pygame_mock.font.Font = MockFont
+    pygame_mock.font.init = lambda: None
+    pygame_mock.draw.rect = lambda *args, **kwargs: None
+    pygame_mock.draw.line = lambda *args, **kwargs: None
+    pygame_mock.display.get_init = lambda: False
+    pygame_mock.image.load = lambda *args, **kwargs: MockSurface((100, 100))
+    pygame_mock.image.frombuffer = lambda *args, **kwargs: MockSurface((100, 100))
+    pygame_mock.transform.smoothscale = lambda surface, size: MockSurface(size)
+
+    sys.modules['pygame'] = pygame_mock
 
 from services.image_provider import MockImageProvider, APIImageProvider
 
