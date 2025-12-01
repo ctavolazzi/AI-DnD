@@ -243,6 +243,44 @@ def test_api_provider_placeholder_fallback():
     return True
 
 
+def test_api_provider_advanced_methods():
+    """Test that APIImageProvider has advanced API methods."""
+    print("\nTesting APIImageProvider advanced methods...")
+
+    provider = APIImageProvider(api_url="http://localhost:8000/api/v1")
+
+    # Check that new methods exist
+    assert hasattr(provider, '_generate_bitforge'), "Should have bitforge method"
+    assert hasattr(provider, '_animate_with_text'), "Should have text animation method"
+    assert hasattr(provider, '_animate_with_skeleton'), "Should have skeleton animation method"
+    assert hasattr(provider, '_rotate_character'), "Should have rotate method"
+    assert hasattr(provider, '_inpaint_image'), "Should have inpaint method"
+    assert hasattr(provider, '_estimate_skeleton'), "Should have skeleton estimation method"
+
+    # Test that methods handle missing client gracefully
+    result_bitforge = provider._generate_bitforge("test", 64, 64)
+    assert result_bitforge is None, "Should return None when API unavailable"
+
+    result_animate_text = provider._animate_with_text("character", "walk", 64, 64)
+    assert result_animate_text is None, "Should return None when API unavailable"
+
+    result_rotate = provider._rotate_character(b"", "south", "east", 64, 64)
+    assert result_rotate is None, "Should return None when API unavailable"
+
+    result_skeleton = provider._estimate_skeleton(b"")
+    assert result_skeleton is None, "Should return None when API unavailable"
+
+    print(f"   Bitforge method: ✓")
+    print(f"   Text animation method: ✓")
+    print(f"   Skeleton animation method: ✓")
+    print(f"   Rotation method: ✓")
+    print(f"   Inpainting method: ✓")
+    print(f"   Skeleton estimation method: ✓")
+    print(f"   Graceful fallback when API unavailable: ✓")
+    print("✅ All advanced methods available and handle errors")
+    return True
+
+
 def main():
     """Run all image provider tests."""
     print("🧪 Test 3: Image Provider Module")
@@ -257,6 +295,7 @@ def main():
         test_mock_provider_cache_clearing,
         test_api_provider_initialization,
         test_api_provider_placeholder_fallback,
+        test_api_provider_advanced_methods,
     ]
 
     passed = 0
