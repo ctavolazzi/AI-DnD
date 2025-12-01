@@ -3,10 +3,12 @@
 Comprehensive test of PixelLab MCP server features
 """
 
-import subprocess
 import json
 import os
+import subprocess
 import time
+
+import pytest
 
 def test_mcp_server_features():
     """Test all available MCP server features"""
@@ -18,7 +20,6 @@ def test_mcp_server_features():
 
     print("1. Testing MCP server startup...")
     try:
-        # Start the MCP server in the background
         process = subprocess.Popen(
             ['npx', '-y', 'pixellab-mcp', '--secret', test_key],
             stdin=subprocess.PIPE,
@@ -26,35 +27,33 @@ def test_mcp_server_features():
             stderr=subprocess.PIPE,
             text=True
         )
+    except FileNotFoundError as exc:
+        pytest.skip(f"npx is not available to start pixellab-mcp: {exc}")
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"Error spawning pixellab-mcp: {exc}")
 
-        # Send a tools list request
-        tools_request = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "tools/list",
-            "params": {}
-        }
+    # Send a tools list request
+    tools_request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "tools/list",
+        "params": {}
+    }
 
-        process.stdin.write(json.dumps(tools_request) + "\n")
-        process.stdin.flush()
+    process.stdin.write(json.dumps(tools_request) + "\n")
+    process.stdin.flush()
 
-        # Wait a moment for response
-        time.sleep(2)
+    time.sleep(2)
 
-        # Try to read response
-        try:
-            stdout, stderr = process.communicate(timeout=5)
-            print(f"✅ MCP server started successfully")
-            print(f"   Output: {stdout[:200]}...")
-            if stderr:
-                print(f"   Errors: {stderr[:200]}...")
-        except subprocess.TimeoutExpired:
-            process.kill()
-            print("⚠️  MCP server started but timed out (expected with test key)")
-
-    except Exception as e:
-        print(f"❌ Error testing MCP server: {e}")
-        return False
+    try:
+        stdout, stderr = process.communicate(timeout=5)
+        print(f"✅ MCP server started successfully")
+        print(f"   Output: {stdout[:200]}...")
+        if stderr:
+            print(f"   Errors: {stderr[:200]}...")
+    except subprocess.TimeoutExpired:
+        process.kill()
+        print("⚠️  MCP server started but timed out (expected with test key)")
 
     print("\n2. Checking expected PixelLab MCP features...")
 
@@ -94,9 +93,10 @@ def test_mcp_server_features():
         print(f"   Args: {pixellab_config['args']}")
         print(f"   Environment: {pixellab_config['env']}")
 
-    except Exception as e:
-        print(f"❌ MCP configuration error: {e}")
-        return False
+    except FileNotFoundError as exc:
+        pytest.skip(f"PixelLab MCP configuration not found: {exc}")
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"MCP configuration error: {exc}")
 
     print("\n4. Security verification...")
 
@@ -119,10 +119,9 @@ def test_mcp_server_features():
                     security_issues.append(file_path)
 
     if security_issues:
-        print(f"❌ Security issues found in: {security_issues}")
-        return False
-    else:
-        print("✅ No hardcoded API keys found in main files")
+        pytest.fail(f"Security issues found in: {security_issues}")
+
+    print("✅ No hardcoded API keys found in main files")
 
     print("\n5. Environment setup verification...")
 
@@ -133,8 +132,7 @@ def test_mcp_server_features():
     if '${PIXELLAB_API_KEY}' in config_content:
         print("✅ Environment variable properly referenced in configuration")
     else:
-        print("❌ Environment variable not properly referenced")
-        return False
+        pytest.fail("Environment variable not properly referenced")
 
     print("\n" + "=" * 60)
     print("🎯 PixelLab MCP Server Test Summary:")
@@ -163,7 +161,7 @@ def test_mcp_server_features():
     print("3. Use Claude to generate pixel art with MCP tools")
     print("4. Test character generation, animation, and image manipulation")
 
-    return True
+    return None
 
 if __name__ == "__main__":
     test_mcp_server_features()

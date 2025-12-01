@@ -7,6 +7,7 @@ and save it as a PNG file that we can open in the browser.
 import os
 import sys
 from io import BytesIO
+import pytest
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -18,8 +19,7 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 if not GEMINI_API_KEY:
-    print("❌ ERROR: GEMINI_API_KEY not found in .env file")
-    sys.exit(1)
+    pytest.skip("GEMINI_API_KEY missing; skipping Nano Banana smoke test", allow_module_level=True)
 
 print("🍌 Nano Banana Image Generation Test")
 print("=" * 60)

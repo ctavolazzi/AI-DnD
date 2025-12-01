@@ -1,11 +1,13 @@
 """Basic tests for database models and API"""
+from datetime import datetime, timedelta
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from app.database import Base
 from app.models.image_asset import ImageAsset
 from app.models.scene_cache import SceneCache
-from datetime import datetime, timedelta
 
 
 @pytest.fixture

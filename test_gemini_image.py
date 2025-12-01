@@ -2,18 +2,18 @@
 """Quick test of Gemini image generation API"""
 
 import os
+import time
+import pytest
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-import time
 
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 if not GEMINI_API_KEY:
-    print("❌ No GEMINI_API_KEY found")
-    exit(1)
+    pytest.skip("GEMINI_API_KEY missing; skipping Gemini image smoke test", allow_module_level=True)
 
 print(f"✅ API Key found: {GEMINI_API_KEY[:10]}...")
 

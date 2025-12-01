@@ -12,6 +12,24 @@ import unittest
 from unittest.mock import patch, MagicMock
 import requests
 import time
+import pytest
+from dotenv import load_dotenv
+
+load_dotenv()
+
+if not os.getenv("GEMINI_API_KEY"):
+    pytest.skip("GEMINI_API_KEY missing; skipping Gemini narrative tests", allow_module_level=True)
+
+try:
+    from google.genai import types as genai_types
+except Exception:
+    genai_types = None
+
+if genai_types is None or not hasattr(genai_types.HarmCategory, "HARM_CATEGORY_HATE_SPEECH"):
+    pytest.skip(
+        "Google Generative AI client missing expected safety categories; skipping narrative tests",
+        allow_module_level=True,
+    )
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

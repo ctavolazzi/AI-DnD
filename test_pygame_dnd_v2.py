@@ -8,6 +8,8 @@ import sys
 import os
 import logging
 
+import pytest
+
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -36,11 +38,8 @@ def test_game_initialization():
         print(f"   Buttons: {len(game.buttons)}")
         print(f"   Game log: {len(game.game_log.messages)} initial messages")
 
-        return True
-
-    except Exception as e:
-        print(f"❌ Improved game initialization failed: {e}")
-        return False
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"Improved game initialization failed: {exc}")
 
 def test_message_system():
     """Test the improved message system."""
@@ -66,11 +65,8 @@ def test_message_system():
         print(f"   Total messages: {len(game.game_log.messages)}")
         print(f"   Message types: {set(msg.message_type for msg in game.game_log.messages)}")
 
-        return True
-
-    except Exception as e:
-        print(f"❌ Message system test failed: {e}")
-        return False
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"Message system test failed: {exc}")
 
 def test_improved_ui_elements():
     """Test improved UI elements."""
@@ -100,11 +96,8 @@ def test_improved_ui_elements():
         print(f"   Buttons: {len(buttons)}")
         print(f"   Button states: Working")
 
-        return True
-
-    except Exception as e:
-        print(f"❌ Improved UI elements test failed: {e}")
-        return False
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"Improved UI elements test failed: {exc}")
 
 def test_enhanced_game_mechanics():
     """Test enhanced game mechanics."""
@@ -142,11 +135,8 @@ def test_enhanced_game_mechanics():
         print(f"   Spell casting: Working")
         print(f"   Message logging: Working")
 
-        return True
-
-    except Exception as e:
-        print(f"❌ Enhanced game mechanics test failed: {e}")
-        return False
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"Enhanced game mechanics test failed: {exc}")
 
 def test_ui_responsiveness():
     """Test UI responsiveness and layout."""
@@ -181,11 +171,8 @@ def test_ui_responsiveness():
         print(f"   All UI elements fit within {screen_width}x{screen_height} screen")
         print(f"   No overlapping or out-of-bounds elements")
 
-        return True
-
-    except Exception as e:
-        print(f"❌ UI responsiveness test failed: {e}")
-        return False
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"UI responsiveness test failed: {exc}")
 
 def main():
     """Run all tests."""
@@ -207,8 +194,11 @@ def main():
     total = len(tests)
 
     for test in tests:
-        if test():
+        try:
+            test()
             passed += 1
+        except Exception as exc:
+            print(f"❌ {test.__name__} failed: {exc}")
 
     print("\n" + "=" * 60)
     print(f"Test Results: {passed}/{total} tests passed")

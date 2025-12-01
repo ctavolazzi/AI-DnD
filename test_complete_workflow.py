@@ -7,8 +7,12 @@ Demonstrates organized file structure and AI-powered image cleanup
 import os
 import sys
 from pathlib import Path
+import pytest
+from dotenv import load_dotenv
 from enhanced_pixellab_client import EnhancedPixelLabClient
 from nano_banana_pixel_art_cleaner import NanoBananaPixelArtCleaner
+
+load_dotenv()
 
 def test_complete_workflow():
     """Test the complete PixelLab + Nano Banana workflow."""
@@ -16,8 +20,11 @@ def test_complete_workflow():
     print("=" * 60)
 
     # Check for API keys
-    pixellab_key = "b4567140-3203-42ec-be0e-3b995f61dc93"
+    pixellab_key = os.getenv("PIXELLAB_API_KEY")
     nano_banana_key = os.getenv("GEMINI_API_KEY")
+
+    if not pixellab_key:
+        pytest.skip("PIXELLAB_API_KEY missing; skipping PixelLab workflow test", allow_module_level=True)
 
     if not nano_banana_key:
         print("⚠️  GEMINI_API_KEY not found - will test without Nano Banana cleanup")

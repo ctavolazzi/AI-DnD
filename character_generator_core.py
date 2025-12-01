@@ -132,7 +132,11 @@ class Character:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert character to dictionary for JSON serialization"""
-        return asdict(self)
+        data = asdict(self)
+        # Normalize enums to their primitive values for JSON compatibility
+        data["character_type"] = self.character_type.value
+        data["tone"] = self.tone.value
+        return data
 
     def to_json(self) -> str:
         """Convert character to JSON string"""

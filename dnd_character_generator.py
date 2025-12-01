@@ -250,7 +250,10 @@ class DnDCharacterGenerator:
         bio = f"A {race} {char_class} seeking adventure and glory."
         location = "Unknown Lands"
         profile_picture_url = ""
-        contact_info = {}
+        contact_info = {
+            "email": f"{name.replace(' ', '').lower()}@adventure.example.com",
+            "sending_stone": "Rune-link unavailable"
+        }
 
         return name, bio, location, profile_picture_url, contact_info
 

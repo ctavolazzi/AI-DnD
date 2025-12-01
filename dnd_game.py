@@ -401,7 +401,7 @@ class Character:
         if self.team is None or target.team is None or self.team != target.team:
             if self.abilities and random.random() < 0.3:
                 ability = next(iter(self.abilities.values()))
-                damage_result = ability(target)
+                damage_result = ability(target) or {}
 
                 # Collect loot if target died from ability
                 if damage_result.get("died") and damage_result.get("loot"):
@@ -422,6 +422,7 @@ class Character:
             self._log("Combat Stats:")
             self._log(f"- Attacker ({self.name}): Attack = {self.attack}, HP = {self.hp}/{self.max_hp}")
             self._log(f"- Defender ({target.name}): Defense = {target.defense}, HP = {target.hp}/{target.max_hp}")
+            self._log(f"{self.name} attacks {target.name}")
 
             roll = random.randint(1, 6)
             damage = self.attack + roll

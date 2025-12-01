@@ -8,6 +8,8 @@ import sys
 import os
 import logging
 
+import pytest
+
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -34,11 +36,8 @@ def test_game_initialization():
         print(f"   UI Panels: {len(game.panels)}")
         print(f"   Buttons: {len(game.buttons)}")
 
-        return True
-
-    except Exception as e:
-        print(f"❌ Game initialization failed: {e}")
-        return False
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"Game initialization failed: {exc}")
 
 def test_character_creation():
     """Test character creation and properties."""
@@ -68,11 +67,9 @@ def test_character_creation():
             print(f"   Enemy {i+1}: {enemy.name} ({enemy.char_class}) - HP: {enemy.hp}/{enemy.max_hp}")
 
         print("✅ Character creation successful")
-        return True
 
-    except Exception as e:
-        print(f"❌ Character creation failed: {e}")
-        return False
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"Character creation failed: {exc}")
 
 def test_ui_elements():
     """Test UI element creation."""
@@ -104,11 +101,9 @@ def test_ui_elements():
         print(f"   Character displays: {len(game.character_displays)}")
 
         print("✅ UI elements creation successful")
-        return True
 
-    except Exception as e:
-        print(f"❌ UI elements test failed: {e}")
-        return False
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"UI elements test failed: {exc}")
 
 def test_game_mechanics():
     """Test basic game mechanics."""
@@ -134,11 +129,9 @@ def test_game_mechanics():
         print(f"   Player stats: HP={player.hp}/{player.max_hp}, Attack={player.attack}, Defense={player.defense}")
 
         print("✅ Game mechanics test successful")
-        return True
 
-    except Exception as e:
-        print(f"❌ Game mechanics test failed: {e}")
-        return False
+    except Exception as exc:  # pragma: no cover - surfaced as pytest failure
+        pytest.fail(f"Game mechanics test failed: {exc}")
 
 def main():
     """Run all tests."""
@@ -159,8 +152,11 @@ def main():
     total = len(tests)
 
     for test in tests:
-        if test():
+        try:
+            test()
             passed += 1
+        except Exception as exc:
+            print(f"❌ {test.__name__} failed: {exc}")
 
     print("\n" + "=" * 50)
     print(f"Test Results: {passed}/{total} tests passed")
