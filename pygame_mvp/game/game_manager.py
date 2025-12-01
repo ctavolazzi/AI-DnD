@@ -460,6 +460,7 @@ class GameManager:
             if self.current_map_name in self.map_builders:
                 self.current_map = self.map_builders[self.current_map_name]()
             self.player_grid = data.get("player_grid", self.player_grid)
+            self._sync_minimap()
             quests_state = data.get("quests")
             if quests_state:
                 self.quest_tracker.from_dict(quests_state)
