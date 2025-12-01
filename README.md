@@ -189,9 +189,103 @@ See [`tests/pixellab_map_test/README.md`](https://www.google.com/search?q=tests/
 
 ### MCP Integration for Claude Code
 
-AI-DnD integrates with **PixelLab's Model Context Protocol (MCP)** server. This allows you to use Claude Code to generate assets using natural language prompts like: "Create a pixel art wizard character with 8 directions".
+AI-DnD integrates with **PixelLab's Model Context Protocol (MCP)** server, enabling Claude Code to generate pixel art assets directly through natural language.
 
-Check `.mcp.json` at the project root for configuration.
+#### 🔧 Setup MCP Server
+
+Add the PixelLab MCP server to your Claude Code configuration:
+
+```bash
+claude mcp add pixellab https://api.pixellab.ai/mcp -t http -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+Replace `YOUR_API_KEY` with your actual PixelLab API key from [https://www.pixellab.ai](https://www.pixellab.ai)
+
+#### 📋 Configuration
+
+The MCP server configuration is stored in `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "pixellab": {
+      "type": "http",
+      "url": "https://api.pixellab.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer ${PIXELLAB_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+For local development, set `PIXELLAB_API_KEY` in your `.env` file.
+
+#### ✨ Capabilities
+
+With MCP integration, you can ask Claude Code to:
+- "Create a pixel art wizard character facing 8 directions"
+- "Generate a walking animation for this character"
+- "Rotate this sprite to face north"
+- "Create an isometric tileset for a dungeon"
+
+#### 🐍 Python Client
+
+For programmatic access, use the PixelLabClient:
+
+```python
+from pixellab_integration.pixellab_client import PixelLabClient
+
+client = PixelLabClient(api_key="your-api-key")
+
+# Generate character
+character = client.generate_character(
+    description="cyberpunk hacker",
+    width=64,
+    height=64,
+    no_background=True
+)
+
+# Create 8-directional sprite
+sprites = client.batch_generate_directions(
+    description="cyberpunk hacker",
+    directions=['north', 'south', 'east', 'west']
+)
+
+# Animate character
+frames = client.animate_character_text(
+    reference_image=character,
+    description="cyberpunk hacker",
+    action="walk",
+    n_frames=4
+)
+```
+
+See `pixellab_integration/pixellab_client.py` for complete API documentation.
+
+#### 🎮 Game Asset Generator
+
+Automate creation of complete character sprite sets with the Game Asset Generator utility:
+
+```bash
+# Generate a player character with 8-directional sprites + animations
+python utils/game_asset_generator.py --character "elven ranger" --animations walk,idle,attack
+
+# Generate an NPC
+python utils/game_asset_generator.py --npc "goblin warrior" --size 48
+
+# Batch generate multiple characters from JSON file
+python utils/game_asset_generator.py --batch utils/example_character_batch.json
+```
+
+**Features:**
+- 8-directional sprites (N, NE, E, SE, S, SW, W, NW)
+- Walking and action animations
+- Organized sprite sheets
+- Metadata files for easy integration
+- Batch processing support
+
+Output is saved to `assets/generated/` with organized directories per character.
 
 -----
 

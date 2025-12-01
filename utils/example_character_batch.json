@@ -1,0 +1,26 @@
+[
+  {
+    "name": "hero_warrior",
+    "description": "heroic knight in shining armor with sword and shield",
+    "size": 64,
+    "animations": ["walk", "idle", "attack"]
+  },
+  {
+    "name": "wizard_npc",
+    "description": "old wizard with purple robes and glowing staff",
+    "size": 64,
+    "animations": ["walk", "idle"]
+  },
+  {
+    "name": "goblin_enemy",
+    "description": "small green goblin with crude weapons",
+    "size": 48,
+    "animations": ["walk", "attack"]
+  },
+  {
+    "name": "merchant_npc",
+    "description": "friendly merchant with coin purse and traveling cloak",
+    "size": 64,
+    "animations": ["idle"]
+  }
+]
