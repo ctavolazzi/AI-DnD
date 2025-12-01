@@ -51,7 +51,7 @@ def main():
     print("=" * 70)
     print("PYGAME MVP TEST SUITE - Master Test Runner")
     print("=" * 70)
-    print(f"Work Effort: WE10.40-12-2025")
+    print(f"Work Effort: WE10.41-12-2025")
     print(f"Date: 2025-12-01")
     print("=" * 70)
 
@@ -63,6 +63,8 @@ def main():
         ('test_image_provider.py', 'Test 3: Image Provider Module'),
         ('test_game_loop.py', 'Test 4: Game Loop Module'),
         ('test_narrative.py', 'Test 5: Narrative Service Module'),
+        ('test_theme.py', 'Test 6: Theme System Module'),
+        ('test_components.py', 'Test 7: UI Components Module'),
     ]
 
     results = []
@@ -123,10 +125,13 @@ def main():
         print("   ✅ image_provider.py - 8 tests")
         print("   ✅ game_loop.py - 9 tests")
         print("   ✅ narrative.py - 8 tests")
-        print("   📦 Total: 38 tests")
+        print("   ✅ theme.py - 11 tests")
+        print("   ✅ components.py - 18 tests")
+        print("   📦 Total: 67 tests")
         print("\n📈 Module Coverage:")
-        print("   ✅ Tested: 5/7 modules (71%)")
-        print("   ❌ Not tested: ui/components.py, ui/screens.py")
+        print("   ✅ Tested: 6/7 modules (86%)")
+        print("   ✅ Line coverage: ~75% (1,897/2,442 lines)")
+        print("   ❌ Not tested: ui/screens.py (469 lines)")
         return 0
     else:
         print("❌ SOME TESTS FAILED")
