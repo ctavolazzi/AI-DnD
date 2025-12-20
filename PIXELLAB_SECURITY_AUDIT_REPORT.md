@@ -5,7 +5,7 @@
 ## 🚨 Security Issues Found & Fixed
 
 ### 1. Hardcoded API Keys (CRITICAL)
-**Issue:** API key `b4567140-3203-42ec-be0e-3b995f61dc93` was hardcoded in multiple files
+**Issue:** API key `REDACTED_API_KEY` was hardcoded in multiple files
 **Files Affected:** 16 files including Python scripts, test files, and documentation
 **Risk Level:** HIGH - API key exposed in version control
 
@@ -59,7 +59,7 @@ export PIXELLAB_API_KEY=your_actual_api_key_here
 ### Python Code (Secure)
 ```python
 # Before (INSECURE)
-API_KEY = "b4567140-3203-42ec-be0e-3b995f61dc93"
+API_KEY = "REDACTED_API_KEY"
 
 # After (SECURE)
 API_KEY = os.getenv("PIXELLAB_API_KEY")

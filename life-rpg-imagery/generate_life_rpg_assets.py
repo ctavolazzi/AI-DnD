@@ -18,7 +18,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from pixellab_integration.pixellab_client import PixelLabClient
 
 # PixelLab API Configuration
-API_KEY = "b4567140-3203-42ec-be0e-3b995f61dc93"
+API_KEY = os.getenv("PIXELLAB_API_KEY")
+if not API_KEY:
+    raise ValueError("PIXELLAB_API_KEY environment variable not set")
 OUTPUT_DIR = Path(__file__).parent / "generated"
 
 # Create output directory

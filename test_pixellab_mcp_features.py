@@ -101,7 +101,7 @@ def test_mcp_server_features():
     print("\n4. Security verification...")
 
     # Check that no hardcoded API keys remain
-    hardcoded_key = "b4567140-3203-42ec-be0e-3b995f61dc93"
+    hardcoded_key = "REDACTED_FOR_SECURITY_CHECK"
 
     # Check main files
     main_files = [

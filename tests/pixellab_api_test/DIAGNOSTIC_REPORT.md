@@ -85,7 +85,7 @@ All API requests to `https://api.pixellab.ai/v1/generate-image-pixflux` returned
 1. **Direct REST API Call (v1 endpoint)**
    ```bash
    curl -X POST "https://api.pixellab.ai/v1/generate-image-pixflux" \
-     -H "Authorization: Bearer b4567140-3..." \
+     -H "Authorization: Bearer REDACTED..." \
      -H "Content-Type: application/json"
    ```
    **Response:** "Access denied"
@@ -93,21 +93,21 @@ All API requests to `https://api.pixellab.ai/v1/generate-image-pixflux` returned
 2. **MCP Endpoint Test (GET)**
    ```bash
    curl "https://api.pixellab.ai/mcp" \
-     -H "Authorization: Bearer b4567140-3..."
+     -H "Authorization: Bearer REDACTED..."
    ```
    **Response:** "Access denied"
 
 3. **MCP Protocol Test (POST with JSON-RPC)**
    ```bash
    curl -X POST "https://api.pixellab.ai/mcp" \
-     -H "Authorization: Bearer b4567140-3..." \
+     -H "Authorization: Bearer REDACTED..." \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
    ```
    **Response:** "Access denied"
 
 ### Possible Causes
 
-The API key `b4567140-3203-42ec-be0e-3b995f61dc93` is being rejected. Possible reasons:
+The API key `REDACTED_API_KEY` is being rejected. Possible reasons:
 
 1. **Demo/Example Key**
    - The key might be a placeholder/example from documentation
@@ -141,7 +141,7 @@ POST https://api.pixellab.ai/v1/generate-image-pixflux
 
 ### Authentication Used
 ```
-Authorization: Bearer b4567140-3203-42ec-be0e-3b995f61dc93
+Authorization: Bearer REDACTED_API_KEY
 ```
 
 ### Request Format
