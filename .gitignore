@@ -263,3 +263,4 @@ pixellab_tests/baselines/
 SESSION_SUMMARY_*.md
 SESSION_DOSSIER_*.md
 Gemini_Generated_Image_*.png
+ui_example.png
