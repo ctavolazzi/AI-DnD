@@ -261,4 +261,5 @@ pixellab_tests/baselines/
 
 # Session documentation (keep latest, ignore dated archives)
 SESSION_SUMMARY_*.md
-SESSION_DOSSIER_*.mdGemini_Generated_Image_*.png
+SESSION_DOSSIER_*.md
+Gemini_Generated_Image_*.png
