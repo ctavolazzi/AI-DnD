@@ -1,6 +1,7 @@
 {
-  "available_energy": 4,
+  "available_energy": 10,
   "long_term_weight": 1.5,
+  "_comment": "AI energy is unlimited - no fatigue. Real constraints: context window, parallelizability, user time.",
   "tasks": [
     {
       "id": 1,
@@ -65,7 +66,22 @@
       "long_term": 3,
       "energy": 4,
       "description": "Explore codebase, analyze architecture"
+    },
+    {
+      "id": 9,
+      "name": "Merge Spell System",
+      "short_term": 4,
+      "long_term": 5,
+      "energy": 3,
+      "description": "Test and merge spells.py + magic_items.py from frontend branch (1437 new lines)"
+    },
+    {
+      "id": 10,
+      "name": "Merge Strategy Docs",
+      "short_term": 3,
+      "long_term": 4,
+      "energy": 1,
+      "description": "Merge understanding branch - PR readiness matrices, architecture analysis (2037 lines, zero risk)"
     }
   ]
 }
-
