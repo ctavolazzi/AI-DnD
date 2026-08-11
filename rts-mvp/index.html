@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RTS MVP</title>
+<style>
+  body {
+    margin: 0; padding: 18px; background: #15161a; color: #d8d8dc;
+    font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  canvas { background: #1e2129; border: 1px solid #33363f; cursor: crosshair; }
+  #hud { display: flex; gap: 22px; letter-spacing: .04em; }
+  #hint { opacity: .5; text-align: center; }
+  b { color: #f2c14e; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div id="hud"></div>
+<canvas id="c" width="640" height="480"></canvas>
+<div id="hint">
+  drag or click to select &middot; right-click to move &middot; <b>S</b> buys a unit (5 gold) &middot; <b>R</b> restarts
+</div>
+
+<script>
+// ---- constants -------------------------------------------------------------
+const UNIT_COST   = 5;
+const UNIT_HP     = 40;
+const UNIT_SPEED  = 70;   // px/sec
+const UNIT_DPS    = 20;
+const ATTACK_RANGE= 26;
+const ENEMY_AGGRO = 100;
+const ENEMY_SPEED = 50;
+const HARVEST_RATE= 2;    // gold/sec per unit sitting on the mine
+
+const MINE = { x: 160, y: 110, r: 22 };
+const BASE = { x: 92, y: 384, r: 24 };
+
+const c = document.getElementById('c');
+const g = c.getContext('2d');
+const hud = document.getElementById('hud');
+
+// ---- state -----------------------------------------------------------------
+let S;
+
+function unit(x, y, side) {
+  return { x, y, side, hp: UNIT_HP, dest: null, sel: false };
+}
+
+function reset() {
+  S = {
+    gold: 0,
+    status: 'playing',            // 'playing' | 'won' | 'lost'
+    units: [unit(120, 330, 'p'), unit(160, 356, 'p')],
+    enemies: [unit(520, 120, 'e'), unit(566, 176, 'e'), unit(500, 208, 'e')],
+    drag: null                    // {x0,y0,x1,y1} while box-selecting
+  };
+}
+
+// ---- helpers ---------------------------------------------------------------
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+function moveToward(u, tx, ty, speed, dt, stopAt) {
+  const dx = tx - u.x, dy = ty - u.y, d = Math.hypot(dx, dy);
+  if (d <= stopAt || d < 0.5) return;
+  const step = Math.min(speed * dt, d - stopAt);
+  u.x += (dx / d) * step;
+  u.y += (dy / d) * step;
+}
+
+function nearest(list, from) {
+  let best = null, bestD = Infinity;
+  for (const o of list) {
+    const d = dist(o, from);
+    if (d < bestD) { bestD = d; best = o; }
+  }
+  return best;
+}
+
+// ---- update ----------------------------------------------------------------
+function update(dt) {
+  // player units: walk to their order, auto-attack, auto-harvest
+  for (const u of S.units) {
+    if (u.dest) moveToward(u, u.dest.x, u.dest.y, UNIT_SPEED, dt, 0);
+
+    const foe = nearest(S.enemies, u);
+    if (foe && dist(foe, u) <= ATTACK_RANGE) foe.hp -= UNIT_DPS * dt;
+
+    if (dist(u, MINE) <= MINE.r + 10) S.gold += HARVEST_RATE * dt;
+  }
+
+  // enemies: sit still until something walks close, then chase and hit it
+  for (const e of S.enemies) {
+    const prey = nearest(S.units, e);
+    if (!prey || dist(prey, e) > ENEMY_AGGRO) continue;
+    moveToward(e, prey.x, prey.y, ENEMY_SPEED, dt, ATTACK_RANGE - 4);
+    if (dist(prey, e) <= ATTACK_RANGE) prey.hp -= UNIT_DPS * dt;
+  }
+
+  S.units = S.units.filter(u => u.hp > 0);
+  S.enemies = S.enemies.filter(e => e.hp > 0);
+
+  if (!S.enemies.length) S.status = 'won';
+  else if (!S.units.length) S.status = 'lost';
+}
+
+// ---- draw ------------------------------------------------------------------
+function drawUnit(u) {
+  if (u.sel) {
+    g.strokeStyle = '#7dd3a0';
+    g.beginPath(); g.arc(u.x, u.y, 13, 0, Math.PI * 2); g.stroke();
+  }
+  g.fillStyle = u.side === 'p' ? '#5b8dd9' : '#d95b5b';
+  g.beginPath(); g.arc(u.x, u.y, 8, 0, Math.PI * 2); g.fill();
+
+  const frac = Math.max(0, u.hp / UNIT_HP);
+  g.fillStyle = '#2a2d36'; g.fillRect(u.x - 9, u.y - 15, 18, 3);
+  g.fillStyle = '#7dd3a0'; g.fillRect(u.x - 9, u.y - 15, 18 * frac, 3);
+}
+
+function draw() {
+  g.clearRect(0, 0, c.width, c.height);
+
+  g.strokeStyle = '#242832';
+  for (let x = 0; x <= c.width; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, c.height); g.stroke(); }
+  for (let y = 0; y <= c.height; y += 40) { g.beginPath(); g.moveTo(0, y); g.lineTo(c.width, y); g.stroke(); }
+
+  g.fillStyle = '#f2c14e';
+  g.beginPath(); g.arc(MINE.x, MINE.y, MINE.r, 0, Math.PI * 2); g.fill();
+
+  g.fillStyle = '#3f5f96';
+  g.fillRect(BASE.x - BASE.r, BASE.y - BASE.r, BASE.r * 2, BASE.r * 2);
+
+  S.enemies.forEach(drawUnit);
+  S.units.forEach(drawUnit);
+
+  if (S.drag) {
+    const { x0, y0, x1, y1 } = S.drag;
+    g.strokeStyle = '#7dd3a0';
+    g.strokeRect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.abs(y1 - y0));
+  }
+
+  if (S.status !== 'playing') {
+    g.fillStyle = 'rgba(21,22,26,.78)';
+    g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = S.status === 'won' ? '#7dd3a0' : '#d95b5b';
+    g.font = '600 34px ui-monospace, Menlo, monospace';
+    g.textAlign = 'center';
+    g.fillText(S.status === 'won' ? 'VICTORY' : 'DEFEAT', c.width / 2, c.height / 2 - 6);
+    g.fillStyle = '#d8d8dc';
+    g.font = '13px ui-monospace, Menlo, monospace';
+    g.fillText('press R to play again', c.width / 2, c.height / 2 + 24);
+  }
+
+  hud.innerHTML =
+    `gold <b>${Math.floor(S.gold)}</b>` +
+    `<span>units <b>${S.units.length}</b></span>` +
+    `<span>enemies <b>${S.enemies.length}</b></span>`;
+}
+
+// ---- input -----------------------------------------------------------------
+function pos(e) {
+  const r = c.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+c.addEventListener('contextmenu', e => e.preventDefault());
+
+c.addEventListener('mousedown', e => {
+  if (S.status !== 'playing') return;
+  const p = pos(e);
+
+  if (e.button === 2) {                       // right-click: order the selection
+    for (const u of S.units) if (u.sel) u.dest = { x: p.x, y: p.y };
+    return;
+  }
+  if (e.button === 0) S.drag = { x0: p.x, y0: p.y, x1: p.x, y1: p.y };
+});
+
+c.addEventListener('mousemove', e => {
+  if (!S.drag) return;
+  const p = pos(e);
+  S.drag.x1 = p.x; S.drag.y1 = p.y;
+});
+
+window.addEventListener('mouseup', e => {
+  if (e.button !== 0 || !S.drag) return;
+  const { x0, y0, x1, y1 } = S.drag;
+  S.drag = null;
+
+  if (Math.hypot(x1 - x0, y1 - y0) < 5) {     // a click, not a drag
+    const hit = S.units.find(u => Math.hypot(u.x - x1, u.y - y1) <= 12);
+    for (const u of S.units) u.sel = (u === hit);
+  } else {                                    // a box
+    const lo = { x: Math.min(x0, x1), y: Math.min(y0, y1) };
+    const hi = { x: Math.max(x0, x1), y: Math.max(y0, y1) };
+    for (const u of S.units) u.sel = u.x >= lo.x && u.x <= hi.x && u.y >= lo.y && u.y <= hi.y;
+  }
+});
+
+window.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (k === 'r') { reset(); return; }
+  if (k === 's' && S.status === 'playing' && S.gold >= UNIT_COST) {
+    S.gold -= UNIT_COST;
+    S.units.push(unit(BASE.x + 34 + Math.random() * 12, BASE.y + (Math.random() - 0.5) * 24, 'p'));
+  }
+});
+
+// ---- game loop -------------------------------------------------------------
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  if (S.status === 'playing') update(dt);
+  draw();
+  requestAnimationFrame(frame);
+}
+
+reset();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
