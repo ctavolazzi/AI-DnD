@@ -3,6 +3,14 @@
 The rules, then the decisions. Read the rules first; they are what make future
 names decidable instead of improvised.
 
+> **Status: decided, mostly NOT applied.** The tables below read "Was / Now",
+> which is misleading, so read this first. Only the `UNIT_* -> SOLDIER_*`
+> constant renames exist in the code. `world`, `playerUnits`, `orderedTarget`,
+> `canReach` and the rest are decisions, not identifiers you can grep for. Each
+> table row is marked. Applying the remainder is one deliberate pass that has to
+> update the test harness in the same commit, since the harness reaches into
+> these names directly.
+
 ## Rules
 
 1. **Symmetric things get symmetric names.** If `playerUnits` exists, its
@@ -24,6 +32,8 @@ names decidable instead of improvised.
 
 ## Decisions: the world
 
+*None of these are applied. The code still uses `S`, `S.units`, `S.enemies`.*
+
 | Was | Now | Why |
 | --- | --- | --- |
 | `S` | `world` | A single capital letter is not a name |
@@ -37,6 +47,8 @@ names decidable instead of improvised.
 
 ## Decisions: a unit
 
+*None of these are applied. The code still uses `side`, `kind`, `sel`, `foe`.*
+
 | Was | Now | Why |
 | --- | --- | --- |
 | `side: 'p' \| 'e'` | `team: 'player' \| 'enemy'` | Single-letter codes force a lookup every read |
@@ -49,17 +61,20 @@ names decidable instead of improvised.
 
 ## Decisions: constants
 
-| Was | Now | Why |
-| --- | --- | --- |
-| `UNIT_COST/HP/SPEED/DPS` | `SOLDIER_*` | Rule 5. These are one unit type's stats, not all units' |
-| `RADIUS` | `UNIT_RADIUS` | Radius of what |
-| `SPACING` | `MIN_SEPARATION` | Spacing is ambiguous between a gap and a layout |
-| `STEP` | `TICK_SECONDS` | Step of what, in what unit |
-| `ENEMY_AGGRO` | `AGGRO_RANGE` | It is a distance, and it is not enemy-specific in principle |
-| `HARVEST_RATE` | `GOLD_PER_SECOND` | Rate of what, per what |
-| `BASE_R` | `BASE_RADIUS` | Rule 4 |
+| Was | Now | Applied? | Why |
+| --- | --- | --- | --- |
+| `UNIT_COST/HP/SPEED/DPS` | `SOLDIER_*` | **yes** | Rule 5. These are one unit type's stats, not all units' |
+| `RADIUS` | `UNIT_RADIUS` | no | Radius of what |
+| `SPACING` | `MIN_SEPARATION` | no | Spacing is ambiguous between a gap and a layout |
+| `STEP` | `TICK_SECONDS` | no | Step of what, in what unit |
+| `ENEMY_AGGRO` | `AGGRO_RANGE` | no | It is a distance, and it is not enemy-specific in principle |
+| `HARVEST_RATE` | `GOLD_PER_SECOND` | no | Rate of what, per what |
+| `BASE_R` | `BASE_RADIUS` | no | Rule 4 |
 
 ## Decisions: functions
+
+*None of these are applied. The code still uses `unit()`, `separate()`,
+`nearest()`, `inRange()`, `standoff()`, `buy()`.*
 
 | Was | Now | Why |
 | --- | --- | --- |

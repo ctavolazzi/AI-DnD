@@ -7,7 +7,7 @@ yet; this is the specification the build follows.
 The soldier is chosen because it is the cheapest, most common unit, so every
 mistake in this slice will be visible immediately and often.
 
-```
+```text
   design/units/soldier.json        authored by a human, in git
           |
           v  seed / migrate
@@ -45,9 +45,16 @@ reviewed in a pull request like code.
   "bodyRadius": 8,
   "buildSeconds": 0,
   "spriteSheet": "soldier.png",
-  "published": true
+  "published": true,
+  "free": false
 }
 ```
+
+`free` is required because of the validation rule in layer 3: a `costGold` of 0
+is legal but must be stated deliberately, so an omitted cost field cannot
+produce a free unit by accident. It appears here because that rule also says
+unknown keys are an error, and an earlier draft required a key the schema did
+not contain.
 
 `id` is a **stable slug**. It is never renamed and never reused, because match
 records will reference it for as long as those records exist. `displayName` is
@@ -84,9 +91,15 @@ The definition holds *base* stats. What the simulation reads are *effective*
 stats. Between them sits one pipeline, and its order is fixed forever because
 changing it silently rebalances the entire game.
 
+```text
+effective = clamp( round( (base + sumOfFlat) * (1 + sumOfPercent) ), statMin, statMax )
 ```
-effective = clamp( round( (base + sumOfFlat) * (1 + sumOfPercent) ), min, max )
-```
+
+`statMin` and `statMax` are the per-stat bounds declared in the validation rules
+in layer 3, not free-floating constants. `hp` clamps to `[1, 100000]`, `speed`
+to `[0, 1000]`. Reusing the validation bounds means there is one place a stat's
+legal range is written down. An earlier draft wrote `min, max` with no referent
+at all.
 
 Flat before percent. Percent modifiers sum with each other, they do not
 multiply, so two +50% effects give +100% and not +125%. This is chosen because
@@ -107,10 +120,15 @@ only when `unit.modifierVersion !== team.modifierVersion`, or when the unit
 enters or leaves an aura or terrain zone. Not every tick. A soldier standing
 still with no upgrades recomputes zero times.
 
-**Ordering rule for equal stats.** Modifiers are sorted by `source` using a
-fixed enum order before summing, so floating point addition happens in the same
-sequence on every machine. This exists purely to protect determinism, and it is
-the kind of detail that causes an out-of-sync three weeks later if skipped.
+**Ordering rule for equal stats.** Floating point addition is not associative,
+so the summation order must be identical on every machine. Modifiers are sorted
+by the tuple `(sourceEnum, sourceId, appliedAtTick)`, which is a **total** order.
+
+Sorting by `source` alone, as an earlier draft of this document said, is not
+enough: two modifiers sharing a source have no defined tie-break, so their sum
+order is unspecified and two machines can disagree in the last bit. That was a
+determinism bug written into the paragraph whose only job is to prevent
+determinism bugs.
 
 ---
 
@@ -132,8 +150,9 @@ oversight to fix later, it is the design.
 - `id` matches `^[a-z][a-z0-9-]{1,31}$`. Lowercase slug, no surprises in URLs.
 - Every numeric field is finite and within a declared range. `baseHp` in
   `[1, 100000]`, `baseSpeed` in `[0, 1000]`, `costGold` in `[0, 100000]`.
-- `costGold` of 0 is legal but must carry an explicit `"free": true` so it
-  cannot happen by an omitted field.
+- `costGold` of 0 is legal only when `"free": true` is also present, so a
+  zero cost cannot arise from an omitted field. `free` is a declared key in the
+  schema, not an extra one, which matters given the next rule.
 - Unknown keys are an error, not ignored. A typo in `baseDsp` must fail rather
   than silently apply zero damage.
 

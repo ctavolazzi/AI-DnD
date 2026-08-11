@@ -45,13 +45,50 @@ These came from the requests themselves and govern everything below.
 | 13 | Find stable open source frameworks, study their architecture | done | `ARCHITECTURE-PLAN.md` section 2 |
 | 14 | Execution plan for our own system, committed to the repo | done | `ARCHITECTURE-PLAN.md` sections 3 and 4 |
 | 15 | This deliverables document | done | You are reading it |
-| 16 | A full stack system, built methodically if absent | in progress | Phase 1 and 3 of the plan |
-| 17 | Output the code, file by file and function by function | in progress | |
-| 18 | Full architecture drawing | in progress | |
-| 19 | PixelLab art explaining the full stack | in progress | |
-| 20 | Push live | pending | Waiting on 16 through 19 |
+| 16 | A full stack system, built methodically if absent | **partial** | Phase 1 done and tested. Design data, API and database are specified only |
+| 17 | Output the code, file by file and function by function | **not started** | |
+| 18 | Full architecture drawing | done | `ARCHITECTURE.html`, unbuilt layers marked dashed and tagged planned |
+| 19 | PixelLab art explaining the full stack | done | 5 layer icons, 8-direction soldier, 4-frame walk |
+| 20 | Push live | done | `f76afa9..4bbc23e` on `dev` |
+| 21 | Name things properly | done | `NAMING.md`. Decided, only the constants applied |
+| 22 | One source of truth for data | **partial** | Decided: one SQLite file, server-owned. Not built. Docs still hand-copy stats |
+| 23 | One unit built out through every layer | done | `VERTICAL-SLICE-SOLDIER.md`, ten layers |
+| 24 | Adversarial audit of everything built | done | 17 findings |
+| 25 | Rectify the audit findings | done | This commit. See below |
 
 ---
+
+## Audit findings and what was done
+
+An adversarial audit of every file found 17 problems. Fixed:
+
+| Finding | Fix |
+| --- | --- |
+| `ARCHITECTURE.html` claimed a fixed tick and seeded randomness that the code did not have | Implemented both, so the claims are now true and tested |
+| Three unbuilt layers were drawn as if they existed | Dashed borders, `planned` tags, future tense, and a warning above the stack |
+| Verification claimed on 36% of a page (1500px of 4200px) | Full-page capture and review |
+| Code pushed without ever being executed post-rename | Ran it; also added the assertions that would have caught a break |
+| Test suite was dead, three docs still claimed 12/12 green | Suite revived at 17 assertions, docs corrected |
+| Line numbers in `ARCHITECTURE-PLAN.md` were stale one commit later | Line numbers removed, the grep command given instead |
+| `NAMING.md` presented unapplied renames as done | Status banner plus per-table and per-row markers |
+| `applyConfig` was dead code that made 13 constants mutable for nothing | Deleted, `const` restored |
+| `STEP` declared, commented "never varies", unused | Now drives the accumulator loop |
+| Hint line hardcoded gold costs beside the constants defining them | Generated from the constants |
+| Slice sorted modifiers by a non-total order, inside the determinism rule | Sort tuple made total: `(sourceEnum, sourceId, appliedAtTick)` |
+| Slice required a `free` key absent from its own schema | Added to the schema |
+| Slice clamped to `min, max` with no referent | Bound to the layer 3 validation ranges |
+| Sourcing looked stronger than it was | Added a table stating exactly what was read versus summarised |
+| `DELIVERABLES.md` was stale the moment it was pushed | This section |
+
+Not fixed, and deliberately so:
+
+- **The mouse is still untested.** Fixing it properly needs the command layer
+  from `ARCHITECTURE-PLAN.md` phase 2. A test that pokes at handlers before then
+  would be theatre.
+- **The rename is still unapplied** beyond the constants. It has to land with
+  the harness in one commit.
+- **777 lines of prose against 332 lines of game.** Named as a problem, not
+  solved. No new documents should be written until code catches up.
 
 ## Open items carried forward
 

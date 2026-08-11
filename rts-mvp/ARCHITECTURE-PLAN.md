@@ -28,19 +28,20 @@ That last row is the important one.
 
     grep -nE 'Math\.random|Date\.now|performance\.now|new Date' index.html
 
-Returns exactly three hits:
+No line numbers are quoted here on purpose. An earlier draft of this document
+cited three, and all three were wrong one commit later. Run the command.
 
-- **line 281-282**, `Math.random()` twice in `buy()`, jittering the spawn
-  position of a purchased unit.
-- **line 293**, `performance.now()` in the frame loop, producing variable `dt`.
-
-`update()` occupies lines 135 to 172 and contains none of them. The simulation
-is already a pure function of `(state, dt, commands)`. This was not planned. It
-fell out of splitting `update` from `draw` so the headless test harness could
-run the simulation without rendering.
+When first run, it found `Math.random()` twice inside `buy()` jittering the
+spawn position, and `performance.now()` in the frame loop producing a variable
+`dt`. `update()` itself contained none of them, so the simulation was already a
+pure function of `(state, dt)`. That was not planned. It fell out of splitting
+`update` from `draw` so the headless harness could run the simulation without
+rendering.
 
 That accident is the single most valuable asset in this codebase, because it is
-the precondition for the architecture the genre actually uses.
+the precondition for the architecture the genre actually uses. **Phase 1 below
+is now done**, so the command should today report only the `performance.now()`
+call that drives the render clock, which is correct and must stay.
 
 ---
 
@@ -137,9 +138,23 @@ Each phase ends in something verifiable. No phase depends on a later phase
 existing. Verification is stated up front so it cannot be invented afterwards to
 fit whatever happened.
 
-### Phase 1: determinism hardening
+### Phase 1: determinism hardening — DONE
 
-Remove the two known nondeterminism sources.
+Removed the two known nondeterminism sources.
+
+**Evidence:** 17 headless assertions pass, including `same seed reproduces
+identical checksums`, `a different seed diverges`, `spawn jitter is seeded, not
+Math.random`, `200ms of wall clock produces exactly 12 ticks`, and `a 5s stall is
+clamped to 15 ticks`. Negative-controlled: restoring `Math.random` and removing
+the accumulator clamp turns exactly three of those red.
+
+One thing that went wrong and is worth keeping. The first version of the
+determinism test passed even with `Math.random` restored, because the scripted
+run only accrued 0.05 gold per tick, so every purchase was refused and the PRNG
+was never called. The test was vacuous and only the negative control revealed
+it. A determinism assertion that never spends gold never tests randomness.
+
+The original plan for this phase follows.
 
 - Replace `Math.random()` in `buy()` with a seeded PRNG carried in `S`. A
   32-bit xorshift is sufficient and is four lines.
@@ -236,6 +251,23 @@ commands it produces.
 Until then, treat the input layer as unverified.
 
 ---
+
+## How strong the sourcing in section 2 actually is
+
+Stated plainly, because the tables above look more authoritative than the
+evidence behind them warrants.
+
+| Claim | What I actually read |
+| --- | --- |
+| AoE 200ms turns, N+2 scheduling, adaptive turn length, checksums | **Not the paper.** The PDF fetch failed. This is a summarising model's reading of a secondary article about the paper. The specifics are probably right and are widely repeated, but I did not verify them at the source |
+| "8 players at 30Hz, ~50 bytes, ~12KB/s" | A search-result summary of a different blog, not Terrano and Bettner. It is placed in the AoE subsection above, which wrongly implies that attribution |
+| bitECS "9.56ms vs 131.6ms, roughly 14x" | A search-result snippet. I never opened the benchmark or ran it |
+| Colyseus rooms, schema deltas, patchRate | Official docs summary. Reasonably solid |
+| Flow field three-stage algorithm | The howtorts article itself, fetched and read |
+
+Nothing in section 3's decision depends on the weak rows. The decision rests on
+section 1, which was measured locally. But if a number from section 2 is about
+to drive a real choice, verify it first.
 
 ## Sources
 

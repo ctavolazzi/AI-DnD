@@ -19,57 +19,33 @@
 
 <div id="hud"></div>
 <canvas id="c" width="640" height="480"></canvas>
-<div id="hint">
-  drag or click to select &middot; right-click ground to move, an enemy to focus fire<br>
-  <b>S</b> soldier (5 gold) &middot; <b>D</b> heavy (12 gold) &middot; kill the red base to win &middot; <b>R</b> restarts
-</div>
+<div id="hint"><!-- filled from the balance constants so the costs cannot drift --></div>
 
 <script>
 // ---- balance ---------------------------------------------------------------
-// `let`, not `const`: the backend is authoritative for these when it is
-// reachable. applyConfig() overwrites them at boot. The values here are the
-// offline fallback, so the game still plays from a file:// URL with no server.
-let SOLDIER_COST   = 5;
-let SOLDIER_HP     = 40;
-let SOLDIER_SPEED  = 70;   // px/sec
-let SOLDIER_DPS    = 20;
-let ATTACK_RANGE= 26;
-let ENEMY_AGGRO = 100;
-let ENEMY_SPEED = 50;
-let HARVEST_RATE= 2;    // gold/sec per unit sitting on the mine
+// These are the only numbers that define difficulty. They are `const` because
+// nothing loads them from anywhere yet. When the server exists they move into a
+// single mutable object; see ARCHITECTURE-PLAN.md phase 3.
+const SOLDIER_COST  = 5;
+const SOLDIER_HP    = 40;
+const SOLDIER_SPEED = 70;   // px/sec
+const SOLDIER_DPS   = 20;
+const ATTACK_RANGE  = 26;
+const ENEMY_AGGRO   = 100;
+const ENEMY_SPEED   = 50;
+const HARVEST_RATE  = 2;    // gold/sec per unit sitting on the mine
 
-let HEAVY_COST  = 12;   // the second unit type: slower, tougher, hits harder
-let HEAVY_HP    = 120;
-let HEAVY_SPEED = 45;
-let HEAVY_DPS   = 32;
+const HEAVY_COST    = 12;   // the second unit type: slower, tougher, hits harder
+const HEAVY_HP      = 120;
+const HEAVY_SPEED   = 45;
+const HEAVY_DPS     = 32;
 
-let BASE_HP     = 300;
+const BASE_HP       = 300;
 
-const RADIUS      = 8;
-const SPACING     = 17;   // must stay below ATTACK_RANGE - 4, the enemy stop distance
-const BASE_R      = 24;
-const STEP        = 1 / 60;   // fixed simulation tick. Never varies, ever.
-
-const TUNABLE = ['SOLDIER_COST', 'SOLDIER_HP', 'SOLDIER_SPEED', 'SOLDIER_DPS', 'ATTACK_RANGE',
-                 'ENEMY_AGGRO', 'ENEMY_SPEED', 'HARVEST_RATE', 'HEAVY_COST',
-                 'HEAVY_HP', 'HEAVY_SPEED', 'HEAVY_DPS', 'BASE_HP'];
-
-function applyConfig(cfg) {
-  const setters = {
-    SOLDIER_COST:   v => SOLDIER_COST = v,   SOLDIER_HP:    v => SOLDIER_HP = v,
-    SOLDIER_SPEED:  v => SOLDIER_SPEED = v,  SOLDIER_DPS:   v => SOLDIER_DPS = v,
-    ATTACK_RANGE:v => ATTACK_RANGE = v,ENEMY_AGGRO:v => ENEMY_AGGRO = v,
-    ENEMY_SPEED: v => ENEMY_SPEED = v, HARVEST_RATE: v => HARVEST_RATE = v,
-    HEAVY_COST:  v => HEAVY_COST = v,  HEAVY_HP:   v => HEAVY_HP = v,
-    HEAVY_SPEED: v => HEAVY_SPEED = v, HEAVY_DPS:  v => HEAVY_DPS = v,
-    BASE_HP:     v => BASE_HP = v
-  };
-  let applied = 0;
-  for (const k of TUNABLE) {
-    if (typeof cfg?.[k] === 'number' && Number.isFinite(cfg[k])) { setters[k](cfg[k]); applied++; }
-  }
-  return applied;
-}
+const RADIUS        = 8;
+const SPACING       = 17;   // must stay below ATTACK_RANGE - 4, the enemy stop distance
+const BASE_R        = 24;
+const STEP          = 1 / 60;   // the simulation only ever advances by this
 
 const MINE = { x: 160, y: 110, r: 22 };
 
@@ -96,8 +72,31 @@ function base(x, y, side) {
   return { x, y, side, r: BASE_R, hp: BASE_HP, max: BASE_HP };
 }
 
-function reset() {
+// xorshift32. The simulation must never call Math.random, because a replay has
+// to reproduce a match exactly and Math.random cannot be seeded.
+function rand() {
+  let x = S.seed;
+  x ^= x << 13; x >>>= 0;
+  x ^= x >>> 17;
+  x ^= x << 5;  x >>>= 0;
+  S.seed = x;
+  return x / 4294967296;
+}
+
+// Integer hash of everything the simulation owns. Positions are quantised to a
+// sixteenth of a pixel so float noise below that cannot flip the result.
+function checksum() {
+  let h = 2166136261;
+  const mix = n => { h = Math.imul(h ^ (Math.round(n * 16) | 0), 16777619) >>> 0; };
+  mix(S.gold); mix(S.seed); mix(S.pbase.hp); mix(S.ebase.hp);
+  for (const u of S.units)   { mix(u.x); mix(u.y); mix(u.hp); }
+  for (const e of S.enemies) { mix(e.x); mix(e.y); mix(e.hp); }
+  return h >>> 0;
+}
+
+function reset(seed = 1) {
   S = {
+    seed: seed >>> 0 || 1,        // xorshift32 dies at zero
     gold: 0,
     status: 'playing',            // 'playing' | 'won' | 'lost'
     units: [unit(120, 330, 'p'), unit(160, 356, 'p')],
@@ -304,8 +303,8 @@ function buy(kind, cost) {
   if (S.status !== 'playing' || S.gold < cost) return;
   S.gold -= cost;
   const b = S.pbase;
-  S.units.push(unit(b.x + b.r + 12 + Math.random() * 12,
-                    b.y + (Math.random() - 0.5) * 30, 'p', kind));
+  S.units.push(unit(b.x + b.r + 12 + rand() * 12,
+                    b.y + (rand() - 0.5) * 30, 'p', kind));
 }
 
 window.addEventListener('keydown', e => {
@@ -316,14 +315,28 @@ window.addEventListener('keydown', e => {
 });
 
 // ---- game loop -------------------------------------------------------------
-let last = performance.now();
+// Wall-clock time drives rendering. The simulation only ever advances in whole
+// STEP ticks, so two machines running at different frame rates step identically.
+// The 0.25s clamp stops a backgrounded tab from trying to catch up thousands of
+// ticks in one frame.
+let last = performance.now(), accumulator = 0;
 function frame(now) {
-  const dt = Math.min(0.05, (now - last) / 1000);
+  accumulator += Math.min(0.25, (now - last) / 1000);
   last = now;
-  if (S.status === 'playing') update(dt);
+  while (accumulator >= STEP) {
+    if (S.status === 'playing') update(STEP);
+    accumulator -= STEP;
+  }
   draw();
   requestAnimationFrame(frame);
 }
+
+// The costs here are read from the constants rather than typed into the markup,
+// so a balance change cannot leave the interface telling the player a lie.
+document.getElementById('hint').innerHTML =
+  'drag or click to select &middot; right-click ground to move, an enemy to focus fire<br>' +
+  `<b>S</b> soldier (${SOLDIER_COST} gold) &middot; <b>D</b> heavy (${HEAVY_COST} gold) ` +
+  '&middot; kill the red base to win &middot; <b>R</b> restarts';
 
 reset();
 requestAnimationFrame(frame);
