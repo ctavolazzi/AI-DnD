@@ -47,7 +47,7 @@ const hud = document.getElementById('hud');
 let S;
 
 function unit(x, y, side) {
-  return { x, y, side, hp: UNIT_HP, dest: null, sel: false };
+  return { x, y, side, hp: UNIT_HP, dest: null, foe: null, sel: false };
 }
 
 function reset() {
@@ -108,9 +108,11 @@ function separate(all) {
 function update(dt) {
   // player units: walk to their order, auto-attack, auto-harvest
   for (const u of S.units) {
+    const locked = u.foe && u.foe.hp > 0 ? u.foe : null;   // dead targets fall through
+    if (locked) u.dest = { x: locked.x, y: locked.y };     // chase
     if (u.dest) moveToward(u, u.dest.x, u.dest.y, UNIT_SPEED, dt, 0);
 
-    const foe = nearest(S.enemies, u);
+    const foe = locked || nearest(S.enemies, u);
     if (foe && dist(foe, u) <= ATTACK_RANGE) foe.hp -= UNIT_DPS * dt;
 
     if (dist(u, MINE) <= MINE.r + 10) S.gold += HARVEST_RATE * dt;
@@ -200,7 +202,8 @@ c.addEventListener('mousedown', e => {
   const p = pos(e);
 
   if (e.button === 2) {                       // right-click: order the selection
-    for (const u of S.units) if (u.sel) u.dest = { x: p.x, y: p.y };
+    const foe = S.enemies.find(en => Math.hypot(en.x - p.x, en.y - p.y) <= 12) || null;
+    for (const u of S.units) if (u.sel) { u.foe = foe; u.dest = { x: p.x, y: p.y }; }
     return;
   }
   if (e.button === 0) S.drag = { x0: p.x, y0: p.y, x1: p.x, y1: p.y };

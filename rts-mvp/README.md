@@ -14,12 +14,13 @@ no dependencies, no server. Open `index.html` in a browser.
 | --- | --- |
 | left-click | select one unit |
 | left-drag | box-select units |
-| right-click | order selected units to a point |
+| right-click ground | order selected units to a point |
+| right-click an enemy | focus fire: selected units chase and hit that one specifically |
 | `S` | spend 5 gold, spawn a unit at the base |
 | `R` | restart |
 
-Units auto-attack any enemy inside 26px and auto-harvest while standing on the
-gold circle. Enemies idle until a unit comes within 100px, then chase and fight.
+With no focus target, units auto-attack the nearest enemy inside 26px. They
+auto-harvest while standing on the gold circle. Enemies idle until a unit comes within 100px, then chase and fight.
 Bodies push each other apart at 17px so nothing stacks, and everyone is clamped
 to the map.
 
