@@ -25,25 +25,51 @@
 </div>
 
 <script>
-// ---- constants -------------------------------------------------------------
-const UNIT_COST   = 5;
-const UNIT_HP     = 40;
-const UNIT_SPEED  = 70;   // px/sec
-const UNIT_DPS    = 20;
-const ATTACK_RANGE= 26;
-const ENEMY_AGGRO = 100;
-const ENEMY_SPEED = 50;
+// ---- balance ---------------------------------------------------------------
+// `let`, not `const`: the backend is authoritative for these when it is
+// reachable. applyConfig() overwrites them at boot. The values here are the
+// offline fallback, so the game still plays from a file:// URL with no server.
+let SOLDIER_COST   = 5;
+let SOLDIER_HP     = 40;
+let SOLDIER_SPEED  = 70;   // px/sec
+let SOLDIER_DPS    = 20;
+let ATTACK_RANGE= 26;
+let ENEMY_AGGRO = 100;
+let ENEMY_SPEED = 50;
+let HARVEST_RATE= 2;    // gold/sec per unit sitting on the mine
+
+let HEAVY_COST  = 12;   // the second unit type: slower, tougher, hits harder
+let HEAVY_HP    = 120;
+let HEAVY_SPEED = 45;
+let HEAVY_DPS   = 32;
+
+let BASE_HP     = 300;
+
 const RADIUS      = 8;
 const SPACING     = 17;   // must stay below ATTACK_RANGE - 4, the enemy stop distance
-const HARVEST_RATE= 2;    // gold/sec per unit sitting on the mine
-
-const HEAVY_COST  = 12;   // the second unit type: slower, tougher, hits harder
-const HEAVY_HP    = 120;
-const HEAVY_SPEED = 45;
-const HEAVY_DPS   = 32;
-
 const BASE_R      = 24;
-const BASE_HP     = 300;
+const STEP        = 1 / 60;   // fixed simulation tick. Never varies, ever.
+
+const TUNABLE = ['SOLDIER_COST', 'SOLDIER_HP', 'SOLDIER_SPEED', 'SOLDIER_DPS', 'ATTACK_RANGE',
+                 'ENEMY_AGGRO', 'ENEMY_SPEED', 'HARVEST_RATE', 'HEAVY_COST',
+                 'HEAVY_HP', 'HEAVY_SPEED', 'HEAVY_DPS', 'BASE_HP'];
+
+function applyConfig(cfg) {
+  const setters = {
+    SOLDIER_COST:   v => SOLDIER_COST = v,   SOLDIER_HP:    v => SOLDIER_HP = v,
+    SOLDIER_SPEED:  v => SOLDIER_SPEED = v,  SOLDIER_DPS:   v => SOLDIER_DPS = v,
+    ATTACK_RANGE:v => ATTACK_RANGE = v,ENEMY_AGGRO:v => ENEMY_AGGRO = v,
+    ENEMY_SPEED: v => ENEMY_SPEED = v, HARVEST_RATE: v => HARVEST_RATE = v,
+    HEAVY_COST:  v => HEAVY_COST = v,  HEAVY_HP:   v => HEAVY_HP = v,
+    HEAVY_SPEED: v => HEAVY_SPEED = v, HEAVY_DPS:  v => HEAVY_DPS = v,
+    BASE_HP:     v => BASE_HP = v
+  };
+  let applied = 0;
+  for (const k of TUNABLE) {
+    if (typeof cfg?.[k] === 'number' && Number.isFinite(cfg[k])) { setters[k](cfg[k]); applied++; }
+  }
+  return applied;
+}
 
 const MINE = { x: 160, y: 110, r: 22 };
 
@@ -56,11 +82,11 @@ let S;
 
 function unit(x, y, side, kind = 'soldier') {
   const heavy = kind === 'heavy';
-  const max = heavy ? HEAVY_HP : UNIT_HP;
+  const max = heavy ? HEAVY_HP : SOLDIER_HP;
   return {
     x, y, side, kind, hp: max, max,
-    speed: heavy ? HEAVY_SPEED : UNIT_SPEED,
-    dps:   heavy ? HEAVY_DPS   : UNIT_DPS,
+    speed: heavy ? HEAVY_SPEED : SOLDIER_SPEED,
+    dps:   heavy ? HEAVY_DPS   : SOLDIER_DPS,
     dest: null, foe: null, sel: false
   };
 }
@@ -162,7 +188,7 @@ function update(dt) {
 
   if (S.ebase.hp <= 0) S.status = 'won';
   else if (S.pbase.hp <= 0) S.status = 'lost';
-  else if (!S.units.length && S.gold < UNIT_COST) S.status = 'lost';  // no army, no way to buy one
+  else if (!S.units.length && S.gold < SOLDIER_COST) S.status = 'lost';  // no army, no way to buy one
 }
 
 // ---- draw ------------------------------------------------------------------
@@ -285,7 +311,7 @@ function buy(kind, cost) {
 window.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (k === 'r') { reset(); return; }
-  if (k === 's') buy('soldier', UNIT_COST);
+  if (k === 's') buy('soldier', SOLDIER_COST);
   if (k === 'd') buy('heavy', HEAVY_COST);
 });
 
