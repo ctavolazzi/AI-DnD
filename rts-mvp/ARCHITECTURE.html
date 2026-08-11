@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ironline: system architecture</title>
+<style>
+  :root {
+    --bg: #15161a; --panel: #1e2129; --line: #33363f; --ink: #d8d8dc;
+    --dim: #8b8f9a; --gold: #f2c14e; --blue: #5b8dd9; --red: #d95b5b;
+    --green: #7dd3a0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 20px 80px; background: var(--bg); color: var(--ink);
+    font: 14px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; }
+  h1 { font-size: 26px; letter-spacing: -.01em; margin: 0 0 6px; }
+  h2 { font-size: 15px; letter-spacing: .12em; text-transform: uppercase;
+       color: var(--dim); margin: 54px 0 18px; font-weight: 600; }
+  .sub { color: var(--dim); margin: 0 0 8px; }
+  img { image-rendering: pixelated; }
+
+  .layer {
+    display: grid; grid-template-columns: 76px 1fr; gap: 20px;
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 18px 20px; margin-bottom: 6px; align-items: start;
+  }
+  .layer img { width: 64px; height: 64px; }
+  .layer h3 { margin: 0 0 4px; font-size: 15px; }
+  .layer p { margin: 0 0 8px; color: var(--dim); }
+  .tag {
+    display: inline-block; font-size: 11px; letter-spacing: .08em;
+    padding: 2px 8px; border: 1px solid var(--line); color: var(--dim);
+    margin-right: 6px;
+  }
+  .owns { border-color: #4a5a3f; color: var(--green); }
+  .reads { border-color: #4a4436; color: var(--gold); }
+  .arrow {
+    text-align: center; color: var(--line); font-size: 18px;
+    margin: 0 0 6px; line-height: 1;
+  }
+
+  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+  th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left;
+           vertical-align: top; }
+  th { color: var(--dim); font-weight: 600; font-size: 12px;
+       letter-spacing: .06em; text-transform: uppercase; }
+  code { color: var(--gold); }
+  .scroll { overflow-x: auto; }
+
+  .rot { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .rot figure { margin: 0; text-align: center; }
+  .rot img { width: 68px; height: 68px; background: #1a1c22;
+             border: 1px solid var(--line); display: block; }
+  .rot figcaption { font-size: 11px; color: var(--dim); margin-top: 4px; }
+
+  .note { border-left: 2px solid var(--gold); padding-left: 14px; color: var(--dim); }
+  .note b { color: var(--ink); }
+
+  /* 4-frame walk cycle, pure CSS: each frame is visible for a quarter of the loop */
+  .walk { position: relative; width: 68px; height: 68px; background: #1a1c22;
+          border: 1px solid var(--line); }
+  .walk img { position: absolute; inset: 0; width: 68px; height: 68px; opacity: 0;
+              animation: flipFrame .52s steps(1, end) infinite; }
+  .walk img:nth-child(1) { animation-delay: 0s; }
+  .walk img:nth-child(2) { animation-delay: .13s; }
+  .walk img:nth-child(3) { animation-delay: .26s; }
+  .walk img:nth-child(4) { animation-delay: .39s; }
+  @keyframes flipFrame { 0%, 24.9% { opacity: 1 } 25%, 100% { opacity: 0 } }
+  @media (prefers-reduced-motion: reduce) {
+    .walk img { animation: none; }
+    .walk img:nth-child(1) { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Ironline</h1>
+  <p class="sub">System architecture. Every layer, what owns its data, and which
+  direction the arrows point.</p>
+
+  <h2>The stack, top to bottom</h2>
+
+  <div class="layer">
+    <img src="assets/stack/design-data.png" alt="engraved stone tablet">
+    <div>
+      <h3>Design data</h3>
+      <p>Authored numbers that define the game: unit stats, costs, map layout.
+      Plain text in <code>design/</code>, versioned in git, reviewed in a pull
+      request like code.</p>
+      <span class="tag owns">source of truth</span>
+      <span class="tag">written by a human, in a commit</span>
+    </div>
+  </div>
+  <div class="arrow">&darr; loaded once at server start</div>
+
+  <div class="layer">
+    <img src="assets/stack/database.png" alt="crystal database core">
+    <div>
+      <h3>Database</h3>
+      <p>Holds two different things and treats them differently. Design data is
+      a <em>cache of the files</em> and the files win on disagreement. Match
+      records are generated, append-only, and never hand-edited.</p>
+      <span class="tag owns">owns match records</span>
+      <span class="tag reads">mirrors design data</span>
+      <span class="tag">gitignored</span>
+    </div>
+  </div>
+  <div class="arrow">&darr; the only process that opens the file</div>
+
+  <div class="layer">
+    <img src="assets/stack/api-server.png" alt="server tower">
+    <div>
+      <h3>API server</h3>
+      <p>Python standard library only. Serves published design data read-only,
+      accepts finished match records, returns replays. The game client can never
+      write a unit definition; that path does not exist by design, not by
+      oversight.</p>
+      <span class="tag">read-only to clients</span>
+      <span class="tag">writes require a bearer token</span>
+    </div>
+  </div>
+  <div class="arrow">&darr; HTTP, with an ETag so a returning client gets a 304</div>
+
+  <div class="layer">
+    <img src="assets/stack/client.png" alt="CRT monitor">
+    <div>
+      <h3>Client</h3>
+      <p>Fetches definitions once into a frozen map and never mutates it.
+      Runtime units hold a <code>unitTypeId</code> and read through that cache
+      rather than copying stats, which would fork one definition into N silent
+      copies.</p>
+      <span class="tag reads">reads definitions</span>
+      <span class="tag">falls back to a generated offline bundle</span>
+    </div>
+  </div>
+  <div class="arrow">&darr; input emits commands, never mutations</div>
+
+  <div class="layer">
+    <img src="assets/stack/simulation.png" alt="clockwork gears">
+    <div>
+      <h3>Simulation</h3>
+      <p>A pure function of state, commands and a fixed tick. No wall clock, no
+      randomness that is not seeded, no knowledge of selection or animation.
+      This is what makes replays, determinism and headless testing all the same
+      capability.</p>
+      <span class="tag owns">owns runtime state</span>
+      <span class="tag">fixed 1/60s tick</span>
+    </div>
+  </div>
+
+  <h2>The one rule that keeps it honest</h2>
+  <p class="note"><b>Rendering reads the simulation. It never writes to it.</b>
+  Animation runs on wall-clock time, the simulation runs on fixed ticks, and they
+  are never the same clock. Age of Empires documented what happens when this is
+  violated: machines with different frame rates diverge, the drift compounds
+  silently, and the game declares itself out of sync with no traceable cause.</p>
+
+  <h2>Where a fact is allowed to live</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>Fact</th><th>Authored in</th><th>Copies</th><th>Rule</th></tr>
+    <tr>
+      <td>A soldier costs 5 gold</td>
+      <td><code>design/units/soldier.json</code></td>
+      <td>database row, client cache, offline bundle, docs table</td>
+      <td>All four are <b>generated</b>. None may be hand-edited.</td>
+    </tr>
+    <tr>
+      <td>A match was won in 27.5s</td>
+      <td>the database</td>
+      <td>none</td>
+      <td>Append-only. Never edited, never deleted.</td>
+    </tr>
+    <tr>
+      <td>Where a unit is standing right now</td>
+      <td>simulation memory</td>
+      <td>none</td>
+      <td>Never persisted. Rebuildable from seed plus command log.</td>
+    </tr>
+  </table>
+  </div>
+
+  <h2>The soldier, eight directions</h2>
+  <p class="sub">Facing is derived from the movement vector and is purely
+  cosmetic. It is never an input to combat, because a facing requirement would
+  mean turn-to-face time, which would mean simulation state.</p>
+  <div class="rot">
+    <figure><img src="assets/soldier/north.png" alt="north"><figcaption>north</figcaption></figure>
+    <figure><img src="assets/soldier/north-east.png" alt="north-east"><figcaption>north-east</figcaption></figure>
+    <figure><img src="assets/soldier/east.png" alt="east"><figcaption>east</figcaption></figure>
+    <figure><img src="assets/soldier/south-east.png" alt="south-east"><figcaption>south-east</figcaption></figure>
+    <figure><img src="assets/soldier/south.png" alt="south"><figcaption>south</figcaption></figure>
+    <figure><img src="assets/soldier/south-west.png" alt="south-west"><figcaption>south-west</figcaption></figure>
+    <figure><img src="assets/soldier/west.png" alt="west"><figcaption>west</figcaption></figure>
+    <figure><img src="assets/soldier/north-west.png" alt="north-west"><figcaption>north-west</figcaption></figure>
+  </div>
+
+  <h2>The <code>move</code> animation state</h2>
+  <p class="sub">Four frames on a 0.52s loop, driven by wall-clock time. The
+  simulation does not know this exists and must never read it.</p>
+  <div class="rot">
+    <figure>
+      <div class="walk">
+        <img src="assets/soldier/move/north-0.png" alt=""><img src="assets/soldier/move/north-1.png" alt="">
+        <img src="assets/soldier/move/north-2.png" alt=""><img src="assets/soldier/move/north-3.png" alt="">
+      </div><figcaption>north</figcaption>
+    </figure>
+    <figure>
+      <div class="walk">
+        <img src="assets/soldier/move/east-0.png" alt=""><img src="assets/soldier/move/east-1.png" alt="">
+        <img src="assets/soldier/move/east-2.png" alt=""><img src="assets/soldier/move/east-3.png" alt="">
+      </div><figcaption>east</figcaption>
+    </figure>
+    <figure>
+      <div class="walk">
+        <img src="assets/soldier/move/south-0.png" alt=""><img src="assets/soldier/move/south-1.png" alt="">
+        <img src="assets/soldier/move/south-2.png" alt=""><img src="assets/soldier/move/south-3.png" alt="">
+      </div><figcaption>south</figcaption>
+    </figure>
+    <figure>
+      <div class="walk">
+        <img src="assets/soldier/move/west-0.png" alt=""><img src="assets/soldier/move/west-1.png" alt="">
+        <img src="assets/soldier/move/west-2.png" alt=""><img src="assets/soldier/move/west-3.png" alt="">
+      </div><figcaption>west</figcaption>
+    </figure>
+  </div>
+
+  <h2>One tick, in order</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>#</th><th>Stage</th><th>Why the order matters</th></tr>
+    <tr><td>1</td><td>Apply commands due this tick</td><td>Input is data, so it can be replayed and tested</td></tr>
+    <tr><td>2</td><td>Resolve orders into destinations</td><td>A chase follows a target that is itself moving</td></tr>
+    <tr><td>3</td><td>Move, stopping short by the standoff distance</td><td>Units park inside their own range instead of oscillating on the boundary</td></tr>
+    <tr><td>4</td><td>Apply damage</td><td>Before the cull, so two units can kill each other on the same tick</td></tr>
+    <tr><td>5</td><td>Push overlapping bodies apart</td><td>A correction pass after all movement, not physics</td></tr>
+    <tr><td>6</td><td>Remove anything at or below 0hp</td><td>Before the outcome check</td></tr>
+    <tr><td>7</td><td>Evaluate victory, defeat, stall</td><td>Against what actually survived</td></tr>
+  </table>
+  </div>
+
+  <h2>Status</h2>
+  <p class="sub">Honest state of each layer as of 2026-08-11.</p>
+  <div class="scroll">
+  <table>
+    <tr><th>Layer</th><th>State</th></tr>
+    <tr><td>Simulation</td><td><span style="color:var(--green)">built and tested</span>, 12 assertions, negative-controlled</td></tr>
+    <tr><td>Client rendering</td><td><span style="color:var(--green)">built</span>, canvas 2D, coloured shapes not yet sprites</td></tr>
+    <tr><td>Controls</td><td><span style="color:var(--red)">built but untested</span>, no coverage of mouse input at all</td></tr>
+    <tr><td>Design data</td><td><span style="color:var(--gold)">specified, not built</span>, still hardcoded in the page</td></tr>
+    <tr><td>API server</td><td><span style="color:var(--gold)">specified, not built</span></td></tr>
+    <tr><td>Database</td><td><span style="color:var(--gold)">specified, not built</span></td></tr>
+    <tr><td>Sprites and animation</td><td><span style="color:var(--gold)">art exists, not wired into the game</span></td></tr>
+  </table>
+  </div>
+
+</div>
+</body>
+</html>
