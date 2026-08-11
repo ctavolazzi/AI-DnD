@@ -20,7 +20,8 @@
 <div id="hud"></div>
 <canvas id="c" width="640" height="480"></canvas>
 <div id="hint">
-  drag or click to select &middot; right-click to move &middot; <b>S</b> buys a unit (5 gold) &middot; <b>R</b> restarts
+  drag or click to select &middot; right-click ground to move, an enemy to focus fire<br>
+  <b>S</b> soldier (5 gold) &middot; <b>D</b> heavy (12 gold) &middot; kill the red base to win &middot; <b>R</b> restarts
 </div>
 
 <script>
@@ -36,8 +37,15 @@ const RADIUS      = 8;
 const SPACING     = 17;   // must stay below ATTACK_RANGE - 4, the enemy stop distance
 const HARVEST_RATE= 2;    // gold/sec per unit sitting on the mine
 
+const HEAVY_COST  = 12;   // the second unit type: slower, tougher, hits harder
+const HEAVY_HP    = 120;
+const HEAVY_SPEED = 45;
+const HEAVY_DPS   = 32;
+
+const BASE_R      = 24;
+const BASE_HP     = 300;
+
 const MINE = { x: 160, y: 110, r: 22 };
-const BASE = { x: 92, y: 384, r: 24 };
 
 const c = document.getElementById('c');
 const g = c.getContext('2d');
@@ -46,8 +54,20 @@ const hud = document.getElementById('hud');
 // ---- state -----------------------------------------------------------------
 let S;
 
-function unit(x, y, side) {
-  return { x, y, side, hp: UNIT_HP, dest: null, foe: null, sel: false };
+function unit(x, y, side, kind = 'soldier') {
+  const heavy = kind === 'heavy';
+  const max = heavy ? HEAVY_HP : UNIT_HP;
+  return {
+    x, y, side, kind, hp: max, max,
+    speed: heavy ? HEAVY_SPEED : UNIT_SPEED,
+    dps:   heavy ? HEAVY_DPS   : UNIT_DPS,
+    dest: null, foe: null, sel: false
+  };
+}
+
+// Bases are targets, not units: they never move and never join separation.
+function base(x, y, side) {
+  return { x, y, side, r: BASE_R, hp: BASE_HP, max: BASE_HP };
 }
 
 function reset() {
@@ -56,6 +76,8 @@ function reset() {
     status: 'playing',            // 'playing' | 'won' | 'lost'
     units: [unit(120, 330, 'p'), unit(160, 356, 'p')],
     enemies: [unit(520, 120, 'e'), unit(566, 176, 'e'), unit(500, 208, 'e')],
+    pbase: base(92, 400, 'p'),
+    ebase: base(566, 84, 'e'),
     drag: null                    // {x0,y0,x1,y1} while box-selecting
   };
 }
@@ -90,8 +112,8 @@ function separate(all) {
       let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
       if (d >= SPACING) continue;
       if (d < 0.01) {                                   // exactly stacked: shove along a
-        const a = i * 2.39996 + j;                      // per-pair angle, so a pile
-        dx = Math.cos(a); dy = Math.sin(a); d = 1;      // spreads into a blob, not a line
+        const ang = i * 2.39996 + j;                    // per-pair angle, so a pile
+        dx = Math.cos(ang); dy = Math.sin(ang); d = 1;  // spreads into a blob, not a line
       }
       const push = (SPACING - d) / 2;
       a.x -= (dx / d) * push; a.y -= (dy / d) * push;
@@ -104,26 +126,33 @@ function separate(all) {
   }
 }
 
+// A target's radius widens its reachable band, so a 24px base is hittable from
+// its edge rather than only from its centre.
+const inRange  = (u, t) => dist(u, t) <= ATTACK_RANGE + (t.r || 0);
+const standoff = t => ATTACK_RANGE - 4 + (t.r || 0);
+
 // ---- update ----------------------------------------------------------------
 function update(dt) {
+  const hostileToPlayer = [...S.enemies, S.ebase].filter(t => t.hp > 0);
+
   // player units: walk to their order, auto-attack, auto-harvest
   for (const u of S.units) {
     const locked = u.foe && u.foe.hp > 0 ? u.foe : null;   // dead targets fall through
     if (locked) u.dest = { x: locked.x, y: locked.y };     // chase
-    if (u.dest) moveToward(u, u.dest.x, u.dest.y, UNIT_SPEED, dt, 0);
+    if (u.dest) moveToward(u, u.dest.x, u.dest.y, u.speed, dt, locked ? standoff(locked) : 0);
 
-    const foe = locked || nearest(S.enemies, u);
-    if (foe && dist(foe, u) <= ATTACK_RANGE) foe.hp -= UNIT_DPS * dt;
+    const foe = locked || nearest(hostileToPlayer, u);
+    if (foe && inRange(u, foe)) foe.hp -= u.dps * dt;
 
     if (dist(u, MINE) <= MINE.r + 10) S.gold += HARVEST_RATE * dt;
   }
 
-  // enemies: sit still until something walks close, then chase and hit it
+  // enemies: fight anything that comes close, otherwise march on your base
   for (const e of S.enemies) {
     const prey = nearest(S.units, e);
-    if (!prey || dist(prey, e) > ENEMY_AGGRO) continue;
-    moveToward(e, prey.x, prey.y, ENEMY_SPEED, dt, ATTACK_RANGE - 4);
-    if (dist(prey, e) <= ATTACK_RANGE) prey.hp -= UNIT_DPS * dt;
+    const tgt = prey && dist(prey, e) <= ENEMY_AGGRO ? prey : S.pbase;
+    moveToward(e, tgt.x, tgt.y, ENEMY_SPEED, dt, standoff(tgt));
+    if (inRange(e, tgt)) tgt.hp -= e.dps * dt;
   }
 
   separate([...S.units, ...S.enemies]);
@@ -131,22 +160,35 @@ function update(dt) {
   S.units = S.units.filter(u => u.hp > 0);
   S.enemies = S.enemies.filter(e => e.hp > 0);
 
-  if (!S.enemies.length) S.status = 'won';
-  else if (!S.units.length) S.status = 'lost';
+  if (S.ebase.hp <= 0) S.status = 'won';
+  else if (S.pbase.hp <= 0) S.status = 'lost';
+  else if (!S.units.length && S.gold < UNIT_COST) S.status = 'lost';  // no army, no way to buy one
 }
 
 // ---- draw ------------------------------------------------------------------
+function hpBar(cx, top, w, frac) {
+  g.fillStyle = '#2a2d36'; g.fillRect(cx - w / 2, top, w, 3);
+  g.fillStyle = '#7dd3a0'; g.fillRect(cx - w / 2, top, w * Math.max(0, frac), 3);
+}
+
 function drawUnit(u) {
   if (u.sel) {
     g.strokeStyle = '#7dd3a0';
     g.beginPath(); g.arc(u.x, u.y, 13, 0, Math.PI * 2); g.stroke();
   }
   g.fillStyle = u.side === 'p' ? '#5b8dd9' : '#d95b5b';
-  g.beginPath(); g.arc(u.x, u.y, 8, 0, Math.PI * 2); g.fill();
+  if (u.kind === 'heavy') {                          // square reads as heavy at a glance
+    g.fillRect(u.x - 9, u.y - 9, 18, 18);
+  } else {
+    g.beginPath(); g.arc(u.x, u.y, RADIUS, 0, Math.PI * 2); g.fill();
+  }
+  hpBar(u.x, u.y - 15, 18, u.hp / u.max);
+}
 
-  const frac = Math.max(0, u.hp / UNIT_HP);
-  g.fillStyle = '#2a2d36'; g.fillRect(u.x - 9, u.y - 15, 18, 3);
-  g.fillStyle = '#7dd3a0'; g.fillRect(u.x - 9, u.y - 15, 18 * frac, 3);
+function drawBase(b) {
+  g.fillStyle = b.side === 'p' ? '#3f5f96' : '#8f3a3a';
+  g.fillRect(b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
+  hpBar(b.x, b.y - b.r - 9, b.r * 2, b.hp / b.max);
 }
 
 function draw() {
@@ -159,8 +201,8 @@ function draw() {
   g.fillStyle = '#f2c14e';
   g.beginPath(); g.arc(MINE.x, MINE.y, MINE.r, 0, Math.PI * 2); g.fill();
 
-  g.fillStyle = '#3f5f96';
-  g.fillRect(BASE.x - BASE.r, BASE.y - BASE.r, BASE.r * 2, BASE.r * 2);
+  drawBase(S.pbase);
+  drawBase(S.ebase);
 
   S.enemies.forEach(drawUnit);
   S.units.forEach(drawUnit);
@@ -186,7 +228,8 @@ function draw() {
   hud.innerHTML =
     `gold <b>${Math.floor(S.gold)}</b>` +
     `<span>units <b>${S.units.length}</b></span>` +
-    `<span>enemies <b>${S.enemies.length}</b></span>`;
+    `<span>your base <b>${Math.max(0, Math.ceil(S.pbase.hp))}</b></span>` +
+    `<span>enemy base <b>${Math.max(0, Math.ceil(S.ebase.hp))}</b></span>`;
 }
 
 // ---- input -----------------------------------------------------------------
@@ -202,7 +245,8 @@ c.addEventListener('mousedown', e => {
   const p = pos(e);
 
   if (e.button === 2) {                       // right-click: order the selection
-    const foe = S.enemies.find(en => Math.hypot(en.x - p.x, en.y - p.y) <= 12) || null;
+    const foe = [...S.enemies, S.ebase]
+      .find(t => t.hp > 0 && Math.hypot(t.x - p.x, t.y - p.y) <= (t.r || 12)) || null;
     for (const u of S.units) if (u.sel) { u.foe = foe; u.dest = { x: p.x, y: p.y }; }
     return;
   }
@@ -230,13 +274,19 @@ window.addEventListener('mouseup', e => {
   }
 });
 
+function buy(kind, cost) {
+  if (S.status !== 'playing' || S.gold < cost) return;
+  S.gold -= cost;
+  const b = S.pbase;
+  S.units.push(unit(b.x + b.r + 12 + Math.random() * 12,
+                    b.y + (Math.random() - 0.5) * 30, 'p', kind));
+}
+
 window.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (k === 'r') { reset(); return; }
-  if (k === 's' && S.status === 'playing' && S.gold >= UNIT_COST) {
-    S.gold -= UNIT_COST;
-    S.units.push(unit(BASE.x + 34 + Math.random() * 12, BASE.y + (Math.random() - 0.5) * 24, 'p'));
-  }
+  if (k === 's') buy('soldier', UNIT_COST);
+  if (k === 'd') buy('heavy', HEAVY_COST);
 });
 
 // ---- game loop -------------------------------------------------------------
