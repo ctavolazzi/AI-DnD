@@ -32,6 +32,8 @@ const UNIT_DPS    = 20;
 const ATTACK_RANGE= 26;
 const ENEMY_AGGRO = 100;
 const ENEMY_SPEED = 50;
+const RADIUS      = 8;
+const SPACING     = 17;   // must stay below ATTACK_RANGE - 4, the enemy stop distance
 const HARVEST_RATE= 2;    // gold/sec per unit sitting on the mine
 
 const MINE = { x: 160, y: 110, r: 22 };
@@ -78,6 +80,30 @@ function nearest(list, from) {
   return best;
 }
 
+// Push overlapping bodies apart. Not physics, just enough that units stop
+// occupying the same pixel. SPACING sits under the enemy stop distance so
+// chasing and separating never fight each other.
+function separate(all) {
+  for (let i = 0; i < all.length; i++) {
+    for (let j = i + 1; j < all.length; j++) {
+      const a = all[i], b = all[j];
+      let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+      if (d >= SPACING) continue;
+      if (d < 0.01) {                                   // exactly stacked: shove along a
+        const a = i * 2.39996 + j;                      // per-pair angle, so a pile
+        dx = Math.cos(a); dy = Math.sin(a); d = 1;      // spreads into a blob, not a line
+      }
+      const push = (SPACING - d) / 2;
+      a.x -= (dx / d) * push; a.y -= (dy / d) * push;
+      b.x += (dx / d) * push; b.y += (dy / d) * push;
+    }
+  }
+  for (const u of all) {
+    u.x = Math.max(RADIUS, Math.min(c.width - RADIUS, u.x));
+    u.y = Math.max(RADIUS, Math.min(c.height - RADIUS, u.y));
+  }
+}
+
 // ---- update ----------------------------------------------------------------
 function update(dt) {
   // player units: walk to their order, auto-attack, auto-harvest
@@ -97,6 +123,8 @@ function update(dt) {
     moveToward(e, prey.x, prey.y, ENEMY_SPEED, dt, ATTACK_RANGE - 4);
     if (dist(prey, e) <= ATTACK_RANGE) prey.hp -= UNIT_DPS * dt;
   }
+
+  separate([...S.units, ...S.enemies]);
 
   S.units = S.units.filter(u => u.hp > 0);
   S.enemies = S.enemies.filter(e => e.hp > 0);

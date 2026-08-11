@@ -11,7 +11,7 @@ no dependencies, no server. Open `index.html` in a browser.
 ## Controls
 
 | Input | Action |
-|---|---|
+| --- | --- |
 | left-click | select one unit |
 | left-drag | box-select units |
 | right-click | order selected units to a point |
@@ -20,12 +20,14 @@ no dependencies, no server. Open `index.html` in a browser.
 
 Units auto-attack any enemy inside 26px and auto-harvest while standing on the
 gold circle. Enemies idle until a unit comes within 100px, then chase and fight.
+Bodies push each other apart at 17px so nothing stacks, and everyone is clamped
+to the map.
 
 ## What is deliberately not here
 
-Pathfinding, unit collision, buildings you can construct, fog of war, multiple
-unit types, sound, sprites, saving, AI opponent, camera scrolling. Every one of
-those is a separate decision, and none of them are needed for the loop to close.
+Pathfinding, buildings you can construct, fog of war, multiple unit types, sound,
+sprites, saving, AI opponent, camera scrolling. Every one of those is a separate
+decision, and none of them are needed for the loop to close.
 
 ## Verified
 
