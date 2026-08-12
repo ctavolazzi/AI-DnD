@@ -100,6 +100,34 @@ Not fixed, and deliberately so:
 - **777 lines of prose against 332 lines of game.** Named as a problem, not
   solved. No new documents should be written until code catches up.
 
+## Roadmap
+
+Waves, in shipping order. A wave is done when its assertions are green and its
+negative control has been watched go red.
+
+**Wave 1, feedback. DONE.** Hit flash (red wash on the sprite for 140ms after any
+hp drop, units and bases), attack animation played whenever a unit has a target
+in reach and facing the target, keep sprites for both bases, gold ore for the
+mine. 4 new assertions, new `--sabotage-render` mode.
+
+**Wave 2, legibility.** Death animation with a client-only corpse list that
+outlives the simulation, a hit spark or damage number at the point of impact, a
+selection count in the HUD, and a cursor that changes over a valid target. All
+client-side, so none of it can desync anything.
+
+**Wave 3, depth that costs nothing structurally.** A ranged unit, which forces
+projectiles as real entities. Build time on units, so production becomes a
+decision rather than an instant. An enemy that spends gold instead of being a
+fixed three.
+
+**Wave 4, the structural one.** The command layer. Input becomes
+`{tick, type, payload}` that `update()` drains. Unlocks replays, networking, and
+input tests that assert on commands rather than on resulting state.
+
+**Wave 5, only when a profile says so.** PixiJS if draw time becomes the frame
+budget. Flow fields when unit counts make separation look like a crowd crush.
+bitECS if iteration shows up in a profile. Not before.
+
 ## Open items carried forward
 
 **The mouse is untested.** Click, drag, box-select and right-click targeting

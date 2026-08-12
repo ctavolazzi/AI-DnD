@@ -195,35 +195,79 @@ function update(dt) {
 // Client-side only. The simulation never reads any of this, and per-unit
 // animation state lives in a WeakMap so simulation objects stay untouched.
 const DIRS8 = ['east', 'south-east', 'south', 'south-west', 'west', 'north-west', 'north', 'north-east'];
-const sprites = { idle: {}, move: {} };
+const CARDINALS = ['north', 'east', 'south', 'west'];
+const HURT_MS = 140;              // how long a unit stays red after taking damage
+
+const sprites = { idle: {}, move: {}, attack: {}, base: {}, gold: null };
+
+function loadImg(src) {
+  const im = new Image();         // no ready flag: every draw checks the image
+  im.src = src;
+  return im;
+}
 
 function loadSprites() {
-  const urls = [];
-  for (const d of DIRS8) urls.push(['idle', d, 0, `assets/soldier/${d}.png`]);
-  for (const d of ['north', 'east', 'south', 'west'])
-    for (let f = 0; f < 4; f++) urls.push(['move', d, f, `assets/soldier/move/${d}-${f}.png`]);
-
-  for (const [state, dir, frame, src] of urls) {
-    const im = new Image();                  // no ready flag: drawUnit checks each image
-    im.src = src;
-    if (state === 'idle') sprites.idle[dir] = im;
-    else (sprites.move[dir] ||= [])[frame] = im;
+  for (const d of DIRS8) sprites.idle[d] = loadImg(`assets/soldier/${d}.png`);
+  for (const d of CARDINALS) {
+    sprites.move[d]   = [0, 1, 2, 3].map(f => loadImg(`assets/soldier/move/${d}-${f}.png`));
+    sprites.attack[d] = [0, 1, 2, 3, 4].map(f => loadImg(`assets/soldier/attack/${d}-${f}.png`));
   }
+  sprites.base.p = loadImg('assets/base-player.png');
+  sprites.base.e = loadImg('assets/base-enemy.png');
+  sprites.gold   = loadImg('assets/gold.png');
+}
+
+const usable = im => !!(im && im.complete && im.naturalWidth > 0);
+const pickFrame = (arr, now, ms) => {
+  if (!arr || !arr.length) return null;
+  const live = arr.filter(usable);
+  return live.length ? live[Math.floor(now / ms) % live.length] : null;
+};
+
+// Paints a sprite through a red wash without touching the source image. Drawn on
+// a scratch canvas with source-atop so only the sprite's own pixels are tinted,
+// not the transparent box around it.
+const tintPad = document.createElement('canvas');
+const tp = tintPad.getContext('2d');
+function drawTinted(im, x, y, w, h, colour, alpha) {
+  tintPad.width = w; tintPad.height = h;      // resizing resets the context state
+  tp.drawImage(im, 0, 0, w, h);
+  tp.globalCompositeOperation = 'source-atop';
+  tp.globalAlpha = alpha;
+  tp.fillStyle = colour;
+  tp.fillRect(0, 0, w, h);
+  g.drawImage(tintPad, x, y);
 }
 
 const facing = (dx, dy) => DIRS8[(Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) + 8) % 8];
 const cardinal = (dx, dy) =>
   Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'east' : 'west') : (dy > 0 ? 'south' : 'north');
 
-const animOf = new WeakMap();                // unit -> {dir, card, px, py, moving}
-function animFor(u) {
+// Keyed by the simulation object but stored outside it, so nothing here can be
+// mistaken for state the simulation owns.
+const animOf = new WeakMap();
+function animFor(u, now) {
   let a = animOf.get(u);
-  if (!a) { a = { dir: 'south', card: 'south', px: u.x, py: u.y, moving: false }; animOf.set(u, a); }
+  if (!a) {
+    a = { dir: 'south', card: 'south', px: u.x, py: u.y, hp: u.hp, moving: false, hurtUntil: 0 };
+    animOf.set(u, a);
+  }
   const dx = u.x - a.px, dy = u.y - a.py;
   a.moving = Math.hypot(dx, dy) > 0.08;      // sub-pixel drift is not walking
   if (a.moving) { a.dir = facing(dx, dy); a.card = cardinal(dx, dy); }
-  a.px = u.x; a.py = u.y;
+  if (u.hp < a.hp - 0.01) a.hurtUntil = now + HURT_MS;
+  a.px = u.x; a.py = u.y; a.hp = u.hp;
   return a;
+}
+
+// Recomputes what update() would be shooting at, purely to choose an animation.
+// Rendering is allowed to read simulation state; it is never allowed to write it.
+function targetInReach(u) {
+  const hostiles = (u.side === 'p' ? [...S.enemies, S.ebase] : [...S.units, S.pbase])
+    .filter(t => t.hp > 0);
+  const locked = u.foe && u.foe.hp > 0 ? u.foe : null;
+  const t = locked || nearest(hostiles, u);
+  return t && inRange(u, t) ? t : null;
 }
 
 function hpBar(cx, top, w, frac) {
@@ -232,9 +276,14 @@ function hpBar(cx, top, w, frac) {
 }
 
 function drawUnit(u) {
-  const mine = u.side === 'p';
-  const team = mine ? '#5b8dd9' : '#d95b5b';
+  const now = performance.now();               // wall clock, never simulation time
+  const team = u.side === 'p' ? '#5b8dd9' : '#d95b5b';
   const heavy = u.kind === 'heavy';
+  const a = animFor(u, now);
+
+  // Face whatever you are hitting, so a swing does not point the wrong way.
+  const tgt = targetInReach(u);
+  if (tgt) { a.dir = facing(tgt.x - u.x, tgt.y - u.y); a.card = cardinal(tgt.x - u.x, tgt.y - u.y); }
 
   // Team-coloured disc under the feet. This is how the genre tells sides apart
   // without tinting the sprite, and it stays readable when units overlap.
@@ -254,23 +303,26 @@ function drawUnit(u) {
   // "settled", so a global ready flag would take the sprite path, find nothing
   // usable, and draw no unit at all. Missing art must degrade to shapes, never
   // to invisible units.
-  const a = animFor(u);
-  const frameIdx = Math.floor(performance.now() / 130) % 4;   // wall clock, never sim time
-  const img = a.moving ? sprites.move[a.card]?.[frameIdx] : sprites.idle[a.dir];
-  const usable = img && img.complete && img.naturalWidth > 0;
+  const state = tgt ? 'attack' : a.moving ? 'move' : 'idle';
+  let frameImg = null;
+  if (state === 'attack')    frameImg = pickFrame(sprites.attack[a.card], now, 110);
+  else if (state === 'move') frameImg = pickFrame(sprites.move[a.card], now, 130);
+  if (!usable(frameImg)) frameImg = sprites.idle[a.dir];     // last resort, always exists
 
+  const hurt = now < a.hurtUntil;
   let barTop;
-  if (usable) {
+  if (usable(frameImg)) {
     const size = heavy ? 48 : 38;
     // The character does not fill its canvas. Measured on the source PNGs, the
     // content box is y 14..55 of 68, so the feet sit at 81% of the drawn height
     // and the head at 21%. Anchoring to the canvas bottom instead leaves the
     // unit visibly floating above its own disc.
     const top = u.y + 6 - size * (55 / 68);
-    g.drawImage(img, u.x - size / 2, top, size, size);
+    if (hurt) drawTinted(frameImg, u.x - size / 2, top, size, size, '#ff3b3b', 0.62);
+    else      g.drawImage(frameImg, u.x - size / 2, top, size, size);
     barTop = top + size * (14 / 68) - 6;
   } else {
-    g.fillStyle = team;
+    g.fillStyle = hurt ? '#ff3b3b' : team;
     if (heavy) g.fillRect(u.x - 9, u.y - 9, 18, 18);
     else { g.beginPath(); g.arc(u.x, u.y, RADIUS, 0, Math.PI * 2); g.fill(); }
     barTop = u.y - 16;
@@ -280,9 +332,31 @@ function drawUnit(u) {
 }
 
 function drawBase(b) {
-  g.fillStyle = b.side === 'p' ? '#3f5f96' : '#8f3a3a';
-  g.fillRect(b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
-  hpBar(b.x, b.y - b.r - 9, b.r * 2, b.hp / b.max);
+  const now = performance.now();
+  let a = animOf.get(b);
+  if (!a) { a = { hp: b.hp, hurtUntil: 0 }; animOf.set(b, a); }
+  if (b.hp < a.hp - 0.01) a.hurtUntil = now + HURT_MS;
+  a.hp = b.hp;
+  const hurt = now < a.hurtUntil;
+
+  const im = sprites.base[b.side];
+  if (!usable(im)) {
+    // Only in fallback. The keep sprite carries its own plot, and a second ring
+    // under it reads as a stray outline rather than a footprint.
+    g.strokeStyle = b.side === 'p' ? '#3f5f96' : '#8f3a3a';
+    g.beginPath(); g.ellipse(b.x, b.y + b.r * 0.55, b.r, b.r * 0.42, 0, 0, Math.PI * 2); g.stroke();
+  }
+  if (usable(im)) {
+    const size = b.r * 3.2;
+    const x = b.x - size / 2, y = b.y + b.r - size * 0.86;
+    if (hurt) drawTinted(im, x, y, size, size, '#ff3b3b', 0.55);
+    else      g.drawImage(im, x, y, size, size);
+    hpBar(b.x, y + size * 0.12, b.r * 2, b.hp / b.max);
+  } else {
+    g.fillStyle = hurt ? '#ff3b3b' : (b.side === 'p' ? '#3f5f96' : '#8f3a3a');
+    g.fillRect(b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
+    hpBar(b.x, b.y - b.r - 9, b.r * 2, b.hp / b.max);
+  }
 }
 
 function draw() {
@@ -292,8 +366,18 @@ function draw() {
   for (let x = 0; x <= c.width; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, c.height); g.stroke(); }
   for (let y = 0; y <= c.height; y += 40) { g.beginPath(); g.moveTo(0, y); g.lineTo(c.width, y); g.stroke(); }
 
-  g.fillStyle = '#f2c14e';
-  g.beginPath(); g.arc(MINE.x, MINE.y, MINE.r, 0, Math.PI * 2); g.fill();
+  if (usable(sprites.gold)) {
+    // Dim disc marks the harvest radius; the ore sits on top of it.
+    g.fillStyle = 'rgba(242,193,78,.18)';
+    g.beginPath(); g.arc(MINE.x, MINE.y, MINE.r, 0, Math.PI * 2); g.fill();
+    // Measured: content box is y 5..60 of 64, so its centre is at 51% of the
+    // drawn height. Anchoring on the canvas centre would sit the ore low.
+    const s = MINE.r * 2.4;
+    g.drawImage(sprites.gold, MINE.x - s / 2, MINE.y - s * 0.51, s, s);
+  } else {
+    g.fillStyle = '#f2c14e';
+    g.beginPath(); g.arc(MINE.x, MINE.y, MINE.r, 0, Math.PI * 2); g.fill();
+  }
 
   drawBase(S.pbase);
   drawBase(S.ebase);

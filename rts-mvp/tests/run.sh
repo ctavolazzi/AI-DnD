@@ -38,6 +38,11 @@ elif [ "${1:-}" = "--sabotage-input" ]; then
   sed -e 's|if (Math.hypot(x1 - x0, y1 - y0) < 5) {|if (false) {|' \
       -e 's|<= (t.r \|\| 12))|<= -1)|' \
       -e "s|if (S.status !== 'playing') return;|if (false) return;|" index.html > "$BUILD"
+elif [ "${1:-}" = "--sabotage-render" ]; then
+  # Makes drawUnit write to the simulation. Expected red:
+  #   draw() never mutates simulation state
+  echo "=== SABOTAGED BUILD: render writes to sim (one assertion must go red) ==="
+  sed -e 's|  const state = tgt ?|  u.hp -= 0.001;  const state = tgt ?|' index.html > "$BUILD"
 else
   echo "=== REAL BUILD ==="
   cat index.html > "$BUILD"

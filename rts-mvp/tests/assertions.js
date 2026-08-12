@@ -183,4 +183,45 @@ rightClick(300, 300);
 ok('input is ignored once the match is over', S.units[0].dest === null,
    'dest=' + JSON.stringify(S.units[0].dest));
 
+// ---- render layer ---------------------------------------------------------
+// The rule these protect: rendering may READ simulation state and may never
+// WRITE it. If that breaks, two machines with different frame rates diverge.
+
+reset();
+S.units = [unit(300, 300, 'p')];
+S.enemies = [unit(312, 300, 'e')];
+ok('targetInReach finds a hostile in range', targetInReach(S.units[0]) === S.enemies[0],
+   'got=' + (targetInReach(S.units[0]) ? 'enemy' : 'null'));
+
+S.enemies[0].x = 600; S.enemies[0].y = 460;
+ok('targetInReach is null with nothing in range', targetInReach(S.units[0]) === null,
+   'got=' + (targetInReach(S.units[0]) ? 'something' : 'null'));
+
+reset();
+const hurtUnit = S.units[0];
+draw();                                  // first draw records the baseline hp
+hurtUnit.hp -= 5;
+draw();                                  // second draw notices the drop
+const hurtRec = animOf.get(hurtUnit);
+ok('taking damage opens a hurt window', !!hurtRec && hurtRec.hurtUntil > performance.now(),
+   'hurtUntil-now=' + (hurtRec ? (hurtRec.hurtUntil - performance.now()).toFixed(0) : 'no record') + 'ms');
+
+// Exact snapshot, not checksum(). checksum() quantises positions and hp to a
+// sixteenth so that float noise cannot cause a false desync, which also means it
+// cannot see a tiny write. The first version of this assertion used it and
+// sailed straight through a deliberate `u.hp -= 0.001` in drawUnit.
+const snapshot = () => JSON.stringify([
+  S.gold, S.seed, S.status, S.pbase.hp, S.ebase.hp,
+  ...S.units.flatMap(u => [u.x, u.y, u.hp, u.dest && u.dest.x, u.foe ? 1 : 0]),
+  ...S.enemies.flatMap(e => [e.x, e.y, e.hp])
+]);
+
+reset(7);
+S.gold = 40; key('s'); key('d');
+for (let t = 0; t < 90; t++) update(STEP);
+const beforeDraw = snapshot();
+for (let i = 0; i < 6; i++) draw();
+ok('draw() never mutates simulation state', snapshot() === beforeDraw,
+   snapshot() === beforeDraw ? 'exact match over 6 draws' : 'STATE CHANGED during draw');
+
 document.body.innerHTML = '<pre>' + out.join('\n') + '</pre>';
