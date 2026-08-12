@@ -50,16 +50,23 @@ exactly. Rendering runs on wall-clock time and never writes to simulation state.
 
 ## Verified
 
-Headless Chrome drives the real `update()` across **17 assertions**: harvesting,
-both purchase types and their refusal when short on gold, heavy damage output,
-victory by razing the enemy base, defeat by losing yours, the stall guard, focus
-fire, separation, auto-acquiring the base with no order given, seeded replay,
-seed divergence, seeded spawn jitter, and two on the fixed timestep.
+    ./tests/run.sh                  # 26 pass, 0 fail
+    ./tests/run.sh --sabotage       # 23 pass, 3 fail   (determinism broken on purpose)
+    ./tests/run.sh --sabotage-input # 22 pass, 4 fail   (input broken on purpose)
 
-The suite is negative-controlled by three separate sabotages. Restoring
-`Math.random`, removing the accumulator clamp, dropping the enemy base from the
-auto-target list, and stopping enemies from marching each turn a specific
-assertion red and leave the rest green.
+Headless Chrome drives the real `update()` and dispatches real `MouseEvent`s
+across **26 assertions**: harvesting, both purchase types and their refusal when
+short on gold, heavy damage output, victory by razing the enemy base, defeat by
+losing yours, the stall guard, focus fire, separation, auto-acquiring the base
+with no order given, seeded replay, seed divergence, seeded spawn jitter, two on
+the fixed timestep, and nine on the mouse: click-select, box-select, ordering
+only the selection, focus-firing a unit and the base, clearing a focus target,
+and ignoring input once the match is over.
+
+**Every assertion has been watched go red.** Two sabotage modes exist for that
+purpose and the runner documents which assertions each one must break. A
+negative control that trips more assertions than listed is too broad and tells
+you nothing.
 
 Two gaps the negative controls caught, both of which would otherwise have
 shipped as false confidence:
@@ -72,6 +79,6 @@ shipped as false confidence:
 
 ## Not verified
 
-**The mouse.** Click, drag, box-select and right-click targeting have zero
-coverage. Every assertion drives `update()` directly or dispatches synthetic
-keyboard events. Nobody has clicked this game.
+**Nobody has played it by hand.** The mouse is covered by assertions now, but
+assertions test what I thought to check. Feel, pacing and anything that only
+shows up in a real session remain unverified.

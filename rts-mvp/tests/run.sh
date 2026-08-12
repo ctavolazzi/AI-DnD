@@ -23,10 +23,21 @@ PROFILE=$(mktemp -d)
 trap 'rm -f "$BUILD"; rm -rf "$PROFILE"' EXIT
 
 if [ "${1:-}" = "--sabotage" ]; then
-  echo "=== SABOTAGED BUILD (three specific assertions must go red) ==="
+  echo "=== SABOTAGED BUILD: determinism (three assertions must go red) ==="
   sed -e 's|+ rand() \* 12|+ Math.random() * 12|' \
       -e 's|(rand() - 0.5) \* 30|(Math.random() - 0.5) * 30|' \
       -e 's|Math.min(0.25, (now - last) / 1000)|((now - last) / 1000)|' index.html > "$BUILD"
+elif [ "${1:-}" = "--sabotage-input" ]; then
+  # Breaks three input mechanisms: the click-versus-drag threshold, hit detection
+  # for right-click targeting, and the match-over guard. Expected red:
+  #   click on a unit selects it and only it
+  #   right-click an enemy sets it as the focus target
+  #   right-click the enemy base targets the base
+  #   input is ignored once the match is over
+  echo "=== SABOTAGED BUILD: input (four assertions must go red) ==="
+  sed -e 's|if (Math.hypot(x1 - x0, y1 - y0) < 5) {|if (false) {|' \
+      -e 's|<= (t.r \|\| 12))|<= -1)|' \
+      -e "s|if (S.status !== 'playing') return;|if (false) return;|" index.html > "$BUILD"
 else
   echo "=== REAL BUILD ==="
   cat index.html > "$BUILD"

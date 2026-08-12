@@ -413,3 +413,18 @@ requestAnimationFrame(frame);
 </script>
 </body>
 </html>
+<script>
+window.requestAnimationFrame = () => 0;
+const sim = (s, dt = STEP) => { for (let t = 0; t < s; t += dt) update(dt); };
+const key = k => window.dispatchEvent(new KeyboardEvent('keydown', { key: k }));
+const ready = () => { const i = sprites.idle['south']; return i && i.complete && i.naturalWidth > 0; };
+function go() {
+  if (!ready()) return setTimeout(go, 40);
+  reset(1); S.gold = 60;
+  key('d'); key('s'); key('s');
+  S.units[0].x = MINE.x; S.units[0].y = MINE.y;
+  for (let i = 1; i < S.units.length; i++) { S.units[i].foe = S.enemies[0]; S.units[i].sel = true; }
+  sim(6); draw(); document.title = 'READY';
+}
+go();
+</script>

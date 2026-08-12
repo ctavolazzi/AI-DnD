@@ -109,4 +109,78 @@ reset(); last = 0; accumulator = 0; ticks = 0; frame(5000);
 ok('a 5s stall is clamped to 15 ticks, no death spiral', ticks === 15, 'ticks=' + ticks);
 
 update = realUpdate;
+
+// ---- mouse ----------------------------------------------------------------
+// Dispatches real MouseEvents at the canvas. Coordinates are world pixels and
+// get offset by the canvas rect, the same conversion pos() does. mousedown and
+// mousemove are bound to the canvas; mouseup is bound to window, so releasing
+// outside the canvas still completes a selection.
+function mouse(type, wx, wy, button = 0) {
+  const r = c.getBoundingClientRect();
+  const ev = new MouseEvent(type, {
+    clientX: r.left + wx, clientY: r.top + wy,
+    button, buttons: button === 2 ? 2 : 1, bubbles: true, cancelable: true
+  });
+  (type === 'mouseup' ? window : c).dispatchEvent(ev);
+}
+const click = (x, y) => { mouse('mousedown', x, y); mouse('mouseup', x, y); };
+const drag = (x0, y0, x1, y1) => {
+  mouse('mousedown', x0, y0); mouse('mousemove', x1, y1); mouse('mouseup', x1, y1);
+};
+const rightClick = (x, y) => mouse('mousedown', x, y, 2);
+
+reset();
+const u0 = S.units[0], u1 = S.units[1];
+click(u0.x, u0.y);
+ok('click on a unit selects it and only it', u0.sel === true && u1.sel === false,
+   'u0=' + u0.sel + ' u1=' + u1.sel);
+
+click(400, 440);
+ok('click on empty ground clears the selection', !u0.sel && !u1.sel,
+   'u0=' + u0.sel + ' u1=' + u1.sel);
+
+reset();
+drag(90, 300, 200, 380);
+ok('drag box selects the units inside it', S.units[0].sel && S.units[1].sel,
+   'selected=' + S.units.filter(u => u.sel).length + '/2');
+
+reset();
+drag(400, 400, 500, 460);
+ok('drag box over empty ground selects nothing', S.units.every(u => !u.sel),
+   'selected=' + S.units.filter(u => u.sel).length);
+
+reset();
+S.units[0].sel = true;
+rightClick(500, 430);
+ok('right-click ground orders only the selected unit',
+   S.units[0].dest && Math.round(S.units[0].dest.x) === 500 && S.units[1].dest === null,
+   'u0.dest=' + JSON.stringify(S.units[0].dest) + ' u1.dest=' + JSON.stringify(S.units[1].dest));
+
+reset();
+for (const u of S.units) u.sel = true;
+const victim = S.enemies[0];
+rightClick(victim.x, victim.y);
+ok('right-click an enemy sets it as the focus target',
+   S.units.every(u => u.foe === victim), 'foe set on ' + S.units.filter(u => u.foe === victim).length + '/2');
+
+reset();
+for (const u of S.units) u.sel = true;
+rightClick(S.ebase.x, S.ebase.y);
+ok('right-click the enemy base targets the base',
+   S.units.every(u => u.foe === S.ebase), 'foe===ebase on ' + S.units.filter(u => u.foe === S.ebase).length + '/2');
+
+reset();
+for (const u of S.units) u.sel = true;
+rightClick(victim.x, victim.y);
+rightClick(430, 300);
+ok('right-click ground clears a previous focus target',
+   S.units.every(u => u.foe === null), 'still targeting: ' + S.units.filter(u => u.foe).length);
+
+reset();
+S.status = 'lost';
+S.units[0].sel = true;
+rightClick(300, 300);
+ok('input is ignored once the match is over', S.units[0].dest === null,
+   'dest=' + JSON.stringify(S.units[0].dest));
+
 document.body.innerHTML = '<pre>' + out.join('\n') + '</pre>';

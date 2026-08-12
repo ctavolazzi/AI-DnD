@@ -80,11 +80,21 @@ An adversarial audit of every file found 17 problems. Fixed:
 | Sourcing looked stronger than it was | Added a table stating exactly what was read versus summarised |
 | `DELIVERABLES.md` was stale the moment it was pushed | This section |
 
+Closed after the audit:
+
+- **The mouse is now covered**, 9 assertions dispatching real `MouseEvent`s at
+  the canvas, negative-controlled by `--sabotage-input` which turns exactly 4 of
+  them red. The earlier claim that this needed the command layer first was
+  over-strict; asserting on resulting state works today.
+- **Sprites are wired in.** Units render as the 8-direction soldier with a
+  4-frame walk, on team-coloured discs. Two bugs found and fixed while doing it:
+  a global `spritesReady` flag made missing art render *nothing* instead of
+  falling back to shapes, and anchoring the sprite to its canvas bottom left
+  units floating above their discs, because the PixelLab canvas pads the
+  character (content is y 14..55 of 68).
+
 Not fixed, and deliberately so:
 
-- **The mouse is still untested.** Fixing it properly needs the command layer
-  from `ARCHITECTURE-PLAN.md` phase 2. A test that pokes at handlers before then
-  would be theatre.
 - **The rename is still unapplied** beyond the constants. It has to land with
   the harness in one commit.
 - **777 lines of prose against 332 lines of game.** Named as a problem, not
